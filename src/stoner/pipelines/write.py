@@ -84,7 +84,9 @@ def draft_chapter(
         f"Draft chapter {number} now. Consult the beat sheet and canon as "
         f"needed, then save the finished prose with the write_chapter tool "
         f"(number={number}). The chapter should be complete, publishable "
-        f"prose — not an outline or summary."
+        f"prose — not an outline or summary. If tool calling fails "
+        f"repeatedly, reply with ONLY the complete chapter prose as your "
+        f"final message and it will be saved for you."
     )
     result = agent.run(task=task or default_task, system=system)
 

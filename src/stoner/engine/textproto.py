@@ -89,3 +89,25 @@ def parse_response(text: str) -> tuple[str, list[ToolCall]]:
     if notes:
         clean_text = (clean_text + "\n\n" + "\n".join(notes)).strip()
     return clean_text, calls
+
+
+_CALLISH_RE = re.compile(r"(```\s*tool|\btool_call\b|\"name\"\s*:)", re.IGNORECASE)
+
+
+def looks_like_attempted_call(text: str, tool_names: list[str]) -> bool:
+    """Heuristic: the reply contains no valid fenced call but appears to be
+    trying to call a tool (freehand `query_canon({...})`, a stray
+    ```tool fence, or bare protocol JSON). Used by the agent loop to send a
+    format correction instead of treating the reply as a final answer."""
+    if _CALLISH_RE.search(text):
+        return True
+    return any(re.search(rf"\b{re.escape(n)}\s*\(", text) for n in tool_names)
+
+
+FORMAT_CORRECTION = (
+    "Your last reply looked like a tool call but was not in the required "
+    "format, so nothing was executed. To call a tool, reply with a fenced "
+    "block exactly like this:\n\n"
+    '```tool_call\n{"name": "query_canon", "arguments": {"topic": "example"}}\n```\n\n'
+    "Try again now. If you did not mean to call a tool, continue with your task."
+)

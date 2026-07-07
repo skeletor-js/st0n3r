@@ -272,3 +272,37 @@ def test_banned_terms_flow_into_slop(project):
     quotes = {f.quote.lower() for f in report.findings}
     assert "frobnicate" in quotes
     assert "whispering pines" in quotes
+
+
+# --- textproto format-retry: freehand tool calls get corrected ----------------
+
+
+def test_textproto_format_retry(project):
+    from stoner.engine.agent import Agent
+    from stoner.engine.tools import default_registry
+    from stoner.ledger import Ledger
+
+    class FreehandProvider(Provider):
+        """First reply botches the protocol; after correction, uses it right."""
+
+        name = "freehand"
+        supports_tools = False
+
+        def __init__(self):
+            self.n = 0
+
+        def complete(self, req: CompletionRequest) -> CompletionResponse:
+            self.n += 1
+            if self.n == 1:
+                return CompletionResponse(text='tool_call query_canon({"topic": "premise"})')
+            if self.n == 2:
+                return CompletionResponse(
+                    text='```tool_call\n{"name": "query_canon", "arguments": {}}\n```'
+                )
+            return CompletionResponse(text="Done.")
+
+    provider = FreehandProvider()
+    agent = Agent(provider, "m", default_registry(), project, Ledger(project.root), "fmt")
+    result = agent.run(task="t", system="s", max_turns=6)
+    assert provider.n == 3  # retry happened instead of stopping at turn 1
+    assert result.text == "Done."

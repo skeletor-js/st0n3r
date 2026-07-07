@@ -20,7 +20,12 @@ from ..ledger import Ledger
 from ..project import WritingProject
 from ..providers.base import Provider
 from ..types import CompletionRequest, Message, ToolCall, ToolResult, Usage
-from .textproto import parse_response, render_tools_prompt
+from .textproto import (
+    FORMAT_CORRECTION,
+    looks_like_attempted_call,
+    parse_response,
+    render_tools_prompt,
+)
 from .tools import ToolRegistry
 
 _REPEAT_NUDGE_AT = 3
@@ -33,6 +38,9 @@ class AgentResult:
     turns: int
     usage: Usage
     transcript_path: str
+
+
+_MAX_FORMAT_RETRIES = 3
 
 
 def _call_signature(calls: list[ToolCall]) -> tuple:
@@ -107,6 +115,7 @@ class Agent:
         final_text = ""
         turns = 0
 
+        format_retries = 0
         while turns < max_turns:
             turns += 1
             req = CompletionRequest(
@@ -146,6 +155,15 @@ class Agent:
                 "tool_calls": [c.model_dump() for c in calls],
                 "usage": resp.usage.model_dump(),
             }
+
+            if not calls and not native_tools and format_retries < _MAX_FORMAT_RETRIES:
+                if looks_like_attempted_call(assistant_text, self.tools.names()):
+                    format_retries += 1
+                    messages.append(Message(role="user", content=FORMAT_CORRECTION))
+                    turn_record["format_retry"] = format_retries
+                    transcript.data["turns"].append(turn_record)
+                    transcript.save()
+                    continue
 
             if not calls:
                 transcript.data["turns"].append(turn_record)
