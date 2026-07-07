@@ -83,3 +83,4 @@ _Last updated: 2026-07-07 (run 1) — v2 COMPLETE_
   for v0.2.0 with Hearth-UI screenshots over the real book. 227 tests green. Repo remains private.
   Remaining majors in the novella are honest reviewer findings a human author would triage in the
   UI — left in place as a realistic artifact.
+- **Post-milestone-1:** PR #1 squash-merged to main (4dae66c). Branch restarted from main. ROADMAP.md drafted: ten features toward real literature (voice engine, interiority agents, draft tournaments, pacing instrumentation, writers' room, verisimilitude engine, promise/motif ledger, reader simulation, draft archaeology, production line).
