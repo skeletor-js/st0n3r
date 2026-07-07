@@ -33,7 +33,7 @@ _Last updated: 2026-07-07 (run 1)_
 | 9 | final push | todo | |
 | v2 | claude_code provider | done | bef8527; live-verified in-env |
 | v2 | foundation pipeline (brainstorm/canon gen) | wip | subagent |
-| v2 | autonomous book mode + whole-book review | wip | subagent |
+| v2 | autonomous book mode + whole-book review | done | abeb1f4, 15 tests; CLI wired |
 | v2 | UI v2 (Hearth design system) | wip | subagent running w/ Hearth tokens |
 | v2 | proof of output (novella in examples/) | todo | needs A+B+C |
 | v2 | docs v2 reconciliation | todo | |
