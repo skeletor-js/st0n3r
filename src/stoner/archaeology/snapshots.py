@@ -265,3 +265,106 @@ def snapshot_write_chapter(
         )
     store.save_manifest(number, manifest)
     return path
+
+
+class PruneResult(BaseModel):
+    """What `prune_chapter_snapshots` did (or would do, when dry_run)."""
+
+    chapter: int
+    pruned_seqs: list[int] = Field(default_factory=list)
+    removed_files: list[str] = Field(default_factory=list)
+    kept: int = 0
+    dry_run: bool = False
+
+
+def prune_chapter_snapshots(
+    project: WritingProject, number: int, keep: int, dry_run: bool = False
+) -> PruneResult:
+    """Bound a chapter's snapshot storage while keeping the story intact.
+
+    Keeps the first entry (the original draft), every `human-edit` entry,
+    and the most recent `keep` live entries. Everything else is marked
+    `pruned: true` in the manifest -- hashes stay so the attribution chain
+    degrades to "a state existed here" instead of breaking -- and a content
+    file is deleted only when no live entry references it. Appends a
+    `drafts.prune` ledger entry unless `dry_run`.
+    """
+    if keep < 0:
+        raise ValueError("keep must be >= 0")
+    store = DraftStore(project)
+    manifest = store.load_manifest(number)
+    live = [e for e in manifest.entries if not e.pruned]
+    protected: set[int] = {e.seq for e in live if e.reason == "human-edit"}
+    if live:
+        protected.add(live[0].seq)
+    if keep:
+        protected.update(e.seq for e in live[-keep:])
+
+    result = PruneResult(chapter=number, dry_run=dry_run)
+    to_prune = [e for e in live if e.seq not in protected]
+    result.pruned_seqs = [e.seq for e in to_prune]
+    result.kept = len(live) - len(to_prune)
+
+    pruned_seq_set = set(result.pruned_seqs)
+    referenced = {
+        e.file for e in manifest.entries if e.file and not e.pruned and e.seq not in pruned_seq_set
+    }
+    removable = sorted(
+        {e.file for e in to_prune if e.file}
+        | {e.file for e in manifest.entries if e.pruned and e.file}
+    )
+    result.removed_files = [f for f in removable if f not in referenced]
+
+    if dry_run:
+        return result
+
+    for e in to_prune:
+        e.pruned = True
+    for name in result.removed_files:
+        p = store.chapter_dir(number) / name
+        if p.exists():
+            p.unlink()
+    store.save_manifest(number, manifest)
+    Ledger(project.root).append(
+        "drafts.prune",
+        target=project.chapter_rel(number),
+        chapter=number,
+        pruned=result.pruned_seqs,
+        removed_files=result.removed_files,
+        keep=keep,
+    )
+    return result
+
+
+def manual_snapshot(project: WritingProject, number: int) -> SnapshotEntry:
+    """Snapshot the current on-disk chapter as-is with reason `manual`.
+
+    Unlike the chokepoint this does not rewrite the chapter; it preserves
+    whatever is on disk (including hand-edits) as a restorable state and
+    records its hash as the last result so later drift detection starts
+    from here.
+    """
+    store = DraftStore(project)
+    manifest = store.load_manifest(number)
+    full_text = project.read(project.chapter_rel(number))
+    _fm, body = split_frontmatter(full_text)
+    sha = body_hash(body)
+    entry = store.record(
+        number,
+        manifest,
+        full_text,
+        sha,
+        "manual",
+        git_head=_git_head(project.root),
+        result_sha256=sha,
+    )
+    manifest.last_result_sha256 = sha
+    store.save_manifest(number, manifest)
+    Ledger(project.root).append(
+        "drafts.snapshot",
+        target=project.chapter_rel(number),
+        chapter=number,
+        seq=entry.seq,
+        reason="manual",
+    )
+    return entry

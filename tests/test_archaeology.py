@@ -372,3 +372,106 @@ def test_agent_tool_redraft_snapshots_prior_body(project):
     assert "He walked to the window" in snap.read_text(encoding="utf-8")
     _, body = project.read_chapter(5)
     assert "his father's hands" in body
+
+
+# ---------------------------------------------------------------------------
+# U3: provenance engine
+# ---------------------------------------------------------------------------
+
+PROV_ONE = (
+    "The dog crossed the road and stopped. The kettle sat cold.\n\n"
+    "A letter waited on the table.\n"
+)
+PROV_TWO = (
+    "The dog crossed the road and stopped. The kettle sat cold.\n\n"
+    "A letter waited on the table. The fence along the north line sagged.\n"
+)
+PROV_THREE = (
+    "The dog crossed the road and stopped. The kettle sat cold on the stove.\n\n"
+    "A letter waited on the table. The fence along the north line sagged.\n\n"
+    "His father's hands had held the plow.\n"
+)
+
+
+def build_three_state_chain(project: WritingProject) -> None:
+    snapshot_write_chapter(project, 1, {"title": "One"}, PROV_ONE, reason="draft")
+    snapshot_write_chapter(
+        project, 1, {"title": "One"}, PROV_TWO, reason="slop-revise", detail={"score": 40.0}
+    )
+    snapshot_write_chapter(
+        project, 1, {"title": "One"}, PROV_THREE, reason="review-revise", detail={"applied": 2}
+    )
+
+
+def test_blame_attributes_untouched_and_added_sentences(project):
+    from stoner.archaeology.provenance import attribute_sentences
+
+    build_three_state_chain(project)
+    rows = {r.sentence: r for r in attribute_sentences(project, 1)}
+
+    untouched = rows["The dog crossed the road and stopped."]
+    assert untouched.event == "initial"
+    assert untouched.seq is None
+
+    added_second = rows["The fence along the north line sagged."]
+    assert added_second.event == "slop-revise"
+    assert added_second.detail == {"score": 40.0}
+
+    added_third = rows["His father's hands had held the plow."]
+    assert added_third.event == "review-revise"
+    assert added_third.detail == {"applied": 2}
+
+
+def test_blame_classifies_reworded_sentence_as_revised(project):
+    from stoner.archaeology.provenance import attribute_sentences
+
+    build_three_state_chain(project)
+    rows = {r.sentence: r for r in attribute_sentences(project, 1)}
+    reworded = rows["The kettle sat cold on the stove."]
+    assert reworded.event == "review-revise"
+    assert reworded.revised
+    assert reworded.originated_event == "initial"
+
+
+def test_blame_is_deterministic(project):
+    from stoner.archaeology.provenance import attribute_sentences
+
+    build_three_state_chain(project)
+    first = [r.model_dump_json() for r in attribute_sentences(project, 1)]
+    second = [r.model_dump_json() for r in attribute_sentences(project, 1)]
+    assert first == second
+
+
+def test_blame_without_history_attributes_to_initial(project):
+    from stoner.archaeology.provenance import attribute_sentences
+
+    project.write_chapter(1, {"title": "One"}, PROV_ONE)  # never rewritten
+    rows = attribute_sentences(project, 1)
+    assert rows
+    assert all(r.event == "initial" and r.seq is None for r in rows)
+
+
+def test_blame_survives_pruned_middle_entry(project):
+    from stoner.archaeology.provenance import attribute_sentences
+    from stoner.archaeology.snapshots import prune_chapter_snapshots
+
+    build_three_state_chain(project)
+    snapshot_write_chapter(project, 1, {"title": "One"}, BODY_ONE, reason="draft")
+    # Prune the middle of the chain (keep=1 protects seq 1 and the newest).
+    res = prune_chapter_snapshots(project, 1, keep=1)
+    assert res.pruned_seqs  # a middle entry really was pruned
+    rows = attribute_sentences(project, 1)
+    assert rows
+    events = {r.event for r in rows}
+    assert events  # both sides of the gap still resolve to events
+    manifest = DraftStore(project).load_manifest(1)
+    pruned = [e for e in manifest.entries if e.pruned]
+    assert all(e.sha256 for e in pruned)  # hashes retained for the chain
+
+
+def test_unified_diff_helper_shows_changed_lines():
+    from stoner.archaeology.provenance import unified_diff
+
+    diff = unified_diff("a\nb\n", "a\nc\n", "old", "new")
+    assert "-b" in diff and "+c" in diff
+    assert unified_diff("same\n", "same\n", "a", "b") == ""
