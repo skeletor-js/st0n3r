@@ -533,6 +533,11 @@ def ui(
     run_server(project, host=host, port=port)
 
 
+from . import book_cmds  # noqa: E402
+
+book_cmds.register(app)
+
+
 def app_main() -> None:
     # Suppress noisy tracebacks in production; STONER_DEBUG=1 re-enables.
     if not os.environ.get("STONER_DEBUG"):
