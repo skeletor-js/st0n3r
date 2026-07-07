@@ -20,12 +20,12 @@ _Last updated: 2026-07-07 (run 1)_
 | 2 | engine: agent loop + tools + prompts | done | commit 4de3131, 42 tests |
 | 3 | canon: store + templates + memory | done | 37 tests; in 86149a8 |
 | 3 | canon: archivist | done | apply_updates(auto=False)=dry-run preview |
-| 4 | slop: lexicon data | wip | subagent B running; merge research when done |
-| 4 | slop: analyzers + score + report | wip | subagent B running |
-| 5 | review: passes + runner + revise | todo | |
-| 6 | cli: init/status/write/review/slop/canon/revise/ui | todo | |
-| 6 | pipelines: write pipeline | todo | |
-| 7 | ui: server + static dashboard | todo | subagent D |
+| 4 | slop: lexicon data | done | 158 words / 218 phrases / 46 patterns |
+| 4 | slop: analyzers + score + report | done | 26 tests, commit 4d3dbc8 |
+| 5 | review: passes + runner + revise | wip | subagent D running |
+| 6 | cli: init/status/write/review/slop/canon/revise/ui | done | commit 3e38db6, 16 tests |
+| 6 | pipelines: write pipeline | done | commit 3e38db6 |
+| 7 | ui: server + static dashboard | wip | subagent E running |
 | 8 | tests: unit + smoke | todo | alongside modules |
 | 8 | reviewer subagent QA pass + fixes | todo | |
 | 9 | README + docs/ | todo | |
@@ -59,3 +59,4 @@ _Last updated: 2026-07-07 (run 1)_
 - **Run 1 (cont):** Repo confirmed private on GitHub. Wave-1 subagents launched (A: providers+engine, B: slop, C: canon).
 - **Run 1 (cont):** Subagent A landed: providers (anthropic/openai_compat/codex_cli) + engine (agent loop, tools, textproto, prompts), 42 tests green. Committed 4de3131.
 - **Run 1 (cont):** Subagent C landed: canon store/templates/memory/archivist, 37 tests. Note: archivist apply_updates(auto=False) is a dry-run preview; new_entities surfaced for triage, never auto-created.
+- **Run 1 (cont):** Slop detector landed (26 tests). Orchestrator wrote CLI + write pipeline (16 tests). Wave 2 running: D=review engine, E=web UI. 119 tests green outside in-flight scopes.
