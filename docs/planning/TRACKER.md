@@ -31,6 +31,12 @@ _Last updated: 2026-07-07 (run 1)_
 | 9 | README + docs/ | wip | docs agent + orchestrator README |
 | 9 | LICENSE (MIT) + attribution | done | LICENSE + docs/CREDITS.md |
 | 9 | final push | todo | |
+| v2 | claude_code provider | wip | subagent |
+| v2 | foundation pipeline (brainstorm/canon gen) | wip | subagent |
+| v2 | autonomous book mode + whole-book review | wip | subagent |
+| v2 | UI v2 (Hearth design system) | todo | after Hearth study |
+| v2 | proof of output (novella in examples/) | todo | needs A+B+C |
+| v2 | docs v2 reconciliation | todo | |
 
 ## Decisions log
 
@@ -67,3 +73,4 @@ _Last updated: 2026-07-07 (run 1)_
   loop-guard nudge now a user message, usage counted on parse failure, timeline idempotency, write_chapter frontmatter merge,
   slop_check agent tool added, ch>=1000 regex, keyless CLI creation (chapter new/import, canon new, beats), archivist.md rewritten
   truthful, unused reviewer.md removed. 179 tests green. README got screenshots (docs/assets) + demo-driven fixes (rich double-print, UI word count).
+- **Run 1 (cont):** GOAL EXPANDED by owner: autonomy, proof of output, Hearth UI. claude CLI confirmed working in-env (claude_code provider = proof vehicle). Hearth cloned to scratchpad. Launching wave 3.

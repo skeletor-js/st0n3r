@@ -75,3 +75,17 @@ medium-or-lower effort, sparingly.
 - Embeddings-based retrieval (design leaves room; keyword + structured canon
   first).
 - Fine-tuning or local model serving.
+
+
+## v2 — Autonomy push (goal update, 2026-07-07)
+
+Owner feedback: think bigger. New deliverables:
+
+| # | Item | Detail |
+|---|------|--------|
+| A | claude_code provider | Drive the `claude` CLI (`claude -p`) as a backend — subscription-based, mirrors codex_cli. Also = proof-of-output vehicle in this environment. |
+| B | Foundation pipeline | `stoner brainstorm "<seed>"` -> premise + style; `stoner canon generate` -> characters/world/threads/outline/beats from premise, with an evaluate-and-iterate quality loop (autonovel Phase 1 analog). |
+| C | Autonomous book mode | `stoner book` — chapter loop over the outline using the existing write pipeline, plus periodic whole-manuscript review (`stoner review book`, autonovel Opus-loop analog), auto-revision cycles, resumable state (.stoner/book-state.json), budget caps. |
+| D | UI v2 | Rebuild the dashboard on the Hearth design system (skeletor-js/Hearth). |
+| E | Proof of output | Generate a complete novella through the harness end-to-end with the claude_code provider; commit it under examples/. |
+| F | Docs v2 | Reconcile all docs + README with the above. |
