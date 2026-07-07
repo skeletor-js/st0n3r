@@ -17,8 +17,8 @@ errors (frozen as baseline; new code must not add errors).
 | W0 | 009 U2 route rewrite paths through chokepoint | done | 18b26cc; deviation: reason kwarg passed via inspect.signature guard (test stubs lack it) |
 | W1 | 001 voice engine (U1-U4, U6, U7 + gate helper; write.py gate deferred to wiring) | done | 66836b1, +58 tests (415 green) |
 | W1 | 004 pacing instrumentation (U1-U7) | done | 781de54, +73 tests (357 green) |
-| W2 | 005 writers' room (U1-U7) | todo | next up; run on Opus subagent |
-| W2 | 003 draft tournaments (U1-U7; write --tournament + book slots deferred to wiring) | todo | next up; run on Opus subagent |
+| W2 | 005 writers' room (U1-U7) | wip | Opus subagent worktree, run 3 |
+| W2 | 003 draft tournaments (U1-U7; write --tournament + book slots deferred to wiring) | wip | Opus subagent worktree, run 3 |
 | W3 | 002 character interiority (all units) | todo | |
 | W3 | 006 verisimilitude engine (all units) | todo | |
 | W4 | 007 promise & motif ledger (all units) | todo | |
@@ -138,6 +138,11 @@ errors (frozen as baseline; new code must not add errors).
   roster passes, ship promises, readers ratings), UI consolidation (fix pacing rail
   item placement), docs reconciliation, novella proof run (live steps need an API
   key; scripted-provider steps run without).
+- **Run 3 (2026-07-07):** Resumed. Baseline re-verified at 88caf80: 415 passed /
+  1 skipped, ruff clean, mypy 33. Wave 2 launched: 005 room + 003 tournaments as
+  Opus subagents in worktrees, each instructed to ff to main first. Tournament
+  apply routes through the archaeology chokepoint with reason tournament-graft
+  (integration-plan override recorded in the subagent brief).
 
 ## Run journal (run 1 — v1/v2)
 
