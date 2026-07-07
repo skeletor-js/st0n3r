@@ -32,10 +32,10 @@ _Last updated: 2026-07-07 (run 1)_
 | 9 | LICENSE (MIT) + attribution | done | LICENSE + docs/CREDITS.md |
 | 9 | final push | todo | |
 | v2 | claude_code provider | done | bef8527; live-verified in-env |
-| v2 | foundation pipeline (brainstorm/canon gen) | wip | subagent |
+| v2 | foundation pipeline (brainstorm/canon gen) | done | d047f9e, 13 tests; CLI wired |
 | v2 | autonomous book mode + whole-book review | done | abeb1f4, 15 tests; CLI wired |
-| v2 | UI v2 (Hearth design system) | wip | subagent running w/ Hearth tokens |
-| v2 | proof of output (novella in examples/) | todo | needs A+B+C |
+| v2 | UI v2 (Hearth design system) | done | in a0ed68c; both themes verified vs Hearth |
+| v2 | proof of output (novella in examples/) | wip | run in progress: brainstorm done, foundation running |
 | v2 | docs v2 reconciliation | todo | |
 
 ## Decisions log
@@ -75,3 +75,4 @@ _Last updated: 2026-07-07 (run 1)_
   truthful, unused reviewer.md removed. 179 tests green. README got screenshots (docs/assets) + demo-driven fixes (rich double-print, UI word count).
 - **Run 1 (cont):** GOAL EXPANDED by owner: autonomy, proof of output, Hearth UI. claude CLI confirmed working in-env (claude_code provider = proof vehicle). Hearth cloned to scratchpad. Launching wave 3.
 - **Run 1 (cont):** claude_code provider landed + live smoke (PONG, real usage). Banned terms wired into detector. UI v2 agent launched with Hearth design brief. Foundation + book agents still running. Proof-of-output plan: novella on a legacy cannabis farm during legalization (Stoner-quiet, owner's industry), writer=claude/sonnet, archivist/reviewer=claude/haiku, under examples/.
+- **Run 1 (cont):** Foundation + book mode + Hearth UI all landed and wired (224 tests). Proof run started: examples/novella (Ruth Vann, Humboldt legalization novella), writer/reviewer=claude/sonnet, archivist=claude/haiku. Brainstorm complete; foundation generating.

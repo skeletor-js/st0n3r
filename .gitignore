@@ -6,3 +6,6 @@ dist/
 *.egg-info/
 .mypy_cache/
 .ruff_cache/
+
+# generated example project: keep canon/manuscript/reviews, skip bulky transcripts
+examples/*/.stoner/sessions/
