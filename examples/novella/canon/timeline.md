@@ -17,3 +17,9 @@
 | ch-07 | End of July: Ruth stops mentioning ten-year plantings and decade-long selection varieties; shifts to teaching Wyatt as transient worker rather than heir | 7 | Ruth Vann |
 | ch-08 | closes sale to Canopy Biosciences; deal finalized Tuesday; all mother plants and infrastructure transferred via flatbed | 8 | Denny Calloway |
 | ch-11 | 2026-08: unexpected heavy rainstorm forces Ruth to work through the night preventing botrytis damage using Alta Furse's fan-ventilation technique; east-block crop survives intact | 11 | Ruth Vann |
+| ch-13 | October (mid-month): Wyatt departs for job orientation in Willow Creek; opportunity disclosed approximately three weeks prior | 13 | October harvest - Wyatt's departure |
+| ch-13 | October 22: Final plant harvested; crop of approximately four hundred plants now hanging in barn for cure | 13 | October 22 - Harvest completion |
+| ch-14 | Ch-14, November: Permit hearing in Eureka; commission denies application for full 36,000 sq ft mapped cultivation area; conditionally approves provisional Type S license for ~8,000 sq ft (one-year renewable, expandable only if setback violations corrected within one year) | 14 | Ruth Vann |
+| ch-15 | November 29: left for Willow Creek for orientation before starting job in earnest | 15 | Wyatt Deering |
+| ch-15 | November 9: finished curing work, completed jarring final batch; produced 108 quart jars total from 411 plants | 15 | Ruth Vann |
+| ch-15 | Early December (first week): curing cycle complete, humidity stable at 62% across all 108 jars; jars sealed and moved to storage room off barn | 15 | Ruth Vann |

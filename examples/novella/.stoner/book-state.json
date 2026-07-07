@@ -30,22 +30,22 @@
       "revision_cycles": 3
     },
     "3": {
-      "words": 1895,
+      "words": 1848,
       "slop": 17.74,
       "reviewed": true,
-      "revision_cycles": 1
+      "revision_cycles": 2
     },
     "4": {
-      "words": 2066,
+      "words": 2063,
       "slop": 18.63,
       "reviewed": true,
-      "revision_cycles": 4
+      "revision_cycles": 5
     },
     "5": {
-      "words": 1268,
+      "words": 1283,
       "slop": 16.02,
       "reviewed": true,
-      "revision_cycles": 1
+      "revision_cycles": 2
     },
     "6": {
       "words": 1745,
@@ -60,16 +60,16 @@
       "revision_cycles": 2
     },
     "8": {
-      "words": 2109,
+      "words": 2264,
       "slop": 15.91,
       "reviewed": true,
-      "revision_cycles": 3
+      "revision_cycles": 4
     },
     "9": {
-      "words": 1376,
+      "words": 1315,
       "slop": 20.05,
       "reviewed": true,
-      "revision_cycles": 1
+      "revision_cycles": 2
     },
     "10": {
       "words": 1577,
@@ -88,6 +88,24 @@
       "slop": 17.27,
       "reviewed": true,
       "revision_cycles": 1
+    },
+    "13": {
+      "words": 1265,
+      "slop": 15.31,
+      "reviewed": false,
+      "revision_cycles": 0
+    },
+    "14": {
+      "words": 1561,
+      "slop": 17.8,
+      "reviewed": false,
+      "revision_cycles": 0
+    },
+    "15": {
+      "words": 1518,
+      "slop": 19.17,
+      "reviewed": false,
+      "revision_cycles": 0
     }
   },
   "current": null,
@@ -131,9 +149,9 @@
     }
   ],
   "budget": {
-    "chapters_this_run": 8,
+    "chapters_this_run": 11,
     "max_chapters_per_run": null
   },
   "started_at": 1783439030.5029495,
-  "updated_at": 1783444545.599784
+  "updated_at": 1783445311.8773286
 }

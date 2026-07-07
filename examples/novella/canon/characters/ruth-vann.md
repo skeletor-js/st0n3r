@@ -25,6 +25,10 @@ relationships:
   wyatt_deering: trainee; Ruth allows him to work the potting bench alone for the
     first time and views him as potential heir to her craft knowledge if she continues
     teaching him right
+  alta-furse: learned the curing/burping method from Alta in fall of 1998; has never
+    taught this burping-by-feel technique to anyone—not to Wyatt, not to the two men
+    who worked for her before Wyatt (whose names she still has in a ledger)—because
+    it takes a year to teach properly and she has never had anyone 'worth a year'
 skills: expert cultivator; can diagnose plant problems by leaf reading, understand
   genetics, teach proper technique; knows clone-cutting, propagation timing, trellising,
   topping—much of it never written down
@@ -47,6 +51,8 @@ financial:
   note: has outstanding mortgage or note against the property
 knowledge-status: sole living keeper of complete knowledge from seed to cure; no successor
   identified
+operations:
+  start_year: '1985'
 ---
 
 <!-- Copy this file to canon/characters/<slug>.md (e.g. aria-voss.md), one
