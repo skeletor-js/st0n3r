@@ -16,7 +16,7 @@ errors (frozen as baseline; new code must not add errors).
 | W0 | 009 U1 snapshot store + chokepoint | done | 18b26cc, 15 tests |
 | W0 | 009 U2 route rewrite paths through chokepoint | done | 18b26cc; deviation: reason kwarg passed via inspect.signature guard (test stubs lack it) |
 | W1 | 001 voice engine (U1-U4, U6, U7 + gate helper; write.py gate deferred to wiring) | wip | subagent worktree, run 2 |
-| W1 | 004 pacing instrumentation (U1-U7) | wip | subagent worktree, run 2 |
+| W1 | 004 pacing instrumentation (U1-U7) | done | 781de54, +73 tests (357 green) |
 | W2 | 005 writers' room (all units) | todo | |
 | W2 | 003 draft tournaments (all units) | todo | |
 | W3 | 002 character interiority (all units) | todo | |
@@ -109,6 +109,16 @@ errors (frozen as baseline; new code must not add errors).
   (prune in snapshots.py; merge archives vacated drafts dir; renumber ledgers via
   refactor entries; missing-chapter table refs advisory). Voice + pacing still
   building.
+- **Run 2 (cont):** Pacing (004 U1-U7) landed and merged (781de54): +73 tests ->
+  357 passed / 1 skipped, ruff clean, mypy baseline. Its worktree branched from
+  v0.2.0 (worktrees base at session start, NOT current main) so seam conflicts in
+  config.py/main.py/ui/server.py were resolved at merge per contracts (pacing before
+  archaeology in config; pacing register before drafts; explicit-kind _review_kind).
+  NOTE for U5 UI pass: pacing rail item sits between Book and Ledger, not in the
+  marked feature region — cosmetic, consolidation pass owns panel order. Pacing
+  deviations recorded in its report: run_pacing(llm=None) defaults from config;
+  pacing.report ledgers on --no-save too; e2e provider injection via run_pacing.
+  Voice still building.
 
 ## Run journal (run 1 — v1/v2)
 
