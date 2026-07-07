@@ -1,0 +1,207 @@
+"""The write pipeline: plan -> draft -> slop gate -> archive.
+
+Each stage is also reachable standalone through the CLI; this module wires
+them into the opinionated flow described in ARCHITECTURE.md.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+from ..canon.archivist import (
+    ApplyResult,
+    apply_updates,
+    extract_facts_prompt,
+    parse_archivist_json,
+)
+from ..canon.memory import Memory
+from ..canon.scaffold import new_chapter_stub
+from ..canon.store import CanonStore
+from ..engine.agent import Agent
+from ..engine.tools import default_registry
+from ..ledger import Ledger
+from ..project import WritingProject, count_words
+from ..providers.base import Provider
+from ..providers.registry import get_provider
+from ..slop import run_slop
+from ..types import Usage
+from .common import call_model, chapter_context, render_prompt, resolve_role_model
+
+
+@dataclass
+class WriteResult:
+    chapter: int
+    words: int = 0
+    slop_before: float = -1.0
+    slop_after: float = -1.0
+    revision_loops: int = 0
+    gate_passed: bool = False
+    archive: ApplyResult | None = None
+    usage: Usage = field(default_factory=Usage)
+    notes: list[str] = field(default_factory=list)
+
+
+def _slop_gate_fails(project: WritingProject, score: float, severities: set[str]) -> bool:
+    gates = project.config.gates
+    if score > gates.slop_max_score:
+        return True
+    return bool(severities & set(gates.slop_block_severities))
+
+
+def draft_chapter(
+    project: WritingProject,
+    number: int,
+    model: str | None = None,
+    provider: Provider | None = None,
+    task: str = "",
+) -> Usage:
+    """Run the writer agent to draft one chapter (writes the chapter file)."""
+    ctx = chapter_context(project, number)
+    fm, existing = ({}, "")
+    try:
+        fm, existing = project.read_chapter(number)
+    except Exception:
+        fm, _body = new_chapter_stub(number)
+    ctx["chapter_title"] = str(fm.get("title", ""))
+
+    system = render_prompt("writer.md", ctx)
+    model_str = resolve_role_model(project.config, "writer", model)
+    if provider is None:
+        provider, model_id = get_provider(model_str, project.config)
+    else:
+        model_id = model_str.split("/", 1)[1] if "/" in model_str else model_str
+
+    ledger = Ledger(project.root)
+    agent = Agent(
+        provider=provider,
+        model_id=model_id,
+        tools=default_registry(),
+        project=project,
+        ledger=ledger,
+        session_name=f"write-ch{number:02d}",
+    )
+    default_task = (
+        f"Draft chapter {number} now. Consult the beat sheet and canon as "
+        f"needed, then save the finished prose with the write_chapter tool "
+        f"(number={number}). The chapter should be complete, publishable "
+        f"prose — not an outline or summary."
+    )
+    result = agent.run(task=task or default_task, system=system)
+
+    # Fallback: agent produced prose but never called write_chapter.
+    try:
+        project.read_chapter(number)
+    except Exception:
+        if count_words(result.text) > 200:
+            project.write_chapter(number, fm, result.text)
+            ledger.append("write.fallback_save", target=project.chapter_rel(number))
+        else:
+            raise RuntimeError(
+                f"Writer agent finished without producing chapter {number} "
+                f"(final message was {count_words(result.text)} words). "
+                "See the session transcript in .stoner/sessions/."
+            ) from None
+    return result.usage
+
+
+def run_write(
+    project: WritingProject,
+    number: int,
+    model: str | None = None,
+    provider: Provider | None = None,
+    skip_archive: bool = False,
+    task: str = "",
+) -> WriteResult:
+    """Full pipeline: draft -> slop gate (auto-revise) -> archivist."""
+    res = WriteResult(chapter=number)
+    ledger = Ledger(project.root)
+    ledger.append("pipeline.write.start", target=project.chapter_rel(number))
+
+    res.usage += draft_chapter(project, number, model=model, provider=provider, task=task)
+
+    # --- slop gate -----------------------------------------------------
+    _, body = project.read_chapter(number)
+    report = run_slop(body, path=project.chapter_rel(number))
+    res.slop_before = res.slop_after = report.score
+    gates = project.config.gates
+
+    while res.revision_loops < gates.max_revision_loops and _slop_gate_fails(
+        project, report.score, {f.severity.value for f in report.findings}
+    ):
+        res.revision_loops += 1
+        ledger.append(
+            "pipeline.write.slop_revise",
+            target=project.chapter_rel(number),
+            score=report.score,
+            loop=res.revision_loops,
+        )
+        from ..review.revise import revise_chapter  # late import; parallel module
+
+        blocked = [
+            f
+            for f in report.findings
+            if f.severity.value in ("major", "critical") or report.score > gates.slop_max_score
+        ][:40]
+        revision = revise_chapter(
+            project, number, blocked or report.findings[:40], model=model, provider=provider
+        )
+        res.usage += revision.usage
+        _, body = project.read_chapter(number)
+        report = run_slop(body, path=project.chapter_rel(number))
+        res.slop_after = report.score
+
+    res.gate_passed = not _slop_gate_fails(
+        project, report.score, {f.severity.value for f in report.findings}
+    )
+    if not res.gate_passed:
+        res.notes.append(
+            f"slop gate still failing after {res.revision_loops} loop(s): "
+            f"score {report.score:.1f} (max {gates.slop_max_score})"
+        )
+
+    # --- archivist -------------------------------------------------------
+    if not skip_archive:
+        res.archive = run_archive(project, number, model=model, provider=provider, auto=True)
+
+    fm, body = project.read_chapter(number)
+    res.words = count_words(body)
+    ledger.append(
+        "pipeline.write.done",
+        target=project.chapter_rel(number),
+        words=res.words,
+        slop=res.slop_after,
+        gate_passed=res.gate_passed,
+    )
+    return res
+
+
+def run_archive(
+    project: WritingProject,
+    number: int,
+    model: str | None = None,
+    provider: Provider | None = None,
+    auto: bool = False,
+) -> ApplyResult:
+    """Archivist stage: extract facts from a chapter, diff canon, apply."""
+    store = CanonStore(project)
+    memory = Memory(project)
+    _, body = project.read_chapter(number)
+
+    ctx = chapter_context(project, number)
+    system = render_prompt("archivist.md", {**ctx, "chapter_text": ""})
+    user = extract_facts_prompt(body, store.context_pack(max_chars=8000))
+    text, _usage = call_model(
+        project, "archivist", system=system, user=user, model=model, provider=provider
+    )
+    parsed = parse_archivist_json(text)
+    result = apply_updates(store, memory, parsed, number, auto=auto)
+    if auto:
+        memory.rebuild_book_so_far()
+    Ledger(project.root).append(
+        "canon.archive",
+        target=project.chapter_rel(number),
+        applied=len(result.applied_facts),
+        conflicts=len(result.conflicts),
+        auto=auto,
+    )
+    return result

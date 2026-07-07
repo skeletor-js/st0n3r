@@ -52,6 +52,10 @@ target-version = "py311"
 select = ["E", "F", "I", "UP", "B"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+# typer's Option/Argument-in-default is the documented idiom
+"src/stoner/cli/*" = ["B008"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
