@@ -18,8 +18,8 @@ _Last updated: 2026-07-07 (run 1)_
 | 2 | providers: openai_compat | done | commit 4de3131, 42 tests |
 | 2 | providers: codex_cli | done | commit 4de3131, 42 tests |
 | 2 | engine: agent loop + tools + prompts | done | commit 4de3131, 42 tests |
-| 3 | canon: store + templates + memory | wip | subagent C running |
-| 3 | canon: archivist | wip | subagent C running |
+| 3 | canon: store + templates + memory | done | 37 tests; in 86149a8 |
+| 3 | canon: archivist | done | apply_updates(auto=False)=dry-run preview |
 | 4 | slop: lexicon data | wip | subagent B running; merge research when done |
 | 4 | slop: analyzers + score + report | wip | subagent B running |
 | 5 | review: passes + runner + revise | todo | |
@@ -58,3 +58,4 @@ _Last updated: 2026-07-07 (run 1)_
   parallel subagent builds (A: providers+engine, B: slop, C: canon, D: ui).
 - **Run 1 (cont):** Repo confirmed private on GitHub. Wave-1 subagents launched (A: providers+engine, B: slop, C: canon).
 - **Run 1 (cont):** Subagent A landed: providers (anthropic/openai_compat/codex_cli) + engine (agent loop, tools, textproto, prompts), 42 tests green. Committed 4de3131.
+- **Run 1 (cont):** Subagent C landed: canon store/templates/memory/archivist, 37 tests. Note: archivist apply_updates(auto=False) is a dry-run preview; new_entities surfaced for triage, never auto-created.
