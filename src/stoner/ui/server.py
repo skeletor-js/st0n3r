@@ -105,6 +105,10 @@ def _save_review(project: WritingProject, file: str, data: dict[str, Any]) -> No
 
 
 def _review_kind(data: dict[str, Any]) -> str:
+    """Report `kind` discriminator; legacy reports without one are sniffed."""
+    kind = data.get("kind")
+    if isinstance(kind, str) and kind:
+        return kind
     return "review" if "passes" in data else "slop"
 
 

@@ -430,6 +430,8 @@
         <span class="ri-label">Ledger</span>
         <span class="ri-end" data-count="ledger"></span>
       </button>
+      <!-- FEATURE RAIL ITEMS: one rail-item per feature panel, inserted above
+           in wave order (voice, tournaments, pacing, room, readers). -->
     </nav>
     <div class="rail-foot">
       <div class="foot-note"><span class="dot"></span>127.0.0.1 &middot; local only</div>
@@ -472,6 +474,11 @@
       <div class="view-pane" id="view-ledger">
         <div class="split-detail" id="ledger-detail" style="width: 100%;"></div>
       </div>
+
+      <!-- BEGIN FEATURE PANELS: one self-contained view-pane per feature,
+           inserted in wave order (voice, tournaments, pacing, room, readers).
+           No shared JS state beyond the existing fetch helpers. -->
+      <!-- END FEATURE PANELS -->
     </div>
   </main>
 </div>

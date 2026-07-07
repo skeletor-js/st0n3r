@@ -115,6 +115,7 @@ class Finding(BaseModel):
 class SlopReport(BaseModel):
     """Result of running the slop detector over one document."""
 
+    kind: str = "slop"  # report discriminator for .stoner/reviews/ routing
     path: str
     score: float  # 0 clean .. 100 slop
     subscores: dict[str, float] = Field(default_factory=dict)  # per analyzer
@@ -126,6 +127,7 @@ class SlopReport(BaseModel):
 class ReviewReport(BaseModel):
     """Result of running critic passes over one document."""
 
+    kind: str = "review"  # report discriminator for .stoner/reviews/ routing
     path: str
     passes: list[str] = Field(default_factory=list)
     findings: list[Finding] = Field(default_factory=list)

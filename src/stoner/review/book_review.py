@@ -241,6 +241,7 @@ def run_book_review(
     ts = int(time.time())
     base = f".stoner/reviews/book-{ts}"
     payload = {
+        "kind": "book",
         "created_at": report.created_at,
         "model": report.model,
         "verdict": report.verdict,

@@ -3,7 +3,32 @@
 State file for cross-run continuity. Update after every meaningful step.
 Statuses: `todo` | `wip` | `done` | `blocked`.
 
-_Last updated: 2026-07-07 (run 1) — v2 COMPLETE_
+_Last updated: 2026-07-07 (run 2) — next-ten build IN PROGRESS_
+
+## Next-ten phase status (plans 2026-07-07-001..011)
+
+Baseline at run 2 start: 227 passed + 1 skipped, ruff clean, mypy 33 pre-existing
+errors (frozen as baseline; new code must not add errors).
+
+| Wave | Item | Status | Notes |
+|------|------|--------|-------|
+| W0 | 011 U1 seam conventions + report kinds | wip | run 2 |
+| W0 | 009 U1 snapshot store + chokepoint | wip | subagent, run 2 |
+| W0 | 009 U2 route rewrite paths through chokepoint | wip | subagent, run 2 |
+| W1 | 001 voice engine (all units) | todo | |
+| W1 | 004 pacing instrumentation (all units) | todo | |
+| W2 | 005 writers' room (all units) | todo | |
+| W2 | 003 draft tournaments (all units) | todo | |
+| W3 | 002 character interiority (all units) | todo | |
+| W3 | 006 verisimilitude engine (all units) | todo | |
+| W4 | 007 promise & motif ledger (all units) | todo | |
+| W4 | 008 reader simulation (all units) | todo | |
+| W5 | 010 production line (all units) | todo | |
+| Wx | 009 U3-U8 (provenance/CLI/refactors) | todo | slots alongside waves |
+| tail | 011 U4 cross-feature wiring | todo | |
+| tail | 011 U5 UI panel consolidation | todo | |
+| tail | 011 U6 docs reconciliation | todo | |
+| tail | 011 U7 full-suite + novella proof run | todo | live steps need API key |
 
 ## Phase status
 
@@ -57,7 +82,15 @@ _Last updated: 2026-07-07 (run 1) — v2 COMPLETE_
   multiple sources (facts/wordlists are fine; keep attribution in
   docs/CREDITS.md).
 
-## Run journal
+## Run journal (run 2 — next ten)
+
+- **Run 2 (2026-07-07):** Session start on the next-ten build. Read plan 011 + 009 in
+  full. Baseline verified: `uv sync --extra dev` then 227 passed / 1 skipped, ruff clean,
+  mypy 33 pre-existing errors (baseline saved to scratchpad). Starting Wave 0:
+  orchestrator does 011 U1 (report kinds + panel marker + register comment); subagent
+  builds 009 U1-U2 (archaeology snapshot chokepoint).
+
+## Run journal (run 1 — v1/v2)
 
 - **Run 1 (2026-07-07):** Session start. Repo empty. Wrote planning docs,
   launched research subagent. Next: scaffold package + core modules, then

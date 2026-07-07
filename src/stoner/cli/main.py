@@ -540,6 +540,9 @@ def ui(
 
 from . import book_cmds, foundation_cmds  # noqa: E402
 
+# Feature command groups register here. New register lines append below in
+# plan-number order: voice, cast, tournament, pacing, room, facts, motifs,
+# readers, drafts, ship. Config fields and DIRS entries follow the same order.
 book_cmds.register(app)
 foundation_cmds.register(app)
 

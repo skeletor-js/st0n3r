@@ -257,6 +257,24 @@ def test_reviews_list_and_detail(client, project: WritingProject):
     assert data["findings"][0]["issue"] == "eye color changed"
 
 
+def test_reviews_list_kind_discriminator(client, project: WritingProject):
+    # Explicit kind is surfaced verbatim; legacy files without one are sniffed.
+    reviews = project.root / ".stoner" / "reviews"
+    (reviews / "ch-02-voice.json").write_text(
+        json.dumps({"kind": "voice", "path": "manuscript/ch-02.md", "created_at": 2.0}),
+        encoding="utf-8",
+    )
+    (reviews / "ch-03-legacy.json").write_text(
+        json.dumps({"path": "manuscript/ch-03.md", "created_at": 1.0, "passes": ["continuity"], "findings": []}),
+        encoding="utf-8",
+    )
+    res = client.get("/api/reviews")
+    assert res.status_code == 200
+    listing = {r["file"]: r for r in res.json()}
+    assert listing["ch-02-voice.json"]["kind"] == "voice"
+    assert listing["ch-03-legacy.json"]["kind"] == "review"
+
+
 def test_review_detail_404(client):
     res = client.get("/api/reviews/does-not-exist.json")
     assert res.status_code == 404

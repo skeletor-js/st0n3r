@@ -198,6 +198,7 @@ def test_run_review_two_passes_saves_report_and_locates_spans(project):
     assert len(json_files) == 1
     assert len(md_files) == 1
     saved = json.loads(json_files[0].read_text(encoding="utf-8"))
+    assert saved["kind"] == "review"
     assert len(saved["findings"]) == 2
     assert "review:continuity" in md_files[0].read_text(encoding="utf-8")
 
