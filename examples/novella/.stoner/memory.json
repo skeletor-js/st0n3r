@@ -1,0 +1,794 @@
+{
+  "book_so_far": "Ch 1: Ruth cuts clones methodically while training a new employee, Wyatt, avoiding the unopened county permit application on her kitchen table. When she finally reads it Thursday evening, the eleven-page compliance checklist reveals her entire operation—meticulously built over forty years—violates multiple structural, water rights, and tracking requirements. She now has concrete knowledge of the legal gap between what she has built and what the law permits.\nCh 2: Ruth drives to the Planning and Building Department in Eureka on Friday morning to get specific numbers on compliance costs. She learns reinspection and plan review fees, discovers her application cannot be processed until she submits an engineered remediation plan (pushing the 14-18 week inspection queue back further), and overhears county staff discussing how they prioritize consultant-prepared complete applications over incomplete ones—a realization that ground surrendered will have no legal claim waiting.\nCh 3: Saturday morning, Ruth teaches Wyatt the correct topping technique and discovers an opportunity to share an advanced pruning method she has kept secret for forty years, never teaching it to anyone. By mid-July, Ruth transitions from guarding her knowledge to freely teaching, recognizing that this decision reflects her having started to contemplate who will carry the work forward after she is gone.\nCh 4: Corinne Yee from Canopy conducts a site assessment with rangefinder and tablet, measuring four specific violations: the generator shed (38 ft vs 50 ft required from boundary), the intake dam (74 ft vs 100 ft required from watercourse), undocumented irrigation, and unpermittable full-sun area (17,400 sq ft). Corinne offers $9,500/acre for raw parcel or $14,000/acre if Ruth's application is active at closing, with Canopy covering all corrective work. Ruth receives the formal report at 4:52pm, recognizing that the measurements have made her decades of careful placement into quantified noncompliance.\nCh 5: Ruth discovers her forty-year water diversion is unregistered and undocumented. Consulting water rights specialist Deb Ostrander, she learns compliance will require expensive engineering, tankage, and permit processes spanning months to years—with risk of denial for Class II watercourse appropriations. Learning from neighbor Hollis Meeker that Canopy secured water approval for three spring-purchased parcels in six weeks by hiring professional staff, Ruth recognizes the county system as functioning as designed to transfer land from independent growers to corporate buyers.\nCh 6: Ruth calculates the economic value of forty years of labor against Canopy's $812,000 offer ($14,000/acre for 58 acres), discovering approximately $6.77/hour—far below minimum wage. She realizes the money prices the land but cannot price the craft and knowledge living only in her hands and Wyatt's if she continues teaching him. The offer, valid through month's end, becomes a weight she can no longer ignore.\nCh 7: Ruth trains Wyatt on trellis tucking in the south block, showcasing his growing competence until Wyatt mentions offhand a Canopy job posting in Willow Creek for $22/hour with dental and retirement benefits. Ruth recognizes she had unconsciously built a ten-year succession fantasy around him that he never promised, and by end of July quietly recalibrates to teaching him as a temporary worker rather than an heir, without confrontation.\nCh 8: Ruth visits neighboring grower Denny Calloway and discovers he has already sold to Canopy. Denny explains his decision to accept the $14,000/acre buyout rather than fight the permit violations, arguing that legalization is 'just prohibition wearing a tie.' Ruth returns home unable to refute his logic but uncertain whether his acceptance reflects wisdom or resignation.\nCh 9: Ruth works through the permit checklist, completing two items: the irrigation as-built survey and removal of unpermittable full-sun canopy plants. The remaining items—generator shed relocation and intake dam remediation—require engineering estimates beyond her reach, with the dam alone costing $171,000 (nearly three years of her best annual income, $58,000 in 2019). She realizes the numbers will make her decision for her; the county doesn't need to deny the application.\nCh 10: Ruth's daughter Iris visits in early August and explicitly rejects any claim to the farm or inherited knowledge. Ruth accepts that her unspoken hope for succession—first with Wyatt, now with Iris—will not materialize, and recognizes herself as the last person alive who possesses the complete body of knowledge from seed to cure.\nCh 11: Ruth experiences an unexpected heavy rainstorm in early August and spends the night preventing botrytis damage to her crop using a technique learned from Alta Furse in 1998, working alone while Wyatt is away. By morning the vulnerable plants survive intact, but the compliance folder on her kitchen table remains unfinished.\nCh 12: Ruth meets with Canopy's acquisitions counsel for a revised offer. The land purchase price remains $14,000/acre, but a new Cultivation Consulting Agreement clause requires her to sign away her proprietary cultivation knowledge (pruning, curing, botrytis management) as documented video and written protocols, becoming Canopy's sole intellectual property. Ruth refuses the consulting agreement, asserting that her forty years of learned techniques—passed to her by Alta Furse in 1998 and now being taught to Wyatt—belong only to her hands and can only be taught to a person, never to a training protocol. She leaves with the land purchase still unsigned.",
+  "chapters": {
+    "1": {
+      "summary": "Ruth cuts clones methodically while training a new employee, Wyatt, avoiding the unopened county permit application on her kitchen table. When she finally reads it Thursday evening, the eleven-page compliance checklist reveals her entire operation—meticulously built over forty years—violates multiple structural, water rights, and tracking requirements. She now has concrete knowledge of the legal gap between what she has built and what the law permits.",
+      "pov": "",
+      "words": 0,
+      "new_facts": [
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "age",
+          "value": "61",
+          "quote": "a 61-year-old Humboldt grower"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "status",
+          "value": "alive",
+          "quote": "Ruth cut the clone at a forty-five degree angle"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "appearance.hands",
+          "value": "skilled, precise hands measured by years of work; grip strength and reach have diminished over time",
+          "quote": "both of which had also been measured over the years, mostly by what they could no longer do"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "skills",
+          "value": "expert cultivator; can diagnose plant problems by leaf reading, understand genetics, teach proper technique; knows clone-cutting, propagation timing, trellising, topping—much of it never written down",
+          "quote": "She had learned to read a leaf the way some people read a face. Neither skill had ever once been asked for on a form."
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "relationships.wyatt-deering",
+          "value": "employer; actively deciding how much proprietary knowledge (trellising, topping, two unwritten techniques) to teach him",
+          "quote": "she hadn't yet decided how much of the rest of it — the trellising, the timing on topping, the two things she had never written down anywhere...she meant to give him"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "relationships.corinne-yee",
+          "value": "recipient of acquisition offer; knows Corinne represents Canopy and controls downstream water rights",
+          "quote": "Corinne Yee's letter, on Canopy letterhead"
+        },
+        {
+          "entity": "Wyatt Deering",
+          "kind": "character",
+          "field": "status",
+          "value": "alive; employed on Ruth's operation",
+          "quote": "Wyatt had eaten early and gone back to his trailer at the far end of the spur"
+        },
+        {
+          "entity": "Wyatt Deering",
+          "kind": "character",
+          "field": "employment",
+          "value": "trainee on Ruth's parcel for three weeks",
+          "quote": "He had been on the parcel three weeks."
+        },
+        {
+          "entity": "Wyatt Deering",
+          "kind": "character",
+          "field": "traits",
+          "value": "asks questions indicating desire to be taught rather than merely instructed; resourceful; doesn't argue or apologize defensively; willing to let marginal work attempt rather than discard it",
+          "quote": "he asked the kind of questions a person asked when they wanted to be taught something rather than just told it"
+        },
+        {
+          "entity": "Corinne Yee",
+          "kind": "character",
+          "field": "role",
+          "value": "representative of Canopy company; making acquisition offer for Ruth's parcel and operation",
+          "quote": "Canopy letterhead, laying out again in slightly warmer language than the first time what the company was prepared to offer for the parcel"
+        },
+        {
+          "entity": "Corinne Yee",
+          "kind": "character",
+          "field": "allegiances",
+          "value": "employed by Canopy; company holds all certificated water rights on the creek stretch relevant to Ruth's intake",
+          "quote": "Canopy held the only certificated right on that stretch of the creek"
+        },
+        {
+          "entity": "Ruth's property—Humboldt County",
+          "kind": "world",
+          "field": "location",
+          "value": "Humboldt County, California; adjacent to old Ostrander parcel line; has Class I or Class II tributary",
+          "quote": "She had walked that ground with her father's boundary stakes in 1987 and had chosen the spot herself"
+        },
+        {
+          "entity": "Ruth's property—Humboldt County",
+          "kind": "world",
+          "field": "cultivation_footprint",
+          "value": "23,400 square feet total, built by hand over eighteen years; includes first greenhouse, second greenhouse, and full-sun plot",
+          "quote": "out of the twenty-three thousand four hundred she had built by hand over eighteen years, one greenhouse and then a second and then the full-sun plot"
+        },
+        {
+          "entity": "Ruth's property—Humboldt County",
+          "kind": "world",
+          "field": "structures",
+          "value": "two mother plant houses (blue poly tarp, sun-faded south side, north side patched with darker blue after storm damage two winters prior); generator shed; drying shed; intake dam",
+          "quote": "the two houses of blue poly tarp, sun-faded on the south side, patched on the north with a newer, darker blue where a storm had torn a seam two winters back"
+        },
+        {
+          "entity": "Ruth's operation—mother plants",
+          "kind": "world",
+          "field": "scale",
+          "value": "420 mother plants maintained; capable of producing 40 cuts/hour individually, 30 cuts/hour in conversation",
+          "quote": "She had four hundred and twenty mother plants to take cuttings from before noon"
+        },
+        {
+          "entity": "Ruth's operation—mother plants",
+          "kind": "world",
+          "field": "strategy",
+          "value": "two separate mother rooms to isolate genetics; stress in one room is tracked through clone failure before full loss of a line",
+          "quote": "Genetics get confused if you crowd them...you don't always see it right away. Takes a season sometimes"
+        },
+        {
+          "entity": "Ruth's operation—water",
+          "kind": "world",
+          "field": "intake",
+          "value": "intake dam drawing from tributary; operates June 1–October 31 (five months); no pre-1914 riparian filing ever made",
+          "quote": "the exact five months her intake dam had drawn water every year since 1987"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "timeline",
+          "field": "event",
+          "value": "1986: established forty-five degree clone-cutting technique as standard practice",
+          "quote": "the way she had been cutting them since 1986"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "timeline",
+          "field": "event",
+          "value": "1987: established current operation using father's boundary stakes as reference; chose generator shed location for acoustic advantage in land fold",
+          "quote": "She had walked that ground with her father's boundary stakes in 1987 and had chosen the spot herself, for the fold in the land that swallowed the engine noise"
+        },
+        {
+          "entity": "County permit process",
+          "kind": "timeline",
+          "field": "event",
+          "value": "Ch-01 Tuesday: Humboldt County Planning and Building Department permit application packet arrives in Ruth's mailbox",
+          "quote": "The packet had come Tuesday."
+        },
+        {
+          "entity": "County permit process",
+          "kind": "timeline",
+          "field": "event",
+          "value": "Ch-01 Thursday evening: Ruth reads complete eleven-page permit application, standing, discovering violations: generator shed 38 ft from parcel line (requires 50 ft); intake dam 74 ft from tributary (requires 100 ft); water diversion during forbidden June–October forbearance window; lack of RFID plant tracking; no 30,000-gallon storage tank; insufficient cell service for state system; full-sun cultivation prohibited under uncured Category Two violations",
+          "quote": "It was Thursday now...She read all eleven pages again, standing"
+        }
+      ],
+      "updated_at": 1783439456.6546454
+    },
+    "2": {
+      "summary": "Ruth drives to the Planning and Building Department in Eureka on Friday morning to get specific numbers on compliance costs. She learns reinspection and plan review fees, discovers her application cannot be processed until she submits an engineered remediation plan (pushing the 14-18 week inspection queue back further), and overhears county staff discussing how they prioritize consultant-prepared complete applications over incomplete ones—a realization that ground surrendered will have no legal claim waiting.",
+      "pov": "",
+      "words": 0,
+      "new_facts": [
+        {
+          "entity": "Pratt",
+          "kind": "character",
+          "field": "status",
+          "value": "alive",
+          "quote": "The woman on the other side of the glass had a badge that said PRATT and a headset she didn't take off"
+        },
+        {
+          "entity": "Pratt",
+          "kind": "character",
+          "field": "role",
+          "value": "permit counter clerk at Planning and Building Department, window 6",
+          "quote": "When her number came up she carried the envelope to window six and set it on the counter... The woman on the other side of the glass had a badge that said PRATT"
+        },
+        {
+          "entity": "Pratt",
+          "kind": "character",
+          "field": "manner",
+          "value": "matter-of-fact, repetitive explanations worn smooth of their original unkindness",
+          "quote": "Pratt said, not unkindly, the way a person repeats a fact they've had to repeat often enough that the unkindness has worn off it for them, if it was ever there."
+        },
+        {
+          "entity": "Planning and Building Department",
+          "kind": "world",
+          "field": "location",
+          "value": "H Street, Eureka; two-story building, manila folder color, wheelchair ramp with rust stain on gutter",
+          "quote": "The Planning and Building Department sat on H Street in a two-story building the color of a manila folder, flags out front, a wheelchair ramp with a rust stain running down one rail where the gutter above it had failed and never been fixed."
+        },
+        {
+          "entity": "Planning and Building Department",
+          "kind": "world",
+          "field": "compliance_fee_schedule",
+          "value": "Category Two reinspection $1200; engineered remediation plan review $400 non-refundable; second reinspection if plan rejected $1200",
+          "quote": "Category Two reinspection, twelve hundred dollars. Engineered remediation plan review, four hundred, non-refundable, due whether or not the plan was approved. A second reinspection, if the first plan failed, another twelve hundred."
+        },
+        {
+          "entity": "Planning and Building Department",
+          "kind": "world",
+          "field": "reduced_license_expansion_policy",
+          "value": "Expansion after reduction requires new application and new environmental review triggered by proposed acreage, not historical acreage; not automatic or guaranteed",
+          "quote": "You'd reapply for an expansion once you're fully compliant. It's not automatic. There's a new environmental review triggered any time canopy increases, even canopy you already had before the reduction... The review's on the acreage as proposed, not as it existed historically."
+        },
+        {
+          "entity": "Planning and Building Department",
+          "kind": "world",
+          "field": "inspection_queue_wait",
+          "value": "14 to 18 weeks from date of completed application; file must include engineered remediation plan before clock starts",
+          "quote": "current wait for a compliance inspection ran fourteen to eighteen weeks from the date of a completed application, and that Ruth's file was not yet marked complete, since it lacked the engineered remediation plan for both flagged setback issues, which the county could not schedule around until it was submitted."
+        },
+        {
+          "entity": "Planning and Building Department",
+          "kind": "world",
+          "field": "file_prioritization_policy",
+          "value": "complete, consultant-prepared, properly formatted applications are prioritized and moved ahead of incomplete DIY applications in the queue",
+          "quote": "Bump them up the sequence, then. No sense sitting a complete file behind six incomplete ones just because they came in later... A clean file went first. A clean file was not the same thing as a true one"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "timeline",
+          "field": "event",
+          "value": "Friday (unspecified date): drove to Planning and Building Department in Eureka, spent entire day learning permit process; returned home ~2pm with fee schedule and critical understanding that her incomplete file cannot begin processing until she hires engineer and submits remediation plans",
+          "quote": "Ruth left Wyatt with a list Friday morning... and drove the truck down the spur and out onto Kettle Rock Road... got back to the parcel a little after two with the whole day spent and nothing in hand but a number for what a reinspection cost and a fact she had not gone looking for"
+        }
+      ],
+      "updated_at": 1783439694.3684905
+    },
+    "3": {
+      "summary": "Saturday morning, Ruth teaches Wyatt the correct topping technique and discovers an opportunity to share an advanced pruning method she has kept secret for forty years, never teaching it to anyone. By mid-July, Ruth transitions from guarding her knowledge to freely teaching, recognizing that this decision reflects her having started to contemplate who will carry the work forward after she is gone.",
+      "pov": "",
+      "words": 0,
+      "new_facts": [
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "teaching.secret_technique",
+          "value": "possesses an advanced pruning technique (used once or twice a season on lopsided plants) that she has kept completely secret from everyone for forty years; took her eleven seasons in her thirties to master through trial and error",
+          "quote": "a cut past the topping, one she used maybe twice a season...she had never shown it to anyone, not in forty years...it had taken her eleven seasons of getting it wrong"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "experience.topping_start_age",
+          "value": "has been topping plants since age twenty-one",
+          "quote": "She had been topping plants since she was twenty-one"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "motivation.succession",
+          "value": "has begun explicitly considering who will remain to carry on the work after she is gone; recognizes that teaching her guarded knowledge is an act of investing in succession",
+          "quote": "she'd started keeping score of who might still be standing here after she wasn't, and that until this exact moment she had not let herself do that arithmetic out loud"
+        },
+        {
+          "entity": "Wyatt Deering",
+          "kind": "character",
+          "field": "background.prior_knowledge_source",
+          "value": "learned growing from a family operation on a different hillside",
+          "quote": "He'd brought most of it from wherever his family's operation had been, some version of this same knowledge learned on some other hillside"
+        }
+      ],
+      "updated_at": 1783439901.7861805
+    },
+    "4": {
+      "summary": "Corinne Yee from Canopy conducts a site assessment with rangefinder and tablet, measuring four specific violations: the generator shed (38 ft vs 50 ft required from boundary), the intake dam (74 ft vs 100 ft required from watercourse), undocumented irrigation, and unpermittable full-sun area (17,400 sq ft). Corinne offers $9,500/acre for raw parcel or $14,000/acre if Ruth's application is active at closing, with Canopy covering all corrective work. Ruth receives the formal report at 4:52pm, recognizing that the measurements have made her decades of careful placement into quantified noncompliance.",
+      "pov": "",
+      "words": 0,
+      "new_facts": [
+        {
+          "entity": "Corinne Yee",
+          "kind": "character",
+          "field": "organization",
+          "value": "Canopy",
+          "quote": "Corinne Yee arrived at eleven exactly, in a gray crew-cab with the Canopy leaf small and green on the door"
+        },
+        {
+          "entity": "generator shed",
+          "kind": "world",
+          "field": "boundary-setback",
+          "value": "38 feet from parcel boundary (non-conforming; 50 feet required)",
+          "quote": "The rangefinder read out in red digits Ruth could see from where she was standing. Thirty-eight feet...County minimum's fifty"
+        },
+        {
+          "entity": "intake dam",
+          "kind": "world",
+          "field": "watercourse-setback",
+          "value": "74 feet from top of bank (non-conforming; 100 feet required)",
+          "quote": "Corinne walked the bank above it, shot the line twice to be sure, and got seventy-four feet from the top of bank to the diversion structure against a required hundred"
+        },
+        {
+          "entity": "full-sun cultivation area",
+          "kind": "world",
+          "field": "area-and-status",
+          "value": "approximately 17,400 sq ft; not permittable under current corrective action status",
+          "quote": "Full-sun cultivation area, approx. 17,400 sq ft: not permittable under current corrective action status"
+        },
+        {
+          "entity": "irrigation system",
+          "kind": "world",
+          "field": "documentation-status",
+          "value": "undocumented distribution system; no as-built documentation on file",
+          "quote": "Irrigation distribution system: no as-built documentation on file. Required prior to final"
+        },
+        {
+          "entity": "Canopy buyout offer",
+          "kind": "world",
+          "field": "financial-terms",
+          "value": "$9,500/acre for raw parcel; $14,000/acre if Ruth's application is active and filed when Canopy closes; Canopy absorbs all corrective work",
+          "quote": "Our standing offer on a raw parcel this size is ninety-five hundred an acre. If your application's still active and formally filed when we close — which yours is — the number goes to fourteen thousand, and Canopy takes on whatever's left of the corrective list at that point."
+        }
+      ],
+      "updated_at": 1783440354.781239
+    },
+    "5": {
+      "summary": "Ruth discovers her forty-year water diversion is unregistered and undocumented. Consulting water rights specialist Deb Ostrander, she learns compliance will require expensive engineering, tankage, and permit processes spanning months to years—with risk of denial for Class II watercourse appropriations. Learning from neighbor Hollis Meeker that Canopy secured water approval for three spring-purchased parcels in six weeks by hiring professional staff, Ruth recognizes the county system as functioning as designed to transfer land from independent growers to corporate buyers.",
+      "pov": "",
+      "words": 0,
+      "new_facts": [
+        {
+          "entity": "Deb Ostrander",
+          "kind": "character",
+          "field": "role",
+          "value": "supporting",
+          "quote": "a woman named Deb Ostrander who did this work for half the ridge"
+        },
+        {
+          "entity": "Deb Ostrander",
+          "kind": "character",
+          "field": "profession",
+          "value": "water rights consultant",
+          "quote": "the county had given her for a water rights consultant out of McKinleyville, a woman named Deb Ostrander"
+        },
+        {
+          "entity": "Deb Ostrander",
+          "kind": "character",
+          "field": "location",
+          "value": "McKinleyville",
+          "quote": "a water rights consultant out of McKinleyville"
+        },
+        {
+          "entity": "Hollis Meeker",
+          "kind": "character",
+          "field": "role",
+          "value": "supporting",
+          "quote": "Hollis Meeker, who had run cattle and a mixed light-dep operation on the parcel two ridges over"
+        },
+        {
+          "entity": "Hollis Meeker",
+          "kind": "character",
+          "field": "operation",
+          "value": "cattle and mixed light-dep",
+          "quote": "Hollis Meeker, who had run cattle and a mixed light-dep operation on the parcel two ridges over since before Ruth had planted her first mother plant"
+        },
+        {
+          "entity": "Hollis Meeker",
+          "kind": "character",
+          "field": "location",
+          "value": "parcel two ridges over from Ruth's",
+          "quote": "the parcel two ridges over"
+        },
+        {
+          "entity": "Hollis Meeker",
+          "kind": "character",
+          "field": "relationships.ruth-vann",
+          "value": "neighbor for thirty years; Ruth trusts him despite steady disagreement without malice",
+          "quote": "who she trusted the way you trust someone you have disagreed with steadily and without malice for thirty years"
+        },
+        {
+          "entity": "Hollis Meeker",
+          "kind": "character",
+          "field": "status",
+          "value": "alive",
+          "quote": "He was loading a pallet of mineral blocks into his flatbed when she came out"
+        },
+        {
+          "entity": "Ruth's water diversion",
+          "kind": "world",
+          "field": "current_usage",
+          "value": "six thousand gallons per day at height of season",
+          "quote": "the six thousand gallons a day she pulled off the creek at the height of the season"
+        },
+        {
+          "entity": "Ruth's water diversion",
+          "kind": "world",
+          "field": "historical_basis",
+          "value": "undated note from Ruth's father stating 'diversion approx 3 gpm, dry season'",
+          "quote": "her father had written the words *diversion approx 3 gpm, dry season* and nothing else"
+        },
+        {
+          "entity": "Ruth's water diversion",
+          "kind": "world",
+          "field": "legal_status",
+          "value": "no Notice of Water Diversion and Use; no appropriative claim filed with State Water Resources Control Board; no riparian documentation",
+          "quote": "There was no Notice of Water Diversion and Use. There was no appropriative claim filed with the State Water Resources Control Board, no riparian documentation"
+        },
+        {
+          "entity": "Ruth's water diversion",
+          "kind": "world",
+          "field": "compliance_solution",
+          "value": "storage tank with off-season winter fill, new intake structure, licensed hydrologist's report, engineer-stamped system plans, consultant fees; timeline two years or more",
+          "quote": "tankage, a new intake structure set back where you need it, the engineering on the whole system stamped, and my time on top of that"
+        },
+        {
+          "entity": "the creek",
+          "kind": "world",
+          "field": "legal_classification",
+          "value": "Class II watercourse, fish-bearing",
+          "quote": "would almost certainly be denied for new appropriative diversions on a Class II watercourse during dry months"
+        },
+        {
+          "entity": "the creek",
+          "kind": "world",
+          "field": "seasonal_condition",
+          "value": "low in late July, sound barely reaching the house",
+          "quote": "low now, the sound of it barely reaching the house this late in July"
+        },
+        {
+          "entity": "Descanso parcels",
+          "kind": "world",
+          "field": "composition",
+          "value": "three parcels: the old Whitmore ground and two adjacent parcels",
+          "quote": "the three that had gone to Canopy back in the spring, the old Whitmore ground and the two beside it"
+        },
+        {
+          "entity": "Descanso parcels",
+          "kind": "world",
+          "field": "owner",
+          "value": "Canopy",
+          "quote": "the three that had gone to Canopy back in the spring"
+        },
+        {
+          "entity": "Descanso parcels",
+          "kind": "world",
+          "field": "water_approval",
+          "value": "county approval obtained in six weeks with will-serve letter and stamped plan; Canopy hired own hydrologist and engineer, filed as consolidated unit",
+          "quote": "Canopy comes in, brings their own hydrologist, their own engineer, files the whole package as one unit covering all three parcels, and six weeks later they've got a will-serve letter and a stamped plan"
+        },
+        {
+          "entity": "Descanso parcels",
+          "kind": "timeline",
+          "field": "event",
+          "value": "County signed off on water rights for Descanso parcels (Canopy property) in six weeks with full approval",
+          "quote": "the county had finally signed off on the water for the Descanso parcels"
+        }
+      ],
+      "updated_at": 1783441344.3497627
+    },
+    "6": {
+      "summary": "Ruth calculates the economic value of forty years of labor against Canopy's $812,000 offer ($14,000/acre for 58 acres), discovering approximately $6.77/hour—far below minimum wage. She realizes the money prices the land but cannot price the craft and knowledge living only in her hands and Wyatt's if she continues teaching him. The offer, valid through month's end, becomes a weight she can no longer ignore.",
+      "pov": "",
+      "words": 0,
+      "new_facts": [
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "appearance.distinguishing",
+          "value": "bad knee",
+          "quote": "a woman her age with a bad knee and a business the county had just spent an afternoon proving didn't legally exist"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "skills",
+          "value": "can smell mold in curing room before visual signs appear; took eleven years to master cola trimming technique to keep resin unbruised; watches sick clones with parental attentiveness",
+          "quote": "the way she'd learned to smell mold in a curing room before it showed on a single bud, the eleven years it had taken her to trim a cola so the resin stayed unbruised, the nights she'd sat up with a sick clone the way another woman might sit up with a fevered child"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "work_schedule",
+          "value": "approximately 60 hours per week for most of 40 years; more in July and August, less in winter",
+          "quote": "She had worked, by her own rough count, something close to sixty hours a week for most of those forty years, more in July and August, less in the dead of winter"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "relationships.wyatt_deering",
+          "value": "trainee; Ruth allows him to work the potting bench alone for the first time and views him as potential heir to her craft knowledge if she continues teaching him right",
+          "quote": "she let him work the potting bench alone for the first time, standing at the door of the greenhouse to watch him measure amendment by scoop... she found, watching him level a scoop of bat guano, that she wanted one more day of the operation being simply what it had always been"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "timeline",
+          "field": "event",
+          "value": "1987: Ruth performed equipment maintenance in a truck bed with flashlight in teeth while deputy's spotlight swept ridge above her during clandestine operations",
+          "quote": "She had done it in the dark, in the rain, in a truck bed with a flashlight in her teeth while a deputy's spotlight swept the ridge above her in 1987, and her hands had not shaken then either"
+        },
+        {
+          "entity": "Ruth's parcel",
+          "kind": "world",
+          "field": "size",
+          "value": "58 acres, fence line to fence line",
+          "quote": "Fifty-eight acres. That was the parcel, the whole of it"
+        },
+        {
+          "entity": "Ruth's parcel",
+          "kind": "world",
+          "field": "composition",
+          "value": "mostly timber and brush; never planted with cannabis",
+          "quote": "most of it timber and brush she had never once put a plant in"
+        },
+        {
+          "entity": "Ruth's parcel",
+          "kind": "world",
+          "field": "ownership_history",
+          "value": "deeded to Ruth's father in 1961; transferred to Ruth in 1994",
+          "quote": "deeded to her father in 1961 and to her in 1994"
+        }
+      ],
+      "updated_at": 1783441517.3210917
+    },
+    "7": {
+      "summary": "Ruth trains Wyatt on trellis tucking in the south block, showcasing his growing competence until Wyatt mentions offhand a Canopy job posting in Willow Creek for $22/hour with dental and retirement benefits. Ruth recognizes she had unconsciously built a ten-year succession fantasy around him that he never promised, and by end of July quietly recalibrates to teaching him as a temporary worker rather than an heir, without confrontation.",
+      "pov": "",
+      "words": 0,
+      "new_facts": [
+        {
+          "entity": "Wyatt Deering",
+          "kind": "character",
+          "field": "age",
+          "value": "23",
+          "quote": "the particular shrug of a twenty-three-year-old"
+        },
+        {
+          "entity": "Wyatt Deering",
+          "kind": "character",
+          "field": "skills",
+          "value": "quick with hands, quicker than most people Ruth has trained; learned to top clean by mid-June; observes and retains leaf deficiency indicators by type; competent at trellis tuck but rushes past difficult decisions requiring patience and foresight",
+          "quote": "He was quick with his hands, quicker than most people she'd started"
+        },
+        {
+          "entity": "Wyatt Deering",
+          "kind": "character",
+          "field": "current_wage",
+          "value": "less than $22/hour",
+          "quote": "\"Twenty-two's more than I make now.\""
+        },
+        {
+          "entity": "Wyatt Deering",
+          "kind": "character",
+          "field": "relationships.ruth-vann",
+          "value": "trainee/employee; Ruth had unconsciously expected long-term succession, but Wyatt has made no commitment to staying; by end of July Ruth shifts to treating him as transient worker rather than heir",
+          "quote": "she had only, somewhere in the cutting and the topping and the long unhurried afternoons of it, begun to build a shape in her mind that had his hands in it doing this ten years on"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "work_history",
+          "value": "has restrung trellis in south block every June for thirty-one years",
+          "quote": "a grid of baling twine Ruth had been restringing every June for thirty-one years"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "timeline",
+          "field": "event",
+          "value": "End of July: Ruth stops mentioning ten-year plantings and decade-long selection varieties; shifts to teaching Wyatt as transient worker rather than heir",
+          "quote": "By the end of July she had stopped, without deciding to, mentioning the ten-year plantings, the varieties that wanted a decade of selection to get right"
+        },
+        {
+          "entity": "South Block",
+          "kind": "world",
+          "field": "infrastructure",
+          "value": "eighty-foot trellis line with four-foot stakes and baling twine grid for branch training",
+          "quote": "The trellis line ran eighty feet along the south block, four-foot stakes and a grid of baling twine"
+        },
+        {
+          "entity": "Canopy",
+          "kind": "world",
+          "field": "job_posting",
+          "value": "Willow Creek location: trellis and integrated pest management position, $22/hour starting wage, dental insurance, 3% retirement match, benefits begin after 90 days",
+          "quote": "\"Canopy's got a job posting up in Willow Creek, Trellis and integrated pest, twenty-two an hour to start. Benefits after ninety days.\" / \"They do dental. Retirement match, three percent.\""
+        }
+      ],
+      "updated_at": 1783441666.0127685
+    },
+    "8": {
+      "summary": "Ruth visits neighboring grower Denny Calloway and discovers he has already sold to Canopy. Denny explains his decision to accept the $14,000/acre buyout rather than fight the permit violations, arguing that legalization is 'just prohibition wearing a tie.' Ruth returns home unable to refute his logic but uncertain whether his acceptance reflects wisdom or resignation.",
+      "pov": "",
+      "words": 0,
+      "new_facts": [
+        {
+          "entity": "Denny Calloway",
+          "kind": "character",
+          "field": "age",
+          "value": "68",
+          "quote": "sixty-eight now to her sixty-one"
+        },
+        {
+          "entity": "Denny Calloway",
+          "kind": "character",
+          "field": "appearance.mobility",
+          "value": "shoulders still capable of work but slower; knees deteriorating with age",
+          "quote": "his shoulders still doing the work but slower about it; my knees tell me that every morning whether I ask or not"
+        },
+        {
+          "entity": "Denny Calloway",
+          "kind": "character",
+          "field": "relationships.ruth-vann",
+          "value": "taught her cannabis cloning in 1987; neighboring grower on adjacent ridge; mutual acquaintance 30+ years",
+          "quote": "He'd taught her how to clone in 1987, standing over her hands at his own bench, telling her the cut had to be at an angle... Denny, on the next ridge over"
+        },
+        {
+          "entity": "Denny Calloway",
+          "kind": "character",
+          "field": "family.wife",
+          "value": "Marilyn Calloway, deceased 6 years ago",
+          "quote": "though Marilyn had been gone six years now"
+        },
+        {
+          "entity": "Denny Calloway",
+          "kind": "character",
+          "field": "family.nephew",
+          "value": "nephew in Fresno who calls twice yearly, wants no involvement in growing",
+          "quote": "I got a nephew in Fresno who calls twice a year and wants nothing to do with any of this"
+        },
+        {
+          "entity": "Denny Calloway",
+          "kind": "character",
+          "field": "property",
+          "value": "40 acres, maintained clean and compliant for 30 years prior to sale",
+          "quote": "I got forty acres running clean for thirty years"
+        },
+        {
+          "entity": "Denny Calloway",
+          "kind": "character",
+          "field": "background.genetics",
+          "value": "mother plant lines in propagation, some with lineage predating his 1987 meeting with Ruth",
+          "quote": "some of them lines he'd been running since before she'd met him"
+        },
+        {
+          "entity": "Denny Calloway",
+          "kind": "character",
+          "field": "status",
+          "value": "former independent cannabis grower; sold to Canopy Biosciences at $14,000/acre active application rate",
+          "quote": "Closed Tuesday... Fourteen. Active application... I signed my name Tuesday"
+        },
+        {
+          "entity": "Denny Calloway",
+          "kind": "timeline",
+          "field": "event",
+          "value": "closes sale to Canopy Biosciences; deal finalized Tuesday; all mother plants and infrastructure transferred via flatbed",
+          "quote": "Closed Tuesday... They're taking everything that's alive and everything that's built"
+        }
+      ],
+      "updated_at": 1783441841.9172108
+    },
+    "9": {
+      "summary": "Ruth works through the permit checklist, completing two items: the irrigation as-built survey and removal of unpermittable full-sun canopy plants. The remaining items—generator shed relocation and intake dam remediation—require engineering estimates beyond her reach, with the dam alone costing $171,000 (nearly three years of her best annual income, $58,000 in 2019). She realizes the numbers will make her decision for her; the county doesn't need to deny the application.",
+      "pov": "",
+      "words": 0,
+      "new_facts": [
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "financial.best_year_net",
+          "value": "$58,000 (2019)",
+          "quote": "her best year's net, the good year, 2019, before the market broke — fifty-eight thousand"
+        }
+      ],
+      "updated_at": 1783443090.7131603
+    },
+    "10": {
+      "summary": "Ruth's daughter Iris visits in early August and explicitly rejects any claim to the farm or inherited knowledge. Ruth accepts that her unspoken hope for succession—first with Wyatt, now with Iris—will not materialize, and recognizes herself as the last person alive who possesses the complete body of knowledge from seed to cure.",
+      "pov": "",
+      "words": 0,
+      "new_facts": [
+        {
+          "entity": "Iris Vann",
+          "kind": "character",
+          "field": "age",
+          "value": "43",
+          "quote": "I look forty-three"
+        },
+        {
+          "entity": "Iris Vann",
+          "kind": "character",
+          "field": "relationships.paul-vann",
+          "value": "husband; recently had knee surgery",
+          "quote": "Iris's husband Paul and his knee surgery"
+        },
+        {
+          "entity": "Iris Vann",
+          "kind": "character",
+          "field": "children",
+          "value": "has sons",
+          "quote": "the boys' summer camp"
+        },
+        {
+          "entity": "Iris Vann",
+          "kind": "character",
+          "field": "location",
+          "value": "Bay Area residential neighborhood",
+          "quote": "a house two streets over from Iris's that had sold for a number that made Ruth put her fork down"
+        },
+        {
+          "entity": "Iris Vann",
+          "kind": "character",
+          "field": "inheritance-stance",
+          "value": "explicitly rejects the farm and all knowledge inheritance; never wanted it from age fifteen onward",
+          "quote": "I never wanted the farm. I didn't want it at fifteen, sneaking off the property because I was so sick of the smell of it on my own clothes, and I don't want it now."
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "financial.note",
+          "value": "has outstanding mortgage or note against the property",
+          "quote": "you could pay off whatever's left on the note"
+        },
+        {
+          "entity": "Ruth Vann",
+          "kind": "character",
+          "field": "knowledge-status",
+          "value": "sole living keeper of complete knowledge from seed to cure; no successor identified",
+          "quote": "she was, she thought, the only person left alive who knew the whole of it, start to finish, root to cure"
+        },
+        {
+          "entity": "Wyatt Deering",
+          "kind": "character",
+          "field": "training.advanced-pruning",
+          "value": "learned Ruth's previously-untaught advanced pruning method during summer 2026; took approximately six weeks to embody the technique",
+          "quote": "She taught Wyatt the pruning method this summer, the one she never taught anybody. Took him about six weeks to get his hands to do what his eyes already understood."
+        },
+        {
+          "entity": "Denny Calloway",
+          "kind": "character",
+          "field": "status.canopy-sale",
+          "value": "sold property to Canopy; parcel now listed on investor sites at fourteen dollars per acre",
+          "quote": "Denny sold... There's a listing already, the parcel's on some investor site. Fourteen a acre, it says."
+        }
+      ],
+      "updated_at": 1783443240.5329494
+    },
+    "11": {
+      "summary": "Ruth experiences an unexpected heavy rainstorm in early August and spends the night preventing botrytis damage to her crop using a technique learned from Alta Furse in 1998, working alone while Wyatt is away. By morning the vulnerable plants survive intact, but the compliance folder on her kitchen table remains unfinished.",
+      "pov": "",
+      "words": 0,
+      "new_facts": [
+        {
+          "entity": "Ruth Vann",
+          "kind": "timeline",
+          "field": "event",
+          "value": "2026-08: unexpected heavy rainstorm forces Ruth to work through the night preventing botrytis damage using Alta Furse's fan-ventilation technique; east-block crop survives intact",
+          "quote": "It had changed its mind."
+        },
+        {
+          "entity": "Alta Furse",
+          "kind": "character",
+          "field": "status",
+          "value": "deceased",
+          "quote": "a woman named Alta Furse who was dead now eleven years"
+        },
+        {
+          "entity": "Alta Furse",
+          "kind": "character",
+          "field": "relationships.ruth-vann",
+          "value": "taught Ruth a botrytis-prevention fan-ventilation technique in 1998",
+          "quote": "a trick she had learned in 1998 from a woman named Alta Furse"
+        }
+      ],
+      "updated_at": 1783443373.857336
+    },
+    "12": {
+      "summary": "Ruth meets with Canopy's acquisitions counsel for a revised offer. The land purchase price remains $14,000/acre, but a new Cultivation Consulting Agreement clause requires her to sign away her proprietary cultivation knowledge (pruning, curing, botrytis management) as documented video and written protocols, becoming Canopy's sole intellectual property. Ruth refuses the consulting agreement, asserting that her forty years of learned techniques—passed to her by Alta Furse in 1998 and now being taught to Wyatt—belong only to her hands and can only be taught to a person, never to a training protocol. She leaves with the land purchase still unsigned.",
+      "pov": "",
+      "words": 0,
+      "new_facts": [
+        {
+          "entity": "Alta Furse",
+          "kind": "character",
+          "field": "relationships.ruth-vann",
+          "value": "In 1998, taught Ruth botrytis-detection technique in a low tunnel behind her barn; the technique involves feeling the tactile give in a stem before rot appears; warned Ruth to be careful who she teaches it to, as it cost Alta years to develop",
+          "quote": "She thought of the low tunnel behind Alta Furse's barn in 1998... that once she had it she should be careful who she gave it to, because there was a difference between teaching a person and handing a person something that had cost you a decade."
+        },
+        {
+          "entity": "Wyatt Deering",
+          "kind": "character",
+          "field": "relationships.ruth-vann",
+          "value": "In July 2019, Ruth taught him her advanced pruning cut for the first time, ending forty years of keeping the technique secret",
+          "quote": "She thought of the advanced pruning cut she had kept to herself for forty years and only that summer, in July, standing over Wyatt's shoulder in the north block, decided to teach"
+        },
+        {
+          "entity": "Canopy Holdings LLC",
+          "kind": "world",
+          "field": "acquisitions.cultivation-consulting-agreement",
+          "value": "Revised offer includes two-year renewable Cultivation Consulting Agreement at $40,000/year to document and transfer Ruth's proprietary cultivation methodologies (pruning, training, curing, pest/disease management) via written protocols and recorded instructional video; all documented methodologies become sole intellectual property of Canopy Holdings LLC, its successors and assigns; filming requested to begin September 2019; particular interest in botrytis management and six-hour storm-response techniques",
+          "quote": "The clause offered her a contract: two years, renewable, forty thousand dollars a year, in exchange for... the documentation, transfer, and training delivery of Grower's proprietary cultivation methodologies, including but not limited to pruning, training, curing, and pest and disease management techniques... all such methodologies, once documented under the agreement, would become the sole intellectual property of Canopy Holdings LLC, its successors and assigns."
+        }
+      ],
+      "updated_at": 1783443533.7198527
+    }
+  }
+}

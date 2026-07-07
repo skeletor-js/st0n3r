@@ -1,0 +1,18 @@
+project_name: novella
+models:
+  writer: claude/claude-sonnet-5
+  reviewer: claude/claude-sonnet-5
+  archivist: claude/claude-haiku-4-5-20251001
+providers: {}
+gates:
+  slop_max_score: 25.0
+  slop_block_severities:
+  - critical
+  max_revision_loops: 2
+review_passes:
+- continuity
+- pacing
+- voice
+- line
+max_tokens: 16000
+temperature: null

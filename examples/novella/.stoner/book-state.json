@@ -1,0 +1,139 @@
+{
+  "chapters_planned": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "chapters_done": {
+    "1": {
+      "words": 2318,
+      "slop": 17.16,
+      "reviewed": true,
+      "revision_cycles": 3
+    },
+    "2": {
+      "words": 1910,
+      "slop": 16.42,
+      "reviewed": true,
+      "revision_cycles": 3
+    },
+    "3": {
+      "words": 1895,
+      "slop": 17.74,
+      "reviewed": true,
+      "revision_cycles": 1
+    },
+    "4": {
+      "words": 2066,
+      "slop": 18.63,
+      "reviewed": true,
+      "revision_cycles": 4
+    },
+    "5": {
+      "words": 1268,
+      "slop": 16.02,
+      "reviewed": true,
+      "revision_cycles": 1
+    },
+    "6": {
+      "words": 1745,
+      "slop": 20.28,
+      "reviewed": true,
+      "revision_cycles": 1
+    },
+    "7": {
+      "words": 1295,
+      "slop": 1.73,
+      "reviewed": true,
+      "revision_cycles": 2
+    },
+    "8": {
+      "words": 2109,
+      "slop": 15.91,
+      "reviewed": true,
+      "revision_cycles": 3
+    },
+    "9": {
+      "words": 1376,
+      "slop": 20.05,
+      "reviewed": true,
+      "revision_cycles": 1
+    },
+    "10": {
+      "words": 1577,
+      "slop": 19.76,
+      "reviewed": false,
+      "revision_cycles": 0
+    },
+    "11": {
+      "words": 1440,
+      "slop": 19.14,
+      "reviewed": false,
+      "revision_cycles": 0
+    },
+    "12": {
+      "words": 1656,
+      "slop": 17.27,
+      "reviewed": true,
+      "revision_cycles": 1
+    }
+  },
+  "current": null,
+  "phase": "reviewing",
+  "book_reviews": [
+    {
+      "ts": 1783440549.0907328,
+      "findings": 7,
+      "major_count": 4,
+      "verdict": "needs-work"
+    },
+    {
+      "ts": 1783440892.7443328,
+      "findings": 4,
+      "major_count": 2,
+      "verdict": "needs-work"
+    },
+    {
+      "ts": 1783442079.3691123,
+      "findings": 7,
+      "major_count": 6,
+      "verdict": "needs-work"
+    },
+    {
+      "ts": 1783442605.8045456,
+      "findings": 7,
+      "major_count": 5,
+      "verdict": "needs-work"
+    },
+    {
+      "ts": 1783443904.4516132,
+      "findings": 7,
+      "major_count": 6,
+      "verdict": "needs-work"
+    },
+    {
+      "ts": 1783444545.5987773,
+      "findings": 7,
+      "major_count": 5,
+      "verdict": "needs-work"
+    }
+  ],
+  "budget": {
+    "chapters_this_run": 8,
+    "max_chapters_per_run": null
+  },
+  "started_at": 1783439030.5029495,
+  "updated_at": 1783444545.599784
+}

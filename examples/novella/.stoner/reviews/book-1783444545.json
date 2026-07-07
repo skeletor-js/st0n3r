@@ -1,0 +1,132 @@
+{
+  "created_at": 1783444545.5987773,
+  "model": "claude/claude-sonnet-5",
+  "verdict": "needs-work",
+  "overall": "This is a disciplined, unusually well-researched novella whose procedural detail — the permit packet, the fee schedule, the dam remediation bid — carries real weight, and whose central argument (tacit, hand-earned knowledge versus the legibility demanded by bureaucracy and capital) pays off cleanly in Chapter 12's refusal of the IP clause. Its main weaknesses are a factual contradiction in the dam setback measurement between Chapters 1 and 4 that undercuts the book's own precision motif, a recurring stylistic tic (filter-word epiphanies built on 'understood'/'felt,' paired with an 'it was not X, it was Y' antithesis) that both flattens prose rhythm and homogenizes secondary characters' voices into the narrator's own, and a Wyatt subplot that is given real stakes across three chapters and then dropped without a closing beat. None of these require structural surgery, but they need attention before the manuscript is ready.",
+  "chapters_full": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "chapters_summarized": [],
+  "usage": {
+    "input_tokens": 2,
+    "output_tokens": 25037
+  },
+  "findings": [
+    {
+      "id": "f_98934b6b5c",
+      "source": "review:book",
+      "severity": "critical",
+      "category": "ch-04:continuity error",
+      "span": {
+        "start": 5610,
+        "end": 5797,
+        "line": 43
+      },
+      "quote": "got seventy-four feet from the top of bank to the diversion structure against a required hundred, six feet short of the eighty Ruth had always carried in her head for that stretch of bank",
+      "issue": "This contradicts Chapter 1, where Ruth herself, reading the packet at her kitchen table, arrives at the identical figure Corinne later measures: \"The intake dam — seventy-four feet from the tributary, by her own rough count, and she had never once had reason to count it before tonight.\" Chapter 1 establishes her own number as 74; Chapter 4 then claims her habitual number was 80 and that Corinne's reading (74) came in 'six feet short' of it. The two can't both be true, and the error lands exactly where the book is asking readers to trust its precision — this is the novel's central motif (a woman who has always known her own numbers) undercut by a number that doesn't match itself.",
+      "suggestion": "Pick one number and hold it. Either delete 'by her own rough count' in Chapter 1 and let 74 be new information Ruth only learns from Corinne's rangefinder (which would actually sharpen the scene — the shed number she knew cold, the dam number she didn't, and that asymmetry could mean something), or fix Chapter 4 to read '...the same seventy-four Ruth had always carried in her head' and cut the 'six feet short of the eighty' clause entirely.",
+      "status": "open"
+    },
+    {
+      "id": "f_1a525235f4",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-08:unresolved arc",
+      "span": {
+        "start": 10556,
+        "end": 10677,
+        "line": 71
+      },
+      "quote": "\"Okay,\" he said, which was not agreement exactly and not the Canopy job either, and she let it be enough for one evening.",
+      "issue": "The Wyatt/Canopy-job thread is set up across three chapters (3, 7, 8) with real weight — Ruth changes her teaching, her trellis order, her sense of who she's working for, all around the question of whether he stays. Chapter 11 confirms it's still live ('the job he had not yet taken'). Then Chapter 12, the book's final chapter, never mentions him again. A thread this load-bearing needs at least one more beat before the book ends, or the reader is left wondering if it was dropped rather than deliberately left open.",
+      "suggestion": "Give Wyatt one more scene, even a short one, in or after Chapter 12 — not a full decision necessarily, but something that lets the reader feel the question land somewhere, even ambiguously, the way the land-sale question is allowed to land ambiguously. Right now the land plot gets a closing gesture (the independent survey); the Wyatt plot gets none, which reads as an oversight rather than a matching choice.",
+      "status": "open"
+    },
+    {
+      "id": "f_3b90573ef9",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-03:prose tic",
+      "span": {
+        "start": 3212,
+        "end": 3362,
+        "line": 19
+      },
+      "quote": "It was not a decision so much as the absence of one. She noticed it the way she noticed weather — after the fact, once it had already started raining.",
+      "issue": "This 'It was not X, it was Y' balanced-antithesis construction, almost always paired with a filter verb ('understood,' 'noticed,' 'felt'), recurs so often it becomes the book's default way of landing an emotional beat rather than one tool among several — variants appear in Chapters 1, 2, 4, 5, 6, 8, 9, 10, and 12 ('It was not a broken system...', 'It was not only that...', 'The money measured a parcel...What no form...had a column for was the other thing'). Used once or twice it's a fine rhetorical move; used a dozen times it starts to read as authorial tic rather than character thought, and it flattens moments that would land harder shown plainly.",
+      "suggestion": "Do a pass just for this pattern and cut it by half. Where it survives, let it come from action or image instead of restated abstraction — this passage, for instance, could just show her hand already stopped and closed on the shears, and trust the reader to supply 'she hadn't decided to stop' without the sentence announcing it.",
+      "status": "open"
+    },
+    {
+      "id": "f_4e4e241da8",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-09:beat rhythm",
+      "span": {
+        "start": 7372,
+        "end": 7481,
+        "line": 21
+      },
+      "quote": "They were only going to let the numbers keep doing it, quietly, until she said yes to something else instead.",
+      "issue": "Nine of the book's twelve chapters end on a long, cadenced, epiphanic sentence that delivers a thematic summary in Ruth's internal voice (see also the closing lines of Chapters 1, 3, 5, 6, 8, 9, 10, and 11). The device works the first few times; by the middle of the book its arrival is predictable enough that a reader can feel the chapter winding up to deliver its 'moral' before it does, which undercuts tension rather than building it.",
+      "suggestion": "Vary the exit points. Let some chapters end mid-action, on dialogue, or on an unresolved image (Chapters 4, 7, and 12 already do this well and read as the strongest endings in the book — model the others on those rather than on the aphoristic ones).",
+      "status": "open"
+    },
+    {
+      "id": "f_48199c337c",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-05:voice differentiation",
+      "span": {
+        "start": 4345,
+        "end": 4653,
+        "line": 19
+      },
+      "quote": "\"They'd have the staff for it,\" Hollis said. \"That's the difference. Money buys you the staff, and the staff is what the county wants to see — somebody who fills the form out the way the form wants to be filled out the first time, instead of a rancher's kid trying to read the water code on his lunch break.\"",
+      "issue": "Hollis, like Denny in Chapter 8 ('I don't figure that makes you a quitter, Ruth — just numbers, same as anything else'), speaks in the same aphoristic, thesis-stating cadence as Ruth's own internal narration. Both men essentially deliver the book's argument in prose, rather than in a voice distinct from Ruth's or from each other's. It makes the supporting cast feel like instruments of theme rather than separate people who happen to agree with Ruth.",
+      "suggestion": "Give Hollis and Denny their own diction and rhythm, distinct from Ruth's interiority and from each other — right now, if you covered the attribution tags, several of their lines could be mistaken for Ruth's own thoughts. Let their agreement with Ruth's conclusion come through in what they choose not to say, or in something concrete and specific to their own operations, rather than in restating the book's thesis aloud.",
+      "status": "open"
+    },
+    {
+      "id": "f_58f4704ceb",
+      "source": "review:book",
+      "severity": "minor",
+      "category": "ch-06:over-explaining",
+      "span": {
+        "start": 6462,
+        "end": 6665,
+        "line": 25
+      },
+      "quote": "Six dollars and seventy-seven cents an hour was not an insult exactly, because an insult required someone to have looked at her and decided she was worth that little, and no one had looked at her at all.",
+      "issue": "The chapter's math is accurate and the scene is earned by Ruth's character, but the final page spells out its own meaning at length after the number has already made the point. The image of the calculator and the green readout does the emotional work; the paragraph that follows explaining why $6.77 is worse than an insult tells the reader what they've already felt.",
+      "suggestion": "Trust the number more. Cut roughly the second half of this paragraph and let the chapter end closer to the calculator itself — the silence after 'She sat with that' is doing more work than the explanation that follows it.",
+      "status": "open"
+    },
+    {
+      "id": "f_f2d0c1ec98",
+      "source": "review:book",
+      "severity": "minor",
+      "category": "ch-05:naming collision",
+      "span": {
+        "start": 1326,
+        "end": 1390,
+        "line": 3
+      },
+      "quote": "a woman named Deb Ostrander who did this work for half the ridge",
+      "issue": "The surname Ostrander is already established in Chapter 1 as the name of the neighboring parcel ('the old Ostrander line'), which Chapter 4 ties to a specific boundary stake driven by Ruth's father. Reusing it for an unrelated water-rights consultant, with no acknowledgment of any connection, is likely to make a careful reader pause and wonder if they missed a family relationship that never gets addressed.",
+      "suggestion": "Rename the consultant, or, if the shared name is deliberate (small ridge, few families), add one line establishing the connection so it reads as intentional local texture rather than an oversight.",
+      "status": "open"
+    }
+  ]
+}
