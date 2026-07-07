@@ -292,6 +292,30 @@ def create_app(project: WritingProject) -> FastAPI:
     def api_ledger(n: int = 100) -> list[dict[str, Any]]:
         return [entry.model_dump(mode="json") for entry in ledger.tail(n)]
 
+    # -- book (autonomous run state) -----------------------------------------
+
+    @app.get("/api/book")
+    def api_book() -> dict[str, Any]:
+        """Contents of `.stoner/book-state.json`, or `{}` if absent/unreadable.
+
+        The file is written by the (still in-development) `stoner book`
+        autonomous run loop -- this endpoint is deliberately defensive since
+        that writer's schema may still be in flux: a missing file, an empty
+        file, malformed JSON, or a non-object JSON value all resolve to `{}`
+        rather than a 404/500, so the dashboard always has something safe to
+        render.
+        """
+        path = project.root / ".stoner" / "book-state.json"
+        if not path.exists():
+            return {}
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+            return {}
+        if not isinstance(data, dict):
+            return {}
+        return data
+
     return app
 
 

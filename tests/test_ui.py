@@ -347,3 +347,56 @@ def test_reviews_and_ledger_reflect_external_edits(client, project: WritingProje
 
     Ledger(project.root).append("write.draft", target="manuscript/ch-01.md")
     assert len(client.get("/api/ledger").json()) == 1
+
+
+# ---------------------------------------------------------------------------
+# book (autonomous run state)
+# ---------------------------------------------------------------------------
+
+
+def test_book_endpoint_absent_returns_empty_object(client):
+    """No .stoner/book-state.json yet -- never a 404, just {}."""
+    res = client.get("/api/book")
+    assert res.status_code == 200
+    assert res.json() == {}
+
+
+def test_book_endpoint_returns_state_when_present(client, project: WritingProject):
+    state = {
+        "chapters_planned": 20,
+        "chapters_done": {
+            "1": {"words": 2400, "slop": 12.0, "reviewed": True, "revision_cycles": 1},
+            "2": {"words": 2100, "slop": 30.5, "reviewed": False, "revision_cycles": 0},
+        },
+        "current": 3,
+        "phase": "drafting",
+        "book_reviews": [{"at_chapter": 2, "majors": 1, "created_at": 1700000000.0}],
+        "updated_at": 1700000100.0,
+    }
+    path = project.root / ".stoner" / "book-state.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(state), encoding="utf-8")
+
+    res = client.get("/api/book")
+    assert res.status_code == 200
+    assert res.json() == state
+
+
+def test_book_endpoint_corrupt_json_returns_empty_object(client, project: WritingProject):
+    path = project.root / ".stoner" / "book-state.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("{not valid json", encoding="utf-8")
+
+    res = client.get("/api/book")
+    assert res.status_code == 200
+    assert res.json() == {}
+
+
+def test_book_endpoint_non_object_json_returns_empty_object(client, project: WritingProject):
+    path = project.root / ".stoner" / "book-state.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("[1, 2, 3]", encoding="utf-8")
+
+    res = client.get("/api/book")
+    assert res.status_code == 200
+    assert res.json() == {}
