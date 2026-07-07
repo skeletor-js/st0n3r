@@ -1,0 +1,194 @@
+# Closed-class English function words tracked by the voice fingerprint
+# (src/stoner/voice/features.py). Hand-assembled from the standard
+# closed-class inventories every English grammar enumerates -- articles,
+# pronouns, prepositions, conjunctions, auxiliaries/modals, demonstratives,
+# quantifiers, and degree adverbs. Function-word inventories are facts about
+# the language, not creative expression: this list is uncopyrightable and no
+# external corpus or frequency list was copied to build it (see
+# docs/CREDITS.md).
+#
+# Format: a flat YAML list of lowercase words. Each word becomes one
+# `fw.<word>` feature (rate per 1000 tokens) in the fingerprint. Order is
+# irrelevant; keep the list grouped by part of speech for readability.
+
+# articles / demonstratives
+- a
+- an
+- the
+- this
+- that
+- these
+- those
+
+# pronouns
+- i
+- me
+- my
+- mine
+- myself
+- we
+- us
+- our
+- ours
+- you
+- your
+- yours
+- he
+- him
+- his
+- himself
+- she
+- her
+- hers
+- herself
+- it
+- its
+- itself
+- they
+- them
+- their
+- theirs
+- who
+- whom
+- whose
+- which
+- what
+- one
+- something
+- nothing
+- anything
+- everything
+- someone
+- everyone
+
+# prepositions
+- of
+- in
+- "on"
+- at
+- by
+- to
+- from
+- with
+- without
+- into
+- onto
+- upon
+- over
+- under
+- above
+- below
+- between
+- among
+- through
+- during
+- before
+- after
+- against
+- about
+- around
+- across
+- along
+- behind
+- beside
+- beyond
+- near
+- within
+- toward
+- "off"
+- out
+- up
+- down
+- like
+
+# conjunctions / subordinators
+- and
+- but
+- or
+- nor
+- so
+- yet
+- for
+- if
+- then
+- than
+- because
+- while
+- when
+- where
+- why
+- how
+- as
+- until
+- though
+- although
+- unless
+- since
+- whether
+- either
+- neither
+- once
+- whereas
+
+# auxiliaries / copulas / modals
+- is
+- am
+- are
+- was
+- were
+- be
+- been
+- being
+- do
+- does
+- did
+- have
+- has
+- had
+- will
+- would
+- shall
+- should
+- can
+- could
+- may
+- might
+- must
+
+# negation / quantifiers / degree adverbs
+- not
+- "no"
+- all
+- any
+- both
+- each
+- every
+- few
+- many
+- much
+- more
+- most
+- some
+- such
+- only
+- own
+- same
+- other
+- another
+- just
+- very
+- too
+- also
+- quite
+- rather
+- almost
+- ever
+- never
+- always
+- often
+- still
+- even
+- again
+- there
+- here
+- now

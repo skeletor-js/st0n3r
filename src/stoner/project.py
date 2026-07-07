@@ -26,9 +26,11 @@ DIRS = [
     "outline/beats",
     "manuscript",
     "notes",
+    "notes/exemplars",
     ".stoner",
     ".stoner/sessions",
     ".stoner/reviews",
+    ".stoner/voice",
 ]
 
 

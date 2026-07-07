@@ -33,6 +33,24 @@ class GateConfig(BaseModel):
     max_revision_loops: int = 2
 
 
+def _default_voice_weights() -> dict[str, float]:
+    # Imported lazily (at model instantiation, not module import) so the
+    # bucket weights can live next to the scoring curve they tune in
+    # voice/drift.py without creating a config <-> voice import cycle.
+    from .voice.drift import DEFAULT_WEIGHTS
+
+    return dict(DEFAULT_WEIGHTS)
+
+
+class VoiceConfig(BaseModel):
+    """Voice-fingerprint learning and drift-gate settings (src/stoner/voice/)."""
+
+    exemplars: list[str] = Field(default_factory=lambda: ["notes/exemplars"])
+    gate: bool = False  # opt-in: gate drafts on measured voice drift
+    max_drift_score: float = 40.0
+    weights: dict[str, float] = Field(default_factory=_default_voice_weights)
+
+
 class ModelRoles(BaseModel):
     """Which model handles which job. Any `provider/model` string."""
 
@@ -52,6 +70,7 @@ class StonerConfig(BaseModel):
     max_tokens: int = 8192
     temperature: float | None = None
     extra: dict[str, Any] = Field(default_factory=dict)
+    voice: VoiceConfig = Field(default_factory=VoiceConfig)
 
     # ------------------------------------------------------------------
     @classmethod

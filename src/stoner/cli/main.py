@@ -538,8 +538,12 @@ def ui(
     run_server(project, host=host, port=port)
 
 
-from . import book_cmds, foundation_cmds  # noqa: E402
+from . import book_cmds, foundation_cmds, voice_cmds  # noqa: E402
 
+# Feature command registration order (integration plan 011): voice, cast,
+# tournament, pacing, room, facts, motifs, readers, drafts, ship -- then the
+# pre-existing book/foundation commands.
+voice_cmds.register(app)
 book_cmds.register(app)
 foundation_cmds.register(app)
 

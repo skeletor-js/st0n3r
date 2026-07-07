@@ -123,6 +123,22 @@ class SlopReport(BaseModel):
     created_at: float = Field(default_factory=time.time)
 
 
+class VoiceReport(BaseModel):
+    """Result of running the voice-drift engine over one document.
+
+    Mirrors :class:`SlopReport`; ``kind`` is the report-kind discriminator
+    the ``.stoner/reviews/`` listing uses to tell saved report files apart.
+    """
+
+    kind: str = "voice"
+    path: str
+    score: float  # 0 in voice .. 100 broke voice
+    subscores: dict[str, float] = Field(default_factory=dict)  # per bucket
+    findings: list[Finding] = Field(default_factory=list)
+    stats: dict[str, Any] = Field(default_factory=dict)  # word count, etc.
+    created_at: float = Field(default_factory=time.time)
+
+
 class ReviewReport(BaseModel):
     """Result of running critic passes over one document."""
 
