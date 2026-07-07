@@ -55,7 +55,7 @@ class StonerConfig(BaseModel):
 
     # ------------------------------------------------------------------
     @classmethod
-    def load(cls, project_root: Path, overrides: dict[str, Any] | None = None) -> "StonerConfig":
+    def load(cls, project_root: Path, overrides: dict[str, Any] | None = None) -> StonerConfig:
         path = project_root / CONFIG_FILENAME
         data: dict[str, Any] = {}
         if path.exists():

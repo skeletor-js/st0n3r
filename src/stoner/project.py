@@ -86,7 +86,7 @@ class WritingProject:
 
     # -- discovery ------------------------------------------------------
     @classmethod
-    def find(cls, start: Path | None = None) -> "WritingProject":
+    def find(cls, start: Path | None = None) -> WritingProject:
         """Walk upward from `start` (or cwd) until stoner.yaml is found."""
         cur = (start or Path.cwd()).resolve()
         for candidate in [cur, *cur.parents]:
@@ -97,7 +97,7 @@ class WritingProject:
         )
 
     @classmethod
-    def create(cls, root: Path, name: str) -> "WritingProject":
+    def create(cls, root: Path, name: str) -> WritingProject:
         """Scaffold a fresh project. Templates are filled in by canon.templates."""
         root = root.resolve()
         root.mkdir(parents=True, exist_ok=True)
