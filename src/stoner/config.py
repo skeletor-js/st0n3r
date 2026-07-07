@@ -33,6 +33,15 @@ class GateConfig(BaseModel):
     max_revision_loops: int = 2
 
 
+class ArchaeologyConfig(BaseModel):
+    """Draft snapshot store (`.stoner/drafts/`) behavior."""
+
+    enabled: bool = True
+    dedup: bool = True
+    keep_per_chapter: int | None = None  # `stoner drafts prune` default
+    verify_after_refactor: bool = True
+
+
 class ModelRoles(BaseModel):
     """Which model handles which job. Any `provider/model` string."""
 
@@ -52,6 +61,7 @@ class StonerConfig(BaseModel):
     max_tokens: int = 8192
     temperature: float | None = None
     extra: dict[str, Any] = Field(default_factory=dict)
+    archaeology: ArchaeologyConfig = Field(default_factory=ArchaeologyConfig)
 
     # ------------------------------------------------------------------
     @classmethod

@@ -6,8 +6,11 @@ them into the opinionated flow described in ARCHITECTURE.md.
 
 from __future__ import annotations
 
+import inspect
 from dataclasses import dataclass, field
+from typing import Any
 
+from ..archaeology.snapshots import snapshot_write_chapter
 from ..canon.archivist import (
     ApplyResult,
     apply_updates,
@@ -104,7 +107,7 @@ def draft_chapter(
                 f"Single-shot draft for chapter {number} came back with only "
                 f"{count_words(body)} words; not saving. Raise max_tokens or retry."
             )
-        project.write_chapter(number, fm, body)
+        snapshot_write_chapter(project, number, fm, body, reason="draft")
         ledger.append("write.single_shot", target=project.chapter_rel(number))
         return resp.usage
     agent = Agent(
@@ -130,7 +133,7 @@ def draft_chapter(
         project.read_chapter(number)
     except Exception:
         if count_words(result.text) > 200:
-            project.write_chapter(number, fm, result.text)
+            snapshot_write_chapter(project, number, fm, result.text, reason="draft")
             ledger.append("write.fallback_save", target=project.chapter_rel(number))
         else:
             raise RuntimeError(
@@ -192,8 +195,13 @@ def run_write(
         ][:40]
         # model deliberately not forwarded: the revise stage keeps its
         # configured reviewer role even when the writer model is overridden.
+        # `reason` tags the draft snapshot; passed only when the (replaceable,
+        # late-imported) callable accepts it.
+        revise_kwargs: dict[str, Any] = {}
+        if "reason" in inspect.signature(revise_chapter).parameters:
+            revise_kwargs["reason"] = "slop-revise"
         revision = revise_chapter(
-            project, number, blocked or report.findings[:40], provider=provider
+            project, number, blocked or report.findings[:40], provider=provider, **revise_kwargs
         )
         res.usage += revision.usage
         _, body = project.read_chapter(number)

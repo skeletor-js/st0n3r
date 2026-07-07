@@ -12,6 +12,7 @@ never deleted.
 
 from __future__ import annotations
 
+import inspect
 import re
 import time
 from collections.abc import Callable
@@ -217,8 +218,15 @@ def _review_and_revise(
             chapter_majors = [f for f in grouped[n] if f.severity in _MAJOR_SEVERITIES]
             if not chapter_majors:
                 continue
+            # `reason` tags the draft snapshot; passed only when the
+            # (replaceable, late-imported) callable accepts it.
+            revise_kwargs: dict[str, Any] = {}
+            if "reason" in inspect.signature(revise_chapter).parameters:
+                revise_kwargs["reason"] = "book-revise"
             try:
-                revision = revise_chapter(project, n, chapter_majors, provider=provider)
+                revision = revise_chapter(
+                    project, n, chapter_majors, provider=provider, **revise_kwargs
+                )
             except (ValueError, RuntimeError):
                 continue
             result.usage = result.usage + revision.usage

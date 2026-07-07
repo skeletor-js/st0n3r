@@ -3,8 +3,10 @@
 Builds one prompt (original chapter + accepted findings + canon digest +
 style guidance), asks the model to return the *complete* revised chapter
 body between `BEGIN CHAPTER` / `END CHAPTER` sentinels, parses that
-tolerantly, and writes the result back through `WritingProject.write_chapter`
-so frontmatter is preserved (with `status` bumped to `"revised"`).
+tolerantly, and writes the result back through the draft-archaeology
+snapshot chokepoint (which preserves the prior body under `.stoner/drafts/`
+and delegates to `WritingProject.write_chapter`) so frontmatter is
+preserved (with `status` bumped to `"revised"`).
 """
 
 from __future__ import annotations
@@ -12,6 +14,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from ..archaeology.snapshots import snapshot_write_chapter
 from ..canon.store import CanonStore
 from ..ledger import Ledger
 from ..project import WritingProject, count_words
@@ -119,11 +122,15 @@ def revise_chapter(
     findings: list[Finding],
     model: str | None = None,
     provider: Provider | None = None,
+    *,
+    reason: str = "review-revise",
 ) -> ReviseResult:
     """Revise `chapter` by applying `findings` (already filtered to
     "accepted" by the caller) via the model. Raises `ValueError` if
     `findings` is empty -- revision without findings is refused rather
-    than silently rewriting the chapter for no reason."""
+    than silently rewriting the chapter for no reason. `reason` names the
+    rewrite event on the draft snapshot taken before the write (callers in
+    other pipelines pass e.g. `slop-revise` / `book-revise`)."""
     if not findings:
         raise ValueError("revise_chapter requires at least one finding to apply")
 
@@ -171,7 +178,14 @@ def revise_chapter(
 
     new_fm = dict(fm)
     new_fm["status"] = "revised"
-    project.write_chapter(chapter, new_fm, revised_body)
+    snapshot_write_chapter(
+        project,
+        chapter,
+        new_fm,
+        revised_body,
+        reason=reason,
+        detail={"applied": len(findings)},
+    )
 
     new_words = count_words(revised_body)
 

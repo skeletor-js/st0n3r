@@ -29,6 +29,7 @@ DIRS = [
     ".stoner",
     ".stoner/sessions",
     ".stoner/reviews",
+    ".stoner/drafts",
 ]
 
 

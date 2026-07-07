@@ -12,6 +12,7 @@ import json
 from collections.abc import Callable
 from typing import Any
 
+from ..archaeology.snapshots import snapshot_write_chapter
 from ..project import ProjectError, WritingProject, count_words
 from ..types import ToolCall, ToolResult, ToolSpec
 
@@ -73,7 +74,7 @@ def write_chapter(
         fm["status"] = status or fm.get("status") or "draft"
         if pov:
             fm["pov"] = pov
-        path = project.write_chapter(n, fm, body)
+        path = snapshot_write_chapter(project, n, fm, body, reason="draft")
     except (ProjectError, ValueError) as e:
         return f"ERROR: {e}"
     words = count_words(body)
