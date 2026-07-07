@@ -72,10 +72,14 @@ def _render_markdown(report: SlopReport) -> str:
 
 
 def _render_rich(report: SlopReport) -> str:
+    import io
+
     from rich.console import Console
     from rich.table import Table
 
-    console = Console(record=True, width=100)
+    # Render to a detached buffer: render() must be pure (no direct stdout
+    # writes), or callers that print the return value emit the report twice.
+    console = Console(record=True, width=100, file=io.StringIO(), force_terminal=True)
     v = verdict(report.score)
     console.print(f"[bold]Slop report[/bold]: {report.path or '(unnamed)'}")
     console.print(f"Score: [bold]{report.score:.1f}[/bold] / 100 -- verdict: [bold]{v}[/bold]")
@@ -98,4 +102,4 @@ def _render_rich(report: SlopReport) -> str:
         f_table.add_row(f.severity.value, f.category, loc, f.issue)
     console.print(f_table)
 
-    return console.export_text()
+    return console.export_text(styles=True)

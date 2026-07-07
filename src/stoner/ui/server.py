@@ -22,7 +22,7 @@ from pydantic import BaseModel
 
 from ..canon.store import CanonStore
 from ..ledger import Ledger
-from ..project import ProjectError, WritingProject, split_frontmatter
+from ..project import ProjectError, WritingProject, count_words, split_frontmatter
 from ..slop import run_slop
 
 if TYPE_CHECKING:  # pragma: no cover - typing only, fastapi may be absent
@@ -195,7 +195,7 @@ def create_app(project: WritingProject) -> FastAPI:
             fm, body = project.read_chapter(number)
         except ProjectError as exc:
             raise _http404(f"chapter not found: ch-{number:02d}") from exc
-        return {"frontmatter": fm, "body": body}
+        return {"frontmatter": fm, "body": body, "words": count_words(body)}
 
     @app.get("/api/chapters/{number}/slop")
     def api_chapter_slop(number: int) -> dict[str, Any]:

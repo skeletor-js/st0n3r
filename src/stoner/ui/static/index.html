@@ -429,7 +429,7 @@
     currentChapter = { number: number, body: chapter.body, fm: chapter.frontmatter };
     pane.innerHTML =
       '<h1 class="doc-title">Ch ' + String(number).padStart(2, "0") + (chapter.frontmatter.title ? " — " + escapeHtml(chapter.frontmatter.title) : "") + "</h1>" +
-      '<div class="doc-meta">' + statusPill(chapter.frontmatter.status) + " &nbsp; " + (chapter.frontmatter.words || 0) + " words" + (chapter.frontmatter.pov ? " &middot; POV " + escapeHtml(chapter.frontmatter.pov) : "") + "</div>" +
+      '<div class="doc-meta">' + statusPill(chapter.frontmatter.status) + " &nbsp; " + (chapter.words || chapter.frontmatter.words || 0) + " words" + (chapter.frontmatter.pov ? " &middot; POV " + escapeHtml(chapter.frontmatter.pov) : "") + "</div>" +
       '<button class="btn primary" id="run-slop">Run slop check</button>' +
       '<div id="slop-result"></div>' +
       '<div class="chapter-body" id="chapter-body">' + renderMarkdown(chapter.body, []) + "</div>" +

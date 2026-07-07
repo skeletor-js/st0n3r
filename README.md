@@ -31,6 +31,10 @@ structurally:
 | Shallow self-review | **Critic passes** — continuity, pacing, voice, line, logic, adversarial cut-analysis, a four-persona reader panel, and comparative STRONG/FINE/WEAK/CUT grading (absolute 1–10 scores collapse; comparisons don't) |
 | Vendor lock-in | **Provider layer** — Anthropic API, any OpenAI-compatible endpoint (OpenAI, OpenRouter, Together, Groq, Ollama, vLLM…), or the Codex CLI on a ChatGPT subscription |
 
+The slop detector at work — no LLM involved, pure analysis:
+
+![stoner slop CLI report](docs/assets/cli-slop.png)
+
 ## Quickstart
 
 ```bash
@@ -104,6 +108,24 @@ the box (keys via env vars); any other OpenAI-compatible endpoint is one
 `providers:` block away; `codex/<model>` drives the Codex CLI under your
 ChatGPT subscription. Providers that can't do native tool-calling get a
 fenced-JSON fallback automatically. See [docs/providers.md](docs/providers.md).
+
+## The dashboard
+
+`stoner ui` serves a local dashboard (nothing leaves 127.0.0.1). The
+manuscript browser runs live slop checks and paints every finding onto the
+prose:
+
+![Manuscript view with slop heatmap](docs/assets/ui-slop.png)
+
+Review findings are triaged here — accept or dismiss, then `stoner revise`
+applies what you accepted:
+
+![Review findings triage](docs/assets/ui-reviews.png)
+
+And the canon browser shows the bible as the agent sees it — hard facts in
+frontmatter, voice and arc in prose:
+
+![Canon browser](docs/assets/ui-canon.png)
 
 ## Documentation
 

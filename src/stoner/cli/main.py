@@ -135,7 +135,9 @@ def slop(
 
     for rel, text in targets:
         report = run_slop(text, path=rel)
-        console.print(render(report, fmt))
+        # rich output already carries ANSI styling; print it verbatim so
+        # bracketed quotes in findings aren't parsed as rich markup.
+        typer.echo(render(report, fmt))
         if save:
             out = project.resolve(
                 f".stoner/reviews/slop-{Path(rel).stem}-{int(_time.time())}.json"
