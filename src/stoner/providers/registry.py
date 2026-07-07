@@ -6,10 +6,11 @@ Model strings look like `<provider>/<model-id>`, e.g.:
     openrouter/deepseek/deepseek-chat   (first segment picks the provider entry)
     ollama/llama3.3
     codex/gpt-5-codex
+    claude/claude-sonnet-5
 
 The provider segment is looked up in StonerConfig.providers; unknown names
 fall back to built-in defaults for `anthropic`, `openai`, `openrouter`,
-`ollama`, and `codex`.
+`ollama`, `codex`, and `claude`.
 """
 
 from __future__ import annotations
@@ -37,6 +38,7 @@ BUILTIN_PROVIDERS: dict[str, ProviderConfig] = {
     ),
     "ollama": ProviderConfig(kind="openai_compat", base_url="http://localhost:11434/v1"),
     "codex": ProviderConfig(kind="codex_cli"),
+    "claude": ProviderConfig(kind="claude_code"),
 }
 
 
@@ -73,4 +75,8 @@ def get_provider(model: str, config: StonerConfig) -> tuple[Provider, str]:
         from .codex_cli import CodexCLIProvider
 
         return CodexCLIProvider(pc), model_id
+    if pc.kind == "claude_code":
+        from .claude_code import ClaudeCodeProvider
+
+        return ClaudeCodeProvider(pc), model_id
     raise ProviderError(f"Unknown provider kind {pc.kind!r} for {pname!r}")
