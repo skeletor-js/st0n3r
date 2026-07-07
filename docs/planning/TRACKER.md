@@ -15,10 +15,10 @@ errors (frozen as baseline; new code must not add errors).
 | W0 | 011 U1 seam conventions + report kinds | done | c34f89a |
 | W0 | 009 U1 snapshot store + chokepoint | done | 18b26cc, 15 tests |
 | W0 | 009 U2 route rewrite paths through chokepoint | done | 18b26cc; deviation: reason kwarg passed via inspect.signature guard (test stubs lack it) |
-| W1 | 001 voice engine (U1-U4, U6, U7 + gate helper; write.py gate deferred to wiring) | wip | subagent worktree, run 2 |
+| W1 | 001 voice engine (U1-U4, U6, U7 + gate helper; write.py gate deferred to wiring) | done | 66836b1, +58 tests (415 green) |
 | W1 | 004 pacing instrumentation (U1-U7) | done | 781de54, +73 tests (357 green) |
-| W2 | 005 writers' room (all units) | todo | |
-| W2 | 003 draft tournaments (all units) | todo | |
+| W2 | 005 writers' room (U1-U7) | wip | Opus subagent worktree, run 2 |
+| W2 | 003 draft tournaments (U1-U7; write --tournament + book slots deferred to wiring) | wip | Opus subagent worktree, run 2 |
 | W3 | 002 character interiority (all units) | todo | |
 | W3 | 006 verisimilitude engine (all units) | todo | |
 | W4 | 007 promise & motif ledger (all units) | todo | |
@@ -119,6 +119,12 @@ errors (frozen as baseline; new code must not add errors).
   deviations recorded in its report: run_pacing(llm=None) defaults from config;
   pacing.report ledgers on --no-save too; e2e provider injection via run_pacing.
   Voice still building.
+- **Run 2 (cont):** Voice (001) landed and merged (66836b1): +58 tests -> 415 passed
+  / 1 skipped, ruff clean, mypy baseline. Calibration separations hold both directions
+  (A-fingerprint: A-text 0.0 / B-text 48.7; B-fingerprint: B <15 / A 30.9).
+  voice_gate_check helper ready for wiring stage; pipelines untouched. WAVE 1
+  COMPLETE. Launching Wave 2 (005 writers' room + 003 tournaments) on Opus
+  subagents in worktrees.
 
 ## Run journal (run 1 — v1/v2)
 
