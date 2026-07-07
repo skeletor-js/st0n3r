@@ -418,3 +418,84 @@ def test_book_endpoint_non_object_json_returns_empty_object(client, project: Wri
     res = client.get("/api/book")
     assert res.status_code == 200
     assert res.json() == {}
+
+
+# ---------------------------------------------------------------------------
+# pacing (latest saved pacing report)
+# ---------------------------------------------------------------------------
+
+
+def _write_pacing_report(project: WritingProject, filename: str, **overrides) -> Path:
+    payload = {
+        "kind": "pacing",
+        "created_at": 1700000000.0,
+        "llm": False,
+        "model": "",
+        "series": [
+            {
+                "chapter": 1,
+                "words": 1200,
+                "dialogue_ratio": 0.4,
+                "interiority_ratio": 0.2,
+                "action_ratio": 0.4,
+                "in_scene_fraction": 0.8,
+                "pov": "Aria",
+                "ending_shape": "one_line_punch",
+                "beat_sheet": "present",
+                "tension": "skipped",
+                "changes_hands": None,
+                "beats": None,
+            }
+        ],
+        "flatlines": [],
+        "stats": {},
+        "usage": {"input_tokens": 0, "output_tokens": 0},
+        "findings": [],
+    }
+    payload.update(overrides)
+    dest = project.root / ".stoner" / "reviews" / filename
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(json.dumps(payload), encoding="utf-8")
+    return dest
+
+
+def test_pacing_endpoint_absent_returns_empty_object(client):
+    res = client.get("/api/pacing")
+    assert res.status_code == 200
+    assert res.json() == {}
+
+
+def test_pacing_endpoint_returns_latest_report(client, project: WritingProject):
+    _write_pacing_report(project, "pacing-1000.json", created_at=1000.0)
+    _write_pacing_report(project, "pacing-2000.json", created_at=2000.0)
+
+    res = client.get("/api/pacing")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["created_at"] == 2000.0
+    assert data["kind"] == "pacing"
+    assert data["series"][0]["chapter"] == 1
+
+
+def test_pacing_endpoint_malformed_json_returns_empty_object(client, project: WritingProject):
+    dest = project.root / ".stoner" / "reviews" / "pacing-9999.json"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text("{not valid json", encoding="utf-8")
+
+    res = client.get("/api/pacing")
+    assert res.status_code == 200
+    assert res.json() == {}
+
+
+def test_reviews_listing_labels_pacing_kind_and_keeps_existing_kinds(client, project: WritingProject):
+    _write_slop_report(project, "ch-01-slop.json")
+    finding = Finding(source="review:continuity", severity=Severity.major, issue="x")
+    _write_review_report(project, "ch-01-review.json", [finding])
+    _write_pacing_report(project, "pacing-1234.json")
+
+    res = client.get("/api/reviews")
+    assert res.status_code == 200
+    listing = {r["file"]: r for r in res.json()}
+    assert listing["pacing-1234.json"]["kind"] == "pacing"
+    assert listing["ch-01-slop.json"]["kind"] == "slop"  # regression
+    assert listing["ch-01-review.json"]["kind"] == "review"  # regression

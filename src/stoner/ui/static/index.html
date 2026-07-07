@@ -425,6 +425,11 @@
         <span class="ri-label">Book</span>
         <span class="ri-end" data-count="book"></span>
       </button>
+      <button class="rail-item" data-view="pacing" type="button">
+        <span class="ic" id="icon-pacing"></span>
+        <span class="ri-label">Pacing</span>
+        <span class="ri-end" data-count="pacing"></span>
+      </button>
       <button class="rail-item" data-view="ledger" type="button">
         <span class="ic" id="icon-ledger"></span>
         <span class="ri-label">Ledger</span>
@@ -470,6 +475,11 @@
         <div class="split-detail" id="book-detail" style="width: 100%;"></div>
       </div>
 
+      <!-- Pacing -->
+      <div class="view-pane" id="view-pacing">
+        <div class="split-detail" id="pacing-detail" style="width: 100%;"></div>
+      </div>
+
       <!-- Ledger -->
       <div class="view-pane" id="view-ledger">
         <div class="split-detail" id="ledger-detail" style="width: 100%;"></div>
@@ -504,6 +514,7 @@
     reviews: svg('<path d="M8 1.7 13 3.4v3.9c0 3.3-2.1 5.7-5 6.9-2.9-1.2-5-3.6-5-6.9V3.4L8 1.7Z"/><path d="M5.7 8 7.3 9.6l3-3.4"/>'),
     book: svg('<circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r=".6" fill="currentColor"/>'),
     ledger: svg('<path d="M3 2.5h10v11H3z"/><path d="M5.3 5.3h5.4M5.3 8h5.4M5.3 10.7h3.4"/>'),
+    pacing: svg('<path d="M1.5 8.5h2.6l1.6-4.5 2.6 8 1.6-4.5 1-1h3.6"/>'),
     sun: svg('<circle cx="8" cy="8" r="2.9"/><path d="M8 1.6v1.5M8 12.9v1.5M2.6 8H1.1M14.9 8h-1.5M4 4l1 1M12 12l1 1M12 4l-1 1M4 12l-1 1"/>', 14),
     moon: svg('<path d="M13 9.6A5.6 5.6 0 0 1 6.4 3 5.7 5.7 0 1 0 13 9.6Z"/>', 14),
     empty: svg('<path d="M8 1.3c.5 1.8-.4 2.6-1.2 3.5C5.8 5.9 5 7 5 8.6a3 3 0 0 0 6 0c0-.9-.3-1.5-.7-2.1.9.6 1.7 1.7 1.7 3.2a4 4 0 1 1-8 0c0-3.4 2.6-4.2 4-8.4Z"/>', 30),
@@ -516,6 +527,7 @@
   document.getElementById("icon-reviews").innerHTML = ICONS.reviews;
   document.getElementById("icon-book").innerHTML = ICONS.book;
   document.getElementById("icon-ledger").innerHTML = ICONS.ledger;
+  document.getElementById("icon-pacing").innerHTML = ICONS.pacing;
 
   // -- theme (system default, toggle persisted in localStorage) -----------
 
@@ -660,12 +672,13 @@
 
   // -- nav ---------------------------------------------------------------
 
-  var VIEW_TITLES = { manuscript: "Manuscript", canon: "Canon", reviews: "Reviews", book: "Book", ledger: "Ledger" };
+  var VIEW_TITLES = { manuscript: "Manuscript", canon: "Canon", reviews: "Reviews", book: "Book", pacing: "Pacing", ledger: "Ledger" };
   var loaders = {
     manuscript: loadManuscript,
     canon: loadCanon,
     reviews: loadReviews,
     book: loadBook,
+    pacing: loadPacing,
     ledger: loadLedger,
   };
 
@@ -1051,6 +1064,193 @@
       '<div class="sec"><div class="sec-label">Chapters</div><div class="plan">' + (rows || '<p style="color:var(--faint);font-size:var(--t-12)">No chapters planned yet.</p>') + "</div></div>" +
       '<div class="sec"><div class="sec-label">Book reviews<span class="count">(' + reviews.length + ")</span></div>" +
       (reviewRows ? '<div class="list">' + reviewRows + "</div>" : '<p style="color:var(--faint);font-size:var(--t-12)">No whole-manuscript reviews yet.</p>') +
+      "</div></div>";
+  }
+
+  // -- pacing (manuscript-timeline structure overlay) -------------------------
+
+  var POV_COLORS = ["--accent", "--ok", "--warn", "--err", "--subtle", "--accent-text"];
+  var TENSION_GLYPHS = { opens: "●", rises: "↑", holds: "→", sags: "↓", skipped: "·", unjudged: "?" };
+  var TENSION_COLORS = { rises: "--ok", holds: "--warn", sags: "--err", opens: "--accent-text", skipped: "--faint", unjudged: "--faint" };
+
+  function povColor(pov, order) {
+    var idx = order.indexOf(pov);
+    return "var(" + POV_COLORS[(idx < 0 ? 0 : idx) % POV_COLORS.length] + ")";
+  }
+
+  function laneLabel(x, y, text) {
+    return '<text x="' + x + '" y="' + y + '" font-size="10" fill="var(--faint)" style="font-family:var(--mono)">' + escapeHtml(text) + "</text>";
+  }
+
+  function pacingRowTip(r) {
+    var changes = r.changes_hands === null ? "skipped" : (r.changes_hands && r.changes_hands.length ? r.changes_hands.join("; ") : "nothing changes hands");
+    var beats = r.beats ? (r.beats.landed + " landed / " + r.beats.drifted + " drifted / " + r.beats.missed + " missed") : "-";
+    return (
+      "Chapter " + r.chapter + "\n" +
+      (r.words || 0).toLocaleString() + " words · POV " + (r.pov || "unknown") + "\n" +
+      "in-scene " + Math.round((r.in_scene_fraction || 0) * 100) + "% · dialogue " + Math.round((r.dialogue_ratio || 0) * 100) +
+      "% / interiority " + Math.round((r.interiority_ratio || 0) * 100) + "% / action " + Math.round((r.action_ratio || 0) * 100) + "%\n" +
+      "ending: " + String(r.ending_shape || "-").replace(/_/g, " ") + " · tension: " + (r.tension || "-") + "\n" +
+      "changes hands: " + changes + "\nbeats: " + beats
+    );
+  }
+
+  function renderPacingTimeline(report) {
+    var series = report.series || [];
+    var n = series.length;
+    var labelW = 86, colW = Math.max(26, Math.min(64, Math.floor(760 / Math.max(n, 1))));
+    var lanes = [
+      { key: "words", label: "words", h: 52 },
+      { key: "scene", label: "in-scene", h: 52 },
+      { key: "mix", label: "mode mix", h: 52 },
+      { key: "pov", label: "pov", h: 20 },
+      { key: "tension", label: "tension", h: 24 },
+      { key: "changes", label: "changes", h: 24 },
+    ];
+    var gap = 12, topPad = 18, bottomPad = 20;
+    var height = topPad + bottomPad;
+    lanes.forEach(function (l) { l.y = height; height += l.h + gap; });
+    var width = labelW + n * colW + 10;
+
+    var maxWords = series.reduce(function (m, r) { return Math.max(m, r.words || 0); }, 1);
+    var povOrder = [];
+    series.forEach(function (r) { var p = r.pov || "unknown"; if (povOrder.indexOf(p) < 0) povOrder.push(p); });
+    var target = (report.stats && report.stats.scene_map && report.stats.scene_map.target) || 0.7;
+
+    function colX(i) { return labelW + i * colW; }
+    function chapterIndex(num) {
+      for (var i = 0; i < n; i++) if (series[i].chapter === num) return i;
+      return -1;
+    }
+
+    var parts = [];
+
+    // span overlays: flatline runs (red) + ending-echo runs (amber)
+    (report.flatlines || []).forEach(function (run) {
+      var a = chapterIndex(run[0]), b = chapterIndex(run[1]);
+      if (a < 0 || b < 0) return;
+      parts.push('<rect x="' + colX(a) + '" y="' + (topPad - 6) + '" width="' + ((b - a + 1) * colW) +
+        '" height="' + (height - topPad - bottomPad + 12) + '" rx="5" fill="var(--err)" opacity="0.09"><title>Chapters ' +
+        run[0] + "–" + run[1] + " flatline; nothing changes hands.</title></rect>");
+    });
+    var echoRuns = (report.stats && report.stats.ending_echo && report.stats.ending_echo.runs) || [];
+    echoRuns.forEach(function (run) {
+      var a = chapterIndex(run[0]), b = chapterIndex(run[1]);
+      if (a < 0 || b < 0) return;
+      parts.push('<rect x="' + colX(a) + '" y="' + (topPad - 6) + '" width="' + ((b - a + 1) * colW) +
+        '" height="' + (height - topPad - bottomPad + 12) + '" rx="5" fill="var(--warn)" opacity="0.07"><title>Chapters ' +
+        run[0] + "–" + run[1] + ' share one ending shape ("' + escapeHtml(String(run[2] || "").replace(/_/g, " ")) + '")</title></rect>');
+    });
+
+    lanes.forEach(function (l) { parts.push(laneLabel(4, l.y + 12, l.label)); });
+
+    // in-scene target guideline
+    var sceneLane = lanes[1];
+    var gy = sceneLane.y + sceneLane.h * (1 - target);
+    parts.push('<line x1="' + labelW + '" y1="' + gy + '" x2="' + (labelW + n * colW) + '" y2="' + gy +
+      '" stroke="var(--border-strong)" stroke-dasharray="3 3"/>');
+
+    series.forEach(function (r, i) {
+      var x = colX(i), barW = colW - 8;
+      var tip = "<title>" + escapeHtml(pacingRowTip(r)) + "</title>";
+      var g = ['<g>' + tip];
+
+      // words bar
+      var wh = Math.max(2, (r.words || 0) / maxWords * lanes[0].h);
+      g.push('<rect x="' + (x + 4) + '" y="' + (lanes[0].y + lanes[0].h - wh) + '" width="' + barW + '" height="' + wh + '" rx="2.5" fill="var(--subtle)" opacity="0.75"/>');
+
+      // in-scene fraction bar (tinted by whether it clears the target)
+      var frac = r.in_scene_fraction || 0;
+      var sh = Math.max(2, frac * lanes[1].h);
+      g.push('<rect x="' + (x + 4) + '" y="' + (lanes[1].y + lanes[1].h - sh) + '" width="' + barW + '" height="' + sh + '" rx="2.5" fill="var(--' + (frac >= target ? "ok" : "warn") + ')" opacity="0.8"/>');
+
+      // stacked mode mix: dialogue / interiority / action
+      var mixY = lanes[2].y, mh = lanes[2].h;
+      var segs = [
+        [r.dialogue_ratio || 0, "--accent"],
+        [r.interiority_ratio || 0, "--warn"],
+        [r.action_ratio || 0, "--ok"],
+      ];
+      var acc = 0;
+      segs.forEach(function (sg) {
+        var h = sg[0] * mh;
+        if (h > 0.5) g.push('<rect x="' + (x + 4) + '" y="' + (mixY + acc) + '" width="' + barW + '" height="' + h + '" fill="var(' + sg[1] + ')" opacity="0.7"/>');
+        acc += h;
+      });
+
+      // pov lane
+      g.push('<rect x="' + (x + 4) + '" y="' + lanes[3].y + '" width="' + barW + '" height="' + lanes[3].h + '" rx="3" fill="' + povColor(r.pov || "unknown", povOrder) + '" opacity="0.55"/>');
+
+      // tension glyph
+      var t = r.tension || "skipped";
+      g.push('<text x="' + (x + colW / 2) + '" y="' + (lanes[4].y + 16) + '" text-anchor="middle" font-size="13" fill="var(' + (TENSION_COLORS[t] || "--faint") + ')">' + (TENSION_GLYPHS[t] || "?") + "</text>");
+
+      // changes-hands dots (hollow when empty and judged)
+      var cy = lanes[5].y + lanes[5].h / 2;
+      if (r.changes_hands === null || r.changes_hands === undefined) {
+        g.push('<text x="' + (x + colW / 2) + '" y="' + (cy + 3) + '" text-anchor="middle" font-size="10" fill="var(--faint)">·</text>');
+      } else if (!r.changes_hands.length) {
+        g.push('<circle cx="' + (x + colW / 2) + '" cy="' + cy + '" r="4" fill="none" stroke="var(--err)" stroke-width="1.4"/>');
+      } else {
+        var dots = Math.min(r.changes_hands.length, 4);
+        for (var d = 0; d < dots; d++) {
+          g.push('<circle cx="' + (x + colW / 2 + (d - (dots - 1) / 2) * 9) + '" cy="' + cy + '" r="3" fill="var(--ok)"/>');
+        }
+      }
+
+      // chapter number
+      g.push('<text x="' + (x + colW / 2) + '" y="' + (height - 6) + '" text-anchor="middle" font-size="10" fill="var(--faint)" style="font-family:var(--mono)">' + String(r.chapter).padStart(2, "0") + "</text>");
+      g.push("</g>");
+      parts.push(g.join(""));
+    });
+
+    return '<div style="overflow-x:auto"><svg width="' + width + '" height="' + height +
+      '" viewBox="0 0 ' + width + " " + height + '" xmlns="http://www.w3.org/2000/svg">' + parts.join("") + "</svg></div>";
+  }
+
+  async function loadPacing() {
+    var report = await guarded(function () { return api("/api/pacing"); });
+    var pane = document.getElementById("pacing-detail");
+    if (!report) return;
+    var hasData = report && Array.isArray(report.series) && report.series.length > 0;
+    setNavCount("pacing", hasData ? report.series.length : "");
+    if (!hasData) {
+      pane.innerHTML = emptyState(
+        ICONS.pacing,
+        "No pacing report yet",
+        "Generate one from the CLI: <code>stoner pacing report</code> (add <code>--no-llm</code> for the free, offline instruments)."
+      );
+      return;
+    }
+
+    var findings = (report.findings || []).slice().sort(function (a, b) {
+      var order = { critical: 0, major: 1, minor: 2, info: 3 };
+      return (order[a.severity] || 4) - (order[b.severity] || 4);
+    });
+    var findingRows = findings
+      .map(function (f) {
+        return (
+          '<div class="list-row"><div class="list-main">' +
+          '<div class="list-title"><span class="chip sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + "</span>" +
+          "<span>" + escapeHtml(f.category || f.source || "") + "</span></div>" +
+          (f.quote ? '<div class="list-meta quote">“' + escapeHtml(f.quote) + "”</div>" : "") +
+          '<div class="list-meta">' + escapeHtml(f.issue || "") + (f.suggestion ? " · " + escapeHtml(f.suggestion) : "") + "</div>" +
+          "</div></div>"
+        );
+      })
+      .join("");
+
+    pane.innerHTML =
+      '<div class="screen-inner wide">' +
+      '<div class="screen-head">' + ICONS.pacing + '<h1 class="screen-title">Pacing</h1>' +
+      '<span class="chip tone-' + (report.llm ? "accent" : "faint") + '">' + (report.llm ? "llm judge on" : "deterministic only") + "</span>" +
+      "</div>" +
+      '<div class="screen-sub">' + report.series.length + " chapters" +
+      (report.flatlines && report.flatlines.length ? " · " + report.flatlines.length + " flatline run" + (report.flatlines.length === 1 ? "" : "s") : "") +
+      (report.created_at ? " · " + fmtTime(report.created_at) : "") + "</div>" +
+      '<div class="sec"><div class="sec-label">Timeline</div>' + renderPacingTimeline(report) + "</div>" +
+      '<div class="sec"><div class="sec-label">Findings<span class="count">(' + findings.length + ")</span></div>" +
+      (findingRows ? '<div class="list">' + findingRows + "</div>" : '<p style="color:var(--faint);font-size:var(--t-12)">No findings.</p>') +
       "</div></div>";
   }
 

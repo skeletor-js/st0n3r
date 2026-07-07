@@ -105,7 +105,12 @@ def _save_review(project: WritingProject, file: str, data: dict[str, Any]) -> No
 
 
 def _review_kind(data: dict[str, Any]) -> str:
-    """Report `kind` discriminator; legacy reports without one are sniffed."""
+    """Label a saved report for the reviews listing.
+
+    Reports that carry an explicit `kind` field (the repo-wide report
+    discriminator; e.g. pacing reports set `kind: "pacing"`) win outright;
+    legacy shape-sniffing covers the older slop/review payloads.
+    """
     kind = data.get("kind")
     if isinstance(kind, str) and kind:
         return kind
@@ -319,6 +324,28 @@ def create_app(project: WritingProject) -> FastAPI:
         if not isinstance(data, dict):
             return {}
         return data
+
+    # -- pacing (latest saved pacing report) -----------------------------------
+
+    @app.get("/api/pacing")
+    def api_pacing() -> dict[str, Any]:
+        """Newest `pacing-*.json` from `.stoner/reviews/`, or `{}` if none.
+
+        Deliberately defensive like `/api/book`: a missing directory, no
+        pacing reports, malformed JSON, or a non-object payload all resolve
+        to `{}` so the Pacing panel always has something safe to render.
+        """
+        base = _reviews_dir(project)
+        if not base.exists():
+            return {}
+        for f in sorted(base.glob("pacing-*.json"), reverse=True):
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+                continue
+            if isinstance(data, dict):
+                return data
+        return {}
 
     return app
 
