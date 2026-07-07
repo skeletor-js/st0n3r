@@ -24,8 +24,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..canon.store import CanonStore
 from ..canon.memory import Memory
+from ..canon.store import CanonStore
 from ..project import ProjectError, WritingProject
 from ..types import Finding, Severity, Span
 
@@ -159,13 +159,29 @@ def _findings_from_list(items: Any, source: str) -> list[Finding]:
 # Prompt building helpers
 # ---------------------------------------------------------------------------
 
+def _shape(example: dict[str, Any]) -> str:
+    """Render an example response shape as compact JSON for a prompt."""
+    return json.dumps(example)
+
+
 _JSON_INSTRUCTIONS = (
     "Respond with STRICT JSON only (a single ```json fenced block or raw "
     "JSON, no other prose) matching exactly this shape:\n\n"
-    '{"findings": [{"severity": "info|minor|major|critical", "category": '
-    '"<short bucket>", "quote": "<verbatim short quote from the chapter, or '
-    '\'\' if none applies>", "issue": "<what is wrong>", "suggestion": '
-    '"<how to fix it>"}], "summary": "<one-paragraph overview>"}\n\n'
+    + _shape(
+        {
+            "findings": [
+                {
+                    "severity": "info|minor|major|critical",
+                    "category": "<short bucket>",
+                    "quote": "<verbatim short quote from the chapter, or empty string if none applies>",
+                    "issue": "<what is wrong>",
+                    "suggestion": "<how to fix it>",
+                }
+            ],
+            "summary": "<one-paragraph overview>",
+        }
+    )
+    + "\n\n"
     "Quotes must be copied verbatim from the chapter text so they can be "
     f"located programmatically. List at most {_MAX_FINDINGS_PER_PASS} "
     "findings, most important first. If there is nothing to flag, return an "
@@ -308,12 +324,21 @@ _CUT_CATEGORIES = {"OVER-EXPLAIN", "REDUNDANT", "THROAT-CLEARING", "WEAK-BEAT", 
 
 _JSON_INSTRUCTIONS_ADVERSARIAL = (
     "Respond with STRICT JSON only matching exactly this shape:\n\n"
-    '{"findings": [{"severity": "minor|major", "category": '
-    '"OVER-EXPLAIN|REDUNDANT|THROAT-CLEARING|WEAK-BEAT|OTHER", "quote": '
-    '"<verbatim text you would cut>", "issue": "<why this can go>", '
-    '"suggestion": "<the cut instruction -- what to remove or how to tighten "
-    'it>"}], "summary": "<total words you would cut and the overall '
-    'rationale>"}\n\n'
+    + _shape(
+        {
+            "findings": [
+                {
+                    "severity": "minor|major",
+                    "category": "OVER-EXPLAIN|REDUNDANT|THROAT-CLEARING|WEAK-BEAT|OTHER",
+                    "quote": "<verbatim text you would cut>",
+                    "issue": "<why this can go>",
+                    "suggestion": "<the cut instruction -- what to remove or how to tighten it>",
+                }
+            ],
+            "summary": "<total words you would cut and the overall rationale>",
+        }
+    )
+    + "\n\n"
     f"List at most {_MAX_FINDINGS_PER_PASS} cuts, largest/most confident "
     "first. Quotes must be copied verbatim so they can be located."
 )
@@ -367,13 +392,28 @@ _PANEL_SYSTEM = (
 
 _JSON_INSTRUCTIONS_PANEL = (
     "Respond with STRICT JSON only matching exactly this shape:\n\n"
-    '{"personas": {"acquisitions_editor": "<notes>", "genre_reader": '
-    '"<notes>", "rival_novelist": "<notes>", "first_time_reader": '
-    '"<notes>"}, "consensus": [{"issue": "<the shared concern>", "quote": '
-    '"<verbatim supporting quote, or \'\'>", "suggestion": "<fix>", '
-    '"votes": <number of the 4 personas who independently raised it, '
-    "1-4>}], \"summary\": \"<overall panel verdict>\"}\n\n"
-    f"List at most {_MAX_FINDINGS_PER_PASS} consensus items."
+    + _shape(
+        {
+            "personas": {
+                "acquisitions_editor": "<notes>",
+                "genre_reader": "<notes>",
+                "rival_novelist": "<notes>",
+                "first_time_reader": "<notes>",
+            },
+            "consensus": [
+                {
+                    "issue": "<the shared concern>",
+                    "quote": "<verbatim supporting quote, or empty string>",
+                    "suggestion": "<fix>",
+                    "votes": "<number, 1-4, of personas who independently raised it>",
+                }
+            ],
+            "summary": "<overall panel verdict>",
+        }
+    )
+    + "\n\n"
+    f"`votes` must be an integer 1-4, not a string. List at most "
+    f"{_MAX_FINDINGS_PER_PASS} consensus items."
 )
 
 
@@ -427,9 +467,20 @@ _GRADE_SEVERITY: dict[str, Severity] = {"WEAK": Severity.minor, "CUT": Severity.
 
 _JSON_INSTRUCTIONS_GRADE = (
     "Respond with STRICT JSON only matching exactly this shape:\n\n"
-    '{"grades": [{"paragraph": <1-based index>, "quote": "<first few words '
-    'of the paragraph, verbatim>", "label": "STRONG|FINE|WEAK|CUT", '
-    '"reason": "<one line>"}], "summary": "<overall verdict>"}\n\n'
+    + _shape(
+        {
+            "grades": [
+                {
+                    "paragraph": "<1-based index>",
+                    "quote": "<first few words of the paragraph, verbatim>",
+                    "label": "STRONG|FINE|WEAK|CUT",
+                    "reason": "<one line>",
+                }
+            ],
+            "summary": "<overall verdict>",
+        }
+    )
+    + "\n\n"
     "Grade every paragraph in order. Use only the four labels above -- "
     "never a numeric score."
 )
