@@ -1,0 +1,65 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "st0n3r"
+version = "0.2.0"
+description = "An AI harness purpose-built for long-form writing: opinionated canon, slop detection, critic passes, and provider-agnostic agent pipelines."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "skeletor-js" }]
+keywords = ["writing", "fiction", "llm", "agent", "editing", "slop"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Other Audience",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Text Processing :: Linguistic",
+]
+dependencies = [
+    "pydantic>=2.5",
+    "typer>=0.12",
+    "rich>=13.0",
+    "pyyaml>=6.0",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.40"]
+openai = ["openai>=1.50"]
+ui = ["fastapi>=0.110", "uvicorn>=0.29"]
+all = ["st0n3r[anthropic,openai,ui]"]
+dev = ["st0n3r[all]", "pytest>=8.0", "pytest-cov", "ruff>=0.5", "mypy>=1.10"]
+
+[project.scripts]
+stoner = "stoner.cli.main:app_main"
+st0n3r = "stoner.cli.main:app_main"
+
+[project.urls]
+Repository = "https://github.com/skeletor-js/st0n3r"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/stoner"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# typer's Option/Argument-in-default is the documented idiom
+"src/stoner/cli/*" = ["B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true

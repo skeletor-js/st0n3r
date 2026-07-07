@@ -1,0 +1,147 @@
+{
+  "created_at": 1783445610.6564941,
+  "model": "claude/claude-sonnet-5",
+  "verdict": "needs-work",
+  "overall": "The manuscript has a genuinely strong architecture — the numbers (feet, dollars, square footage) function as a real narrative device, chapter 2's overheard county conversation pays off precisely in chapter 14's ruling, and Ruth's voice is controlled and consistent — but the prose leans hard on a small set of recurring devices (balanced antithesis, filter-word realizations, near-identical chapter-ending shapes, and at least one directly repeated simile) that flatten the second half into a uniform rhythm an editor would want thinned. More consequentially, because the book trains readers to trust its precise numbers and explicit setups, a couple of those numbers don't reconcile (the full-sun canopy figure reappearing as a live worry after it's resolved; the unexplained gap between the compliant acreage the math implies and the 8,000 sq ft the county actually grants), and two explicitly planted threads — the promised call to Corinne Yee and Denny's unrefuted argument — are never brought back for closure. None of this breaks the book, but a careful pass addressing the repeated imagery, the antithesis tic, and the two loose threads would meaningfully tighten it.",
+  "chapters_full": [
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "chapters_summarized": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "usage": {
+    "input_tokens": 2,
+    "output_tokens": 26193
+  },
+  "findings": [
+    {
+      "id": "f_f4ab36f4ec",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-12:repeated-imagery",
+      "span": {
+        "start": 5592,
+        "end": 5897,
+        "line": 19
+      },
+      "quote": "It had lived in her hands the way a phone number lived in a hand that had dialed it ten thousand times, and it had never occurred to her, not once, not even the July afternoon she'd finally shown Wyatt the cut, that the knowledge itself was a thing that could be owned by someone standing outside the row.",
+      "issue": "This simile is a near-verbatim repeat of chapter 11's \"It lived in her the way a phone number lives in a hand that has dialed it ten thousand times,\" reused one chapter later for the same idea (embodied knowledge the rain/lawyers can't take). The repetition reads as the author reaching for the same image twice rather than the character's mind returning to it, and it dulls the line's force in both places.",
+      "suggestion": "Cut the phone-number simile from one of the two chapters. In ch12, replace it with an image native to the office scene (the fluorescent light, the conference table, the man's unfamiliar hands on the laptop) so the callback to the storm stays implicit rather than restated.",
+      "status": "open"
+    },
+    {
+      "id": "f_cc035ac33b",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-11:continuity",
+      "span": {
+        "start": 5271,
+        "end": 5598,
+        "line": 15
+      },
+      "quote": "she thought instead of the number on Corinne Yee's report, seventeen thousand four hundred square feet of unpermittable full-sun canopy, and the number on Deb Ostrander's estimate, a hundred and seventy-one thousand dollars for a dam remediation she could not afford, and neither number was any use to her out here in the dark.",
+      "issue": "By the time of this storm (after chapter 10's early-August visit, itself after chapter 9), Ruth has already removed the unpermittable full-sun canopy per chapter 9, and the hearing in ch14 confirms it was \"removed and verified.\" Treating the 17,400 sq ft figure as a still-live burden paired with the still-unresolved dam cost contradicts the book's own timeline and undercuts the precision the numbers are meant to carry throughout.",
+      "suggestion": "Swap in a number that is actually still open at this point — the shed's 38-vs-50-foot setback works, since it remains unresolved through the hearing — or explicitly frame the full-sun figure as a cost already paid rather than a present threat.",
+      "status": "open"
+    },
+    {
+      "id": "f_b1088edaa0",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-14:continuity/numbers",
+      "span": {
+        "start": 6633,
+        "end": 6804,
+        "line": 21
+      },
+      "quote": "limited to the portion of the parcel already verified compliant: roughly eight thousand square feet, out of what her original application had listed as thirty-six thousand",
+      "issue": "The book trains readers to track its numbers closely, but this one doesn't reconcile: 36,000 sq ft original canopy minus the 17,400 sq ft of full-sun canopy already removed (ch9) should leave roughly 18,600 sq ft of presumably compliant area, not 8,000. Nothing in the hearing accounts for where the other ~10,600 square feet went.",
+      "suggestion": "Give Aames or Pelletier one line tying the smaller number to a specific cause — e.g., canopy irrigated from the noncompliant dam is excluded from the license until the diversion is fixed — so the figure survives the scrutiny the book invites by being precise everywhere else.",
+      "status": "open"
+    },
+    {
+      "id": "f_40ed57c1f3",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-14:prose-tic",
+      "span": {
+        "start": 3311,
+        "end": 3493,
+        "line": 9
+      },
+      "quote": "Not a grower who'd been there since before the county cared. A grower with no history at all, as far as the county was concerned, because the county had never been permitted to look.",
+      "issue": "The manuscript defaults to \"not X, but Y\" / \"X, not Y\" antithesis to land nearly every insight — it recurs at least once per chapter across chapters 10 through 15 (e.g. ch11 \"not to dry them ... but to keep the air moving\"; ch12 \"not a protocol\"; ch13 \"not decided, the deciding had apparently already happened\"; ch15 \"not out of secrecy exactly, but because\"). At this density the construction stops doing rhetorical work and reads as the prose announcing its own cleverness rather than the character's mind turning.",
+      "suggestion": "On a revision pass, cut at least half of these constructions and state the plain fact instead. Reserve the \"not X but Y\" turn for the two or three moments where the antithesis is actually the point — the consulting-clause refusal in ch12 is a good candidate to keep — so it still lands there.",
+      "status": "open"
+    },
+    {
+      "id": "f_fec1f6591e",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-11:telling/uniform-structure",
+      "span": {
+        "start": 7407,
+        "end": 7678,
+        "line": 19
+      },
+      "quote": "she went to bed at five with the sky graying outside the window and slept four hours without dreaming, the way she had slept after every hard night in forty years of hard nights, because the body, once it had done the work, no longer needed the mind's permission to rest.",
+      "issue": "Nearly every chapter in the back half closes on the same shape: physical action gives way to a stated, aphoristic realization (introduced with \"she understood,\" \"she thought,\" \"she recognized\") that explains the scene's meaning instead of trusting the concrete action to carry it. Chapters 10, 11, 12, 13, 14, and 15 all end this way, making structurally different chapters feel interchangeable.",
+      "suggestion": "Pick two or three chapter endings and delete the final explanatory sentence, closing instead on the concrete image (the split cola, the jar on the shelf) and letting the reader supply the meaning. Vary the others in shape — end one on dialogue, one mid-action, one on a plain fact with no reflection — so the rhythm doesn't telegraph 'insight coming' at the same fixed point every time.",
+      "status": "open"
+    },
+    {
+      "id": "f_7a1edcd928",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-13:unresolved-thread",
+      "span": {
+        "start": 4775,
+        "end": 4844,
+        "line": 13
+      },
+      "quote": "she would have to call Corinne Yee before the week was out and say so",
+      "issue": "This is an explicit promise to the reader that Ruth will contact Corinne and formally decline the sale, and it is never shown or confirmed anywhere in chapters 14 or 15. The book's climactic internal decision (not to sign) is made, but its external consequence — the actual conversation with Canopy — simply evaporates, along with the original 'valid through month's end' deadline on the offer from chapter 6, which is also never mentioned again.",
+      "suggestion": "Add one line in ch14 or ch15 confirming the call happened (or was deliberately avoided) — Ruth dialing from the truck, a message left, Corinne's reaction at some later point. Given how carefully the book otherwise tracks every deadline and figure, leaving this one loose reads as an oversight, not an intentional ambiguity.",
+      "status": "open"
+    },
+    {
+      "id": "f_098fef47f1",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-08:unresolved-thread",
+      "span": null,
+      "quote": "",
+      "issue": "Denny Calloway's 'prohibition wearing a tie' argument is given real philosophical weight — Ruth 'returns home unable to refute his logic' and the chapter leaves open whether his sale reflects wisdom or resignation. When Ruth chooses the opposite path in chapter 13, the argument is never brought back into the light for her to refute, accept, or consciously live with unanswered. A challenge the book raised deliberately is simply dropped rather than paid off.",
+      "suggestion": "Give Ruth one explicit beat in ch13 or ch14 where Denny's logic resurfaces against the backdrop of her decision — even a sentence acknowledging she still can't refute him and is staying anyway for reasons that have nothing to do with winning the argument. That converts a dangling thread into an earned, deliberate ambiguity.",
+      "status": "open"
+    },
+    {
+      "id": "f_f2edfc0852",
+      "source": "review:book",
+      "severity": "minor",
+      "category": "ch-11:copyedit",
+      "span": {
+        "start": 5029,
+        "end": 5099,
+        "line": 15
+      },
+      "quote": "running a extension line to a second set of fans when the wind shifted",
+      "issue": "Grammatical slip: \"a extension\" should be \"an extension.\" Notably, the same chapter correctly uses \"running extension cord\" a paragraph earlier, so this is an inconsistent slip rather than a stylistic choice.",
+      "suggestion": "Fix to \"running an extension line.\"",
+      "status": "open"
+    }
+  ]
+}

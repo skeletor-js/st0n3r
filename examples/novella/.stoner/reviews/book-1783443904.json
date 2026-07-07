@@ -1,0 +1,132 @@
+{
+  "created_at": 1783443904.4516132,
+  "model": "claude/claude-sonnet-5",
+  "verdict": "needs-work",
+  "overall": "This is a disciplined, thematically coherent literary novella with real strengths — the physical specificity of the farm work, the slow-built Wyatt mentorship, the Chapter 11 storm sequence, and the Chapter 12 refusal of the IP clause are all genuinely earned. Its problems are craft-level rather than conceptual: two clean, checkable continuity errors (a dam-building collaborator given two different names, and a setback measurement that migrates from the shed to the dam between chapters), a timeline slip around the Deb Ostrander water consultation, an over-reliance on one closing rhetorical device that makes every chapter's ending feel interchangeable, and a cast of secondary characters who all speak in Ruth's own aphoristic register rather than their own. None of these sink individual scenes, but together they read as a manuscript that needs a continuity pass and a pass for vocal/rhythmic variety before it's ready, and the central sell-or-hold question the book raises so insistently is left without any gesture toward resolution.",
+  "chapters_full": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "chapters_summarized": [],
+  "usage": {
+    "input_tokens": 2,
+    "output_tokens": 33354
+  },
+  "findings": [
+    {
+      "id": "f_a889f743b5",
+      "source": "review:book",
+      "severity": "critical",
+      "category": "ch-04:continuity error",
+      "span": {
+        "start": 5953,
+        "end": 6325,
+        "line": 45
+      },
+      "quote": "Ruth had built that dam by hand in 1987 with a man named Pete Alvarez who was dead now eleven years, had sited it exactly where the creek narrowed enough to hold a head of water and exactly far enough upstream from the trail that nobody walking the ridge would hear it running, and had never once, in thirty-nine years, needed a tape to tell her it was in the right place.",
+      "issue": "In Chapter 9, the same 1987 dam-build is described with a different collaborator: 'the structure she and a man named Carl Jespersen had built with two come-alongs and a Saturday's worth of concrete in 1987.' Pete Alvarez and Carl Jespersen cannot both be the person who helped Ruth pour that dam the same year; this is a straightforward name-continuity break on a load-bearing biographical fact.",
+      "suggestion": "Pick one name for the man who helped build the dam and use it in both chapters. Do a proper-noun pass tracking every named minor character against the scene/date they're tied to (Alta Furse, Pete Alvarez/Carl Jespersen, Ostrander) to catch this class of slip.",
+      "status": "open"
+    },
+    {
+      "id": "f_d13d96a705",
+      "source": "review:book",
+      "severity": "critical",
+      "category": "ch-01:continuity / plot logic",
+      "span": {
+        "start": 8702,
+        "end": 8930,
+        "line": 45
+      },
+      "quote": "One hundred feet from the top of bank of any Class I or Class II watercourse. The generator shed again — seventy-four feet from the tributary, by her own rough count, and she had never once had reason to count it before tonight.",
+      "issue": "Here Ruth attributes both the parcel-line violation (38 ft) and the watercourse violation (74 ft) to the generator shed. But Chapter 4's site visit and closing summary email reassign the 74-foot top-of-bank measurement to a completely different structure — 'the intake dam' / 'Intake structure, 74 ft from top of bank' — leaving the shed with only the boundary-line problem, which is the version the rest of the book (Ch. 9's 12-foot fix) is built on. The book's whole ethos is about numbers being exact and trustworthy, so having the same figure (74 ft) silently migrate from one structure to another is a real rupture, not a stylistic ambiguity.",
+      "suggestion": "Decide whether the shed genuinely has two separate setback violations (in which case Ch. 9 needs to address the watercourse one too, and Ch. 4's report needs a shed watercourse line) or whether the water violation always belonged to the dam alone (in which case cut the shed's second citation here in Ch. 1 and replace it with a line about the dam).",
+      "status": "open"
+    },
+    {
+      "id": "f_8d40bbc7e7",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-09:continuity / timeline",
+      "span": {
+        "start": 4087,
+        "end": 4322,
+        "line": 15
+      },
+      "quote": "Deb had told her back in May what a Class II remediation would likely run — an engineered intake structure with a fish screen and a documented bypass, plans stamped and submitted, a construction season if the permit came through at all",
+      "issue": "This implies Ruth already had a substantive conversation with Deb Ostrander in May. But the only depicted call with Deb, in Chapter 5, is written as a first contact ('She called the number the county had given her for a water rights consultant... a woman named Deb Ostrander who did this work for half the ridge') and is explicitly dated to late July ('the sound of it barely reaching the house this late in July'). May predates even Chapter 1's packet-opening scene in the story's apparent chronology.",
+      "suggestion": "Either change 'back in May' to match the actual (later) date of the Chapter 5 call, or, if an earlier May conversation is intended, plant it on the page instead of introducing Deb as new-to-Ruth in Chapter 5.",
+      "status": "open"
+    },
+    {
+      "id": "f_26812bd2cd",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-08:uniform voice",
+      "span": {
+        "start": 5480,
+        "end": 5540,
+        "line": 37
+      },
+      "quote": "Same amount of gone, Ruth. Just took its time getting there.",
+      "issue": "Denny (68, ex-outlaw rancher), Wyatt (23, hired hand, Ch. 3: 'So it's not really about the cola splitting even. It's about what happens six weeks after that, that you're setting up now.'), and Hollis (Ch. 5: 'Money buys you the staff, and the staff is what the county wants to see') all speak in the identical register as Ruth's own narration: short declaratives, dry aphorism, balanced antithesis. A 23-year-old field hand three weeks into the job and a 68-year-old cattleman should not construct sentences with the same rhetorical polish and rhythm as the novel's most experienced, most reflective character.",
+      "suggestion": "Give each speaker a distinct verbal fingerprint — sentence length, filler, syntax, what they leave unfinished — independent of what wisdom they're dispensing. Wyatt in particular could speak more plainly/less aphoristically than Ruth or Denny; right now his dialogue reads as Ruth's interiority in someone else's mouth.",
+      "status": "open"
+    },
+    {
+      "id": "f_538ad4bb8f",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-07:repetitive structure",
+      "span": {
+        "start": 6718,
+        "end": 6878,
+        "line": 35
+      },
+      "quote": "She only taught it now the way you'd teach a renter to fix a leak before he moved out, thoroughly, correctly, and without illusion about who would own the roof.",
+      "issue": "Nearly every chapter closes on the identical device: a reflective, epigrammatic generalization appended via a 'the way,' 'because,' or 'which' clause that converts the scene's concrete action into abstract wisdom (compare Ch. 1's frost-warning simile, Ch. 5's 'only one of them was actually about the water,' Ch. 9's 'until she said yes to something else instead,' Ch. 11's 'no longer needed the mind's permission to rest,' Ch. 12's 'entirely hers to feel and no one else's to keep'). The pattern is precise enough to be predictable — a reader can feel the aphorism coming a paragraph out — and it flattens tension even in a genuinely propulsive scene like the Chapter 11 storm, which ends on the same reflective cadence as the quiet domestic chapters.",
+      "suggestion": "Let some chapters end cold — on unresolved action, plain dialogue, or a physical image with no interpretive gloss attached. Reserve the aphoristic landing for moments that have specifically earned it (Ch. 12's ending works because the whole scene argues toward that line), rather than deploying it as the default exit for every chapter.",
+      "status": "open"
+    },
+    {
+      "id": "f_2ce684a8aa",
+      "source": "review:book",
+      "severity": "minor",
+      "category": "ch-04:repetitive phrasing",
+      "span": {
+        "start": 1950,
+        "end": 2067,
+        "line": 17
+      },
+      "quote": "came up the spur road on foot from where she'd parked rather than driving it, which Ruth noted and did not comment on",
+      "issue": "The construction 'X, which Ruth noted and did not [comment on / mention / say]' recurs throughout the book as shorthand for suppressed reaction (Ch. 1: 'which she had noted about him the first week and filed away'; Ch. 3: 'which she had noticed he always did and had not yet decided what to make of'; Ch. 10: 'driving her own car up from the Bay Area... which Ruth noted and did not mention'). Repeated often enough, it starts to read as a tic rather than an observed character trait, and it tells the reader what Ruth is withholding instead of dramatizing the withholding.",
+      "suggestion": "Vary how suppressed reaction gets shown — a beat of physical business, a change in Ruth's next action, a held silence in dialogue — rather than repeatedly narrating that she noticed something and chose not to say it.",
+      "status": "open"
+    },
+    {
+      "id": "f_210a485f31",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-12:unresolved arc",
+      "span": {
+        "start": 7970,
+        "end": 8095,
+        "line": 29
+      },
+      "quote": "She put the folder back on the kitchen table when she got home, the price still open, the deadline still the end of the month",
+      "issue": "The book's central dramatic engine since Chapter 1 is a binary, deadline-bound question — sell the parcel to Canopy or hold it — reinforced repeatedly (the offer 'held... through the end of the month,' the $6.77/hour arithmetic, Denny's parallel sale, Iris's refusal of the inheritance). The manuscript ends with that question still fully open and no scene gesturing toward how or when it will be answered; the only resolved thread is the smaller IP-ownership refusal. If this is the complete manuscript rather than a mid-book break, the reader is left without payoff on the promise the book has spent the most pages building.",
+      "suggestion": "Either add a closing beat that shows Ruth moving toward (not necessarily completing) her decision, so the ending reads as poised rather than stalled, or restructure earlier chapters to lower the reader's expectation of a sale/no-sale resolution and foreground the IP refusal as the story's true climax from the start.",
+      "status": "open"
+    }
+  ]
+}

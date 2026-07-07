@@ -1,0 +1,1090 @@
+<title>st0n3r</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  /* ─────────────────────────────────────────────────────────────────────
+     design tokens adapted from Hearth (skeletor-js/Hearth)
+     src/styles/hearth.css -- token block + a trimmed subset of component
+     classes, ported from an Electron chat shell to a plain single-file
+     web dashboard. Divergences from the source are called out inline.
+     ───────────────────────────────────────────────────────────────────── */
+  :root {
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+            "Helvetica Neue", "Helvetica", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+
+    --t-11: 11px; --t-11_5: 11.5px; --t-12: 12px; --t-13: 13px; --t-14: 14px;
+    --t-16: 16px; --t-18: 18px; --t-22: 22px; --t-28: 28px;
+
+    --rail-w: 244px;
+    --topbar-h: 46px;
+    --row-h: 30px;
+
+    --r-xs:   5px;
+    --r-sm:   7px;
+    --r-md:   8px;
+    --r-pop:  11px;
+    --r-card: 14px;
+    --r-pill: 999px;
+
+    --accent:      #C8542B;
+    --accent-soft: rgba(200,84,43,0.10);
+    --accent-fg:   #FFFFFF;
+
+    --ok:   #4E9A6B;
+    --warn: #C0892F;
+    --err:  #C0564A;
+  }
+
+  /* Light theme (warm paper) */
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg:          #FCFBFA;
+    --bg-window:   #ECEAE4;
+    --bg-rail:     #FAF8F5;
+    --bg-panel:    #FFFFFF;
+    --bg-inset:    #F7F5F1;
+    --strong:      #2A2724;
+    --default:     #5E5953;
+    --subtle:      #726C62;
+    --faint:       #8C8579;
+    --accent-text: #B0461F;
+    --border:      #ECE7DF;
+    --border-strong:#E0DBD1;
+    --hover:       rgba(40,32,20,0.055);
+    --selected:    #F3F0EA;
+    --shadow-sm:   0 1px 2px rgba(30,25,18,0.05);
+    --shadow-md:   0 4px 16px rgba(30,25,18,0.08);
+    --shadow-lg:   0 12px 40px rgba(30,25,18,0.14);
+    --code-bg:     #F7F5F1;
+  }
+
+  /* Dark theme (warm charcoal / ember coals) */
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg:          #181714;
+    --bg-window:   #0E0D0B;
+    --bg-rail:     #141310;
+    --bg-panel:    #201E1A;
+    --bg-inset:    #1C1B17;
+    --strong:      #EFEBE3;
+    --default:     #BAB4A9;
+    --subtle:      #8E8678;
+    --faint:       #7A7264;
+    --accent-text: #DA7048;
+    --border:      rgba(255,250,240,0.075);
+    --border-strong:rgba(255,250,240,0.14);
+    --hover:       rgba(255,248,235,0.06);
+    --selected:    rgba(255,248,235,0.10);
+    --shadow-sm:   0 1px 2px rgba(0,0,0,0.4);
+    --shadow-md:   0 6px 22px rgba(0,0,0,0.5);
+    --shadow-lg:   0 18px 50px rgba(0,0,0,0.6);
+    --code-bg:     #1B1A16;
+    --ok:   #5FAE7C; --warn: #D29B45; --err: #D46A5C;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg-window); color: var(--default);
+    font: 400 var(--t-13)/1.5 var(--font);
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: var(--accent-soft); }
+  button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; }
+  input, textarea { font: inherit; color: inherit; }
+  a { color: inherit; text-decoration: none; }
+  svg { display: block; }
+  .ic { flex-shrink: 0; }
+
+  /* Scrollbars — hidden everywhere, per Hearth (scrolling still works). */
+  * { scrollbar-width: none; }
+  *::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+  /* Keyboard focus ring (outline, not box-shadow -- avoids clipping under
+     overflow:hidden containers, same rationale as the source). */
+  .btn:focus-visible, .btn-icon:focus-visible, .ricon:focus-visible,
+  .rail-item:focus-visible, .row-item:focus-visible, .field:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+
+  /* ─────────────────────────  App frame (floating cards)  ─────────────────
+     Hearth reserves top padding for macOS traffic lights + a drag strip.
+     This is a plain web page (no window chrome to clear), so that strip is
+     dropped and the frame uses a flush 9px pad on all sides instead. */
+  .app {
+    display: flex; gap: 9px; padding: 9px;
+    height: 100vh; width: 100vw; overflow: hidden;
+    background: var(--bg-window);
+  }
+
+  /* ─────────────────────────  Left rail (card)  ───────────────────────── */
+  .rail {
+    width: var(--rail-w); flex-shrink: 0;
+    background: var(--bg-rail); border: 1px solid var(--border); border-radius: var(--r-card);
+    box-shadow: var(--shadow-sm);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .rail-top { padding: 13px 12px 2px; }
+  .rail-brand {
+    display: flex; align-items: center; gap: 8px; color: var(--strong);
+    font-weight: 600; font-size: var(--t-14); letter-spacing: -0.01em;
+  }
+  .rail-brand .flame { color: var(--accent); }
+  .rail-sub {
+    padding: 3px 8px 10px; font-size: var(--t-11_5); color: var(--faint);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .rail-scroll { flex: 1; min-height: 0; overflow: auto; padding: 6px 8px 10px; }
+  .rail-group-label {
+    font-size: var(--t-11); color: var(--faint); font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 5px 9px 6px;
+  }
+  .rail-item {
+    display: flex; align-items: center; gap: 9px; height: var(--row-h); width: 100%;
+    padding: 0 8px 0 9px; border-radius: 6px; color: var(--default); font-size: var(--t-13);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    position: relative; text-align: left; transition: background .12s ease, color .12s ease;
+  }
+  .rail-item:hover { background: var(--hover); }
+  .rail-item .ic { color: var(--subtle); }
+  .rail-item .ri-label { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .rail-item .ri-end { color: var(--faint); font-size: var(--t-12); opacity: 0; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .rail-item:hover .ri-end { opacity: 1; }
+  .rail-item.is-selected { background: var(--selected); color: var(--strong); font-weight: 500; }
+  .rail-item.is-selected .ic { color: var(--accent); }
+  .rail-item.is-selected .ri-end { opacity: 1; }
+  .rail-item.is-selected::before {
+    content: ""; position: absolute; left: -8px; top: 6px; bottom: 6px;
+    width: 2.5px; border-radius: 0 2px 2px 0; background: var(--accent);
+  }
+
+  .rail-foot {
+    border-top: 1px solid var(--border); padding: 8px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .foot-note {
+    flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 8px;
+    color: var(--subtle); font-size: var(--t-12); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .foot-note .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); flex-shrink: 0; }
+  .ricon {
+    width: 30px; height: 30px; border-radius: var(--r-md); flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center; color: var(--default);
+    transition: background .12s ease, color .12s ease;
+  }
+  .ricon:hover { background: var(--hover); color: var(--strong); }
+
+  /* ─────────────────────────  Main (card)  ───────────────────────── */
+  .main {
+    flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0;
+    background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-card);
+    box-shadow: var(--shadow-sm); overflow: hidden;
+  }
+  .topbar {
+    height: var(--topbar-h); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 14px 0 18px; gap: 10px; flex-shrink: 0;
+  }
+  .crumbs { font-size: var(--t-13); color: var(--strong); font-weight: 500; display: flex; align-items: center; gap: 7px; }
+  .topbar .spacer { flex: 1; }
+  .topbar .tb-count { font-size: var(--t-12); color: var(--faint); font-variant-numeric: tabular-nums; }
+
+  .workspace { flex: 1; min-height: 0; position: relative; }
+  .view-pane { position: absolute; inset: 0; display: none; min-height: 0; }
+  .view-pane.is-active { display: flex; }
+
+  /* Two-pane list/detail split (chapter browser, canon, reviews). Hearth has
+     no equivalent -- its workbench is a single content surface -- so this
+     split + the .row-item hover/selected treatment below are new, modeled
+     directly on .rail-item's interaction language (hover tint, selected
+     fill + accent bar) to stay visually consistent with the rail. */
+  .split-list {
+    width: 300px; flex-shrink: 0; overflow: auto; background: var(--bg-rail);
+    border-right: 1px solid var(--border);
+  }
+  .split-detail { flex: 1; min-width: 0; overflow: auto; }
+
+  .row-item {
+    display: block; width: 100%; text-align: left; padding: 10px 15px;
+    border-bottom: 1px solid var(--border); position: relative;
+    transition: background .12s ease;
+  }
+  .row-item:hover { background: var(--hover); }
+  .row-item.is-selected { background: var(--selected); }
+  .row-item.is-selected::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 2.5px; background: var(--accent);
+  }
+  .row-title { font-size: var(--t-13); color: var(--strong); font-weight: 500; }
+  .row-meta {
+    display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+    font-size: var(--t-12); color: var(--subtle); margin-top: 4px;
+  }
+  .row-group-label {
+    font-size: var(--t-11); color: var(--faint); font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 12px 15px 6px;
+  }
+  .row-group-label:first-child { padding-top: 10px; }
+
+  /* ─────────────────────────  Screen (detail scroll surface)  ───────── */
+  .screen-inner { max-width: 780px; margin: 0 auto; padding: 26px 30px 60px; }
+  .screen-inner.wide { max-width: 980px; }
+  .screen-head { display: flex; align-items: center; gap: 11px; margin-bottom: 6px; flex-wrap: wrap; }
+  .screen-head .ic { color: var(--accent); }
+  .screen-title { font: 500 var(--t-22)/1.25 var(--font); color: var(--strong); letter-spacing: -0.02em; margin: 0; }
+  .screen-sub { font-size: var(--t-12); color: var(--subtle); margin: 0 0 22px; line-height: 1.55; }
+  .sec { margin-top: 26px; }
+  .sec:first-of-type { margin-top: 0; }
+  .sec-label {
+    font-size: var(--t-11); color: var(--faint); font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+  }
+  .sec-label .count { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--faint); }
+
+  /* ─────────────────────────  Generic controls  ───────────────────────── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: var(--r-sm);
+    border: 1px solid var(--border-strong); background: var(--bg-panel); color: var(--strong);
+    font-size: var(--t-13); white-space: nowrap; transition: background .12s ease, border-color .12s ease;
+  }
+  .btn:hover { background: var(--hover); }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn-sm { height: 25px; padding: 0 9px; font-size: var(--t-12); border-radius: 6px; }
+  .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .btn-primary:hover { filter: brightness(1.05); background: var(--accent); }
+  .btn-quiet { border-color: transparent; background: transparent; color: var(--default); }
+  .btn-quiet:hover { background: var(--hover); color: var(--strong); }
+
+  .field {
+    height: 32px; border: 1px solid var(--border-strong); background: var(--bg-panel);
+    border-radius: var(--r-md); padding: 0 11px; font-size: var(--t-13); color: var(--strong); outline: none;
+  }
+  .field:focus { border-color: color-mix(in srgb, var(--accent) 55%, var(--border-strong)); }
+
+  /* Chip — base pill; tone/severity/status modifiers below are a bespoke
+     extension (Hearth's chip only ships ok/warn/run dot modifiers) sized to
+     the 4-tier severity + 4-tier finding-status vocabulary this app needs. */
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 8px; border-radius: var(--r-pill);
+    background: var(--bg-inset); font-size: var(--t-11); font-weight: 600; color: var(--default);
+    white-space: nowrap; border: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.02em;
+  }
+  .chip.tone-ok    { background: color-mix(in srgb, var(--ok) 14%, transparent);   color: var(--ok);   border-color: transparent; }
+  .chip.tone-warn  { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); border-color: transparent; }
+  .chip.tone-err   { background: color-mix(in srgb, var(--err) 14%, transparent);  color: var(--err);  border-color: transparent; }
+  .chip.tone-accent{ background: var(--accent-soft); color: var(--accent-text); border-color: transparent; }
+  .chip.tone-faint { background: var(--bg-inset); color: var(--faint); border-color: transparent; }
+  /* severity: critical->err, major->warn, minor->subtle, info->faint */
+  .chip.sev-critical { background: color-mix(in srgb, var(--err) 14%, transparent);  color: var(--err); border-color: transparent; }
+  .chip.sev-major    { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); border-color: transparent; }
+  .chip.sev-minor    { background: color-mix(in srgb, var(--subtle) 16%, transparent); color: var(--subtle); border-color: transparent; }
+  .chip.sev-info     { background: color-mix(in srgb, var(--faint) 16%, transparent); color: var(--faint); border-color: transparent; }
+  /* finding status */
+  .chip.st-open      { color: var(--subtle); }
+  .chip.st-accepted  { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); border-color: transparent; }
+  .chip.st-dismissed { color: var(--faint); text-decoration: line-through; }
+  .chip.st-fixed     { background: var(--accent-soft); color: var(--accent-text); border-color: transparent; }
+  /* chapter status */
+  .chip.status-outline { color: var(--faint); }
+  .chip.status-draft   { background: var(--accent-soft); color: var(--accent-text); border-color: transparent; }
+  .chip.status-revised { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); border-color: transparent; }
+  .chip.status-final   { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); border-color: transparent; }
+
+  /* ─────────────────────────  List / list-row  ─────────────────────────
+     Verbatim Hearth pattern (Settings screens): a bordered card containing
+     top-bordered rows, each with a main k/v block and a trailing slot. */
+  .list { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; background: var(--bg-panel); }
+  .list-row { display: flex; align-items: center; gap: 12px; padding: 11px 13px; border-top: 1px solid var(--border); }
+  .list-row:first-child { border-top: 0; }
+  .list-main { flex: 1; min-width: 0; }
+  .list-title { font-size: var(--t-13); color: var(--strong); font-weight: 500; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .list-title .quote { font-style: italic; color: var(--default); font-weight: 400; }
+  .list-meta { font-size: var(--t-12); color: var(--subtle); margin-top: 3px; line-height: 1.5; }
+  .list-meta + .list-meta { margin-top: 1px; }
+  .list-meta code, .list-title code { font-family: var(--mono); font-size: var(--t-11_5); background: var(--code-bg); padding: 1px 5px; border-radius: var(--r-xs); color: var(--default); }
+  .list-trailing { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+  .list-empty { padding: 16px 14px; font-size: var(--t-12); color: var(--faint); }
+
+  /* ─────────────────────────  about-grid (frontmatter k/v)  ───────── */
+  .about-grid { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; background: var(--bg-panel); margin-bottom: 22px; }
+  .about-row { display: flex; gap: 14px; padding: 9px 13px; border-top: 1px solid var(--border); font-size: var(--t-12); }
+  .about-row:first-child { border-top: 0; }
+  .about-k { color: var(--subtle); width: 150px; flex-shrink: 0; }
+  .about-v { color: var(--strong); word-break: break-word; }
+
+  /* ─────────────────────────  Markdown preview  ─────────────────────── */
+  .md-preview { font-size: var(--t-14); line-height: 1.7; color: var(--strong); }
+  .md-preview h1, .md-preview h2, .md-preview h3 { color: var(--strong); font-weight: 600; margin: 20px 0 8px; line-height: 1.3; }
+  .md-preview h1 { font-size: var(--t-22); } .md-preview h2 { font-size: var(--t-18); } .md-preview h3 { font-size: var(--t-16); }
+  .md-preview > h1:first-child, .md-preview > h2:first-child, .md-preview > h3:first-child { margin-top: 0; }
+  .md-preview p { margin: 0 0 12px; }
+  .md-preview strong { font-weight: 600; }
+
+  mark.finding { border-radius: 3px; padding: 0 1px; cursor: help; color: inherit; }
+  mark.sev-info     { background: color-mix(in srgb, var(--faint) 24%, transparent); }
+  mark.sev-minor    { background: color-mix(in srgb, var(--subtle) 28%, transparent); }
+  mark.sev-major    { background: color-mix(in srgb, var(--warn) 32%, transparent); }
+  mark.sev-critical { background: color-mix(in srgb, var(--err) 32%, transparent); }
+
+  /* ─────────────────────────  Score card (slop result)  ─────────────── */
+  .score-card {
+    display: flex; align-items: center; gap: 26px; margin: 4px 0 24px; padding: 17px 19px;
+    border: 1px solid var(--border); border-radius: var(--r-pop); background: var(--bg-panel); box-shadow: var(--shadow-sm);
+  }
+  .score-number { font: 600 34px/1 var(--font); font-variant-numeric: tabular-nums; }
+  .score-side { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  .subscores { flex: 1; display: grid; grid-template-columns: 96px 1fr 34px; gap: 7px 11px; align-items: center; }
+  .subscore-label { font-size: var(--t-12); color: var(--subtle); text-transform: capitalize; }
+  .subscore-track { height: 7px; border-radius: 4px; background: var(--bg-inset); overflow: hidden; }
+  .subscore-fill { height: 100%; border-radius: 4px; }
+  .subscore-value { font-size: var(--t-12); color: var(--faint); text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ─────────────────────────  Plan checklist (Book panel)  ───────────
+     Verbatim Hearth pattern -- reused for per-chapter drafting progress. */
+  .plan { display: flex; flex-direction: column; }
+  .plan-item { display: flex; align-items: flex-start; gap: 11px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: var(--t-13); }
+  .plan-item:last-child { border-bottom: 0; }
+  .plan-check {
+    width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border-strong); flex-shrink: 0;
+    margin-top: 1px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px;
+  }
+  .plan-check.done { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .plan-check.now { border-color: var(--accent); position: relative; }
+  .plan-check.now::after {
+    content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+  .plan-body { flex: 1; min-width: 0; }
+  .plan-body .pt { color: var(--strong); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .plan-item.is-done .pt { color: var(--subtle); }
+  .plan-body .ps { font-size: var(--t-12); color: var(--subtle); margin-top: 3px; }
+  .plan-now-tag {
+    font-size: 10.5px; color: var(--accent-text); font-weight: 600; margin-left: auto;
+    background: var(--accent-soft); padding: 2px 8px; border-radius: 9px; text-transform: uppercase; letter-spacing: 0.03em;
+  }
+
+  /* ─────────────────────────  Empty state  ────────────────────────────
+     Verbatim Hearth .wb-empty, icon swapped for inline SVG (no icon font). */
+  .wb-empty {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px 40px; text-align: center; color: var(--subtle); gap: 8px;
+  }
+  .wb-empty svg { color: var(--faint); margin-bottom: 4px; }
+  .wb-empty h3 { font: 500 var(--t-16)/1.3 var(--font); color: var(--strong); margin: 4px 0 0; }
+  .wb-empty p { margin: 0; font-size: var(--t-13); max-width: 340px; line-height: 1.55; }
+  .wb-empty code { font-family: var(--mono); font-size: var(--t-12); background: var(--code-bg); padding: 1px 6px; border-radius: var(--r-xs); color: var(--strong); }
+
+  .spinner {
+    width: 12px; height: 12px; border-radius: 50%; border: 1.6px solid var(--border-strong);
+    border-top-color: var(--accent); animation: spin .8s linear infinite; flex-shrink: 0; display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─────────────────────────  Toast (Hearth popover)  ─────────────────── */
+  .toast-stack { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 400; display: flex; flex-direction: column-reverse; gap: 8px; align-items: center; }
+  .toast {
+    background: var(--strong); color: var(--bg); padding: 9px 15px; border-radius: 9px; font-size: var(--t-12);
+    display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow-lg); max-width: 380px;
+  }
+
+  code.mono { font-family: var(--mono); font-size: var(--t-11_5); }
+</style>
+
+<div class="app" id="app">
+  <aside class="rail">
+    <div class="rail-top">
+      <div class="rail-brand">
+        <span class="flame ic" id="icon-flame"></span>
+        st0n3r
+      </div>
+      <div class="rail-sub" id="project-name">&nbsp;</div>
+    </div>
+    <nav class="rail-scroll">
+      <div class="rail-group-label">Project</div>
+      <button class="rail-item is-selected" data-view="manuscript" type="button">
+        <span class="ic" id="icon-manuscript"></span>
+        <span class="ri-label">Manuscript</span>
+        <span class="ri-end" data-count="manuscript"></span>
+      </button>
+      <button class="rail-item" data-view="canon" type="button">
+        <span class="ic" id="icon-canon"></span>
+        <span class="ri-label">Canon</span>
+        <span class="ri-end" data-count="canon"></span>
+      </button>
+      <button class="rail-item" data-view="reviews" type="button">
+        <span class="ic" id="icon-reviews"></span>
+        <span class="ri-label">Reviews</span>
+        <span class="ri-end" data-count="reviews"></span>
+      </button>
+      <button class="rail-item" data-view="book" type="button">
+        <span class="ic" id="icon-book"></span>
+        <span class="ri-label">Book</span>
+        <span class="ri-end" data-count="book"></span>
+      </button>
+      <button class="rail-item" data-view="ledger" type="button">
+        <span class="ic" id="icon-ledger"></span>
+        <span class="ri-label">Ledger</span>
+        <span class="ri-end" data-count="ledger"></span>
+      </button>
+    </nav>
+    <div class="rail-foot">
+      <div class="foot-note"><span class="dot"></span>127.0.0.1 &middot; local only</div>
+      <button class="ricon" id="theme-toggle" type="button" title="Toggle theme" aria-label="Toggle theme"></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="crumbs" id="view-title">Manuscript</div>
+      <div class="spacer"></div>
+      <div class="tb-count" id="view-count"></div>
+    </div>
+
+    <div class="workspace" id="workspace">
+      <!-- Manuscript -->
+      <div class="view-pane is-active" id="view-manuscript">
+        <div class="split-list" id="chapter-list"></div>
+        <div class="split-detail" id="chapter-detail"></div>
+      </div>
+
+      <!-- Canon -->
+      <div class="view-pane" id="view-canon">
+        <div class="split-list" id="canon-list"></div>
+        <div class="split-detail" id="canon-detail"></div>
+      </div>
+
+      <!-- Reviews -->
+      <div class="view-pane" id="view-reviews">
+        <div class="split-list" id="reviews-list"></div>
+        <div class="split-detail" id="reviews-detail"></div>
+      </div>
+
+      <!-- Book -->
+      <div class="view-pane" id="view-book">
+        <div class="split-detail" id="book-detail" style="width: 100%;"></div>
+      </div>
+
+      <!-- Ledger -->
+      <div class="view-pane" id="view-ledger">
+        <div class="split-detail" id="ledger-detail" style="width: 100%;"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-stack" id="toast-stack"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // -- icons (inline SVG, 16px, thin-line -- no icon font available) ------
+
+  function svg(inner, size) {
+    size = size || 15;
+    return '<svg class="ic" width="' + size + '" height="' + size + '" viewBox="0 0 16 16" fill="none" ' +
+      'stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">' + inner + "</svg>";
+  }
+
+  var ICONS = {
+    flame: svg('<path d="M8 1.3c.5 1.8-.4 2.6-1.2 3.5C5.8 5.9 5 7 5 8.6a3 3 0 0 0 6 0c0-.9-.3-1.5-.7-2.1.9.6 1.7 1.7 1.7 3.2a4 4 0 1 1-8 0c0-3.4 2.6-4.2 4-8.4Z"/>', 17),
+    manuscript: svg('<path d="M4 1.5h6l2.5 2.5V14a.5.5 0 0 1-.5.5h-8A.5.5 0 0 1 3.5 14V2a.5.5 0 0 1 .5-.5Z"/><path d="M9.5 1.5V4a.5.5 0 0 0 .5.5h2.5"/><path d="M5.5 8h5M5.5 10.3h5M5.5 5.8h2.5"/>'),
+    canon: svg('<path d="M2.5 2.8c1.6-.6 3.4-.6 5 0v10.4c-1.6-.6-3.4-.6-5 0V2.8Z"/><path d="M13 2.8c-1.6-.6-3.4-.6-5 0v10.4c1.6-.6 3.4-.6 5 0V2.8Z"/>'),
+    reviews: svg('<path d="M8 1.7 13 3.4v3.9c0 3.3-2.1 5.7-5 6.9-2.9-1.2-5-3.6-5-6.9V3.4L8 1.7Z"/><path d="M5.7 8 7.3 9.6l3-3.4"/>'),
+    book: svg('<circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r=".6" fill="currentColor"/>'),
+    ledger: svg('<path d="M3 2.5h10v11H3z"/><path d="M5.3 5.3h5.4M5.3 8h5.4M5.3 10.7h3.4"/>'),
+    sun: svg('<circle cx="8" cy="8" r="2.9"/><path d="M8 1.6v1.5M8 12.9v1.5M2.6 8H1.1M14.9 8h-1.5M4 4l1 1M12 12l1 1M12 4l-1 1M4 12l-1 1"/>', 14),
+    moon: svg('<path d="M13 9.6A5.6 5.6 0 0 1 6.4 3 5.7 5.7 0 1 0 13 9.6Z"/>', 14),
+    empty: svg('<path d="M8 1.3c.5 1.8-.4 2.6-1.2 3.5C5.8 5.9 5 7 5 8.6a3 3 0 0 0 6 0c0-.9-.3-1.5-.7-2.1.9.6 1.7 1.7 1.7 3.2a4 4 0 1 1-8 0c0-3.4 2.6-4.2 4-8.4Z"/>', 30),
+    check: svg('<path d="M3.5 8.2 6.3 11 12.5 4.5"/>', 10),
+  };
+
+  document.getElementById("icon-flame").innerHTML = ICONS.flame;
+  document.getElementById("icon-manuscript").innerHTML = ICONS.manuscript;
+  document.getElementById("icon-canon").innerHTML = ICONS.canon;
+  document.getElementById("icon-reviews").innerHTML = ICONS.reviews;
+  document.getElementById("icon-book").innerHTML = ICONS.book;
+  document.getElementById("icon-ledger").innerHTML = ICONS.ledger;
+
+  // -- theme (system default, toggle persisted in localStorage) -----------
+
+  var THEME_KEY = "stoner-theme";
+
+  function applyTheme(mode) {
+    document.documentElement.setAttribute("data-theme", mode);
+    var btn = document.getElementById("theme-toggle");
+    btn.innerHTML = mode === "dark" ? ICONS.sun : ICONS.moon;
+    btn.title = mode === "dark" ? "Switch to light theme" : "Switch to dark theme";
+  }
+
+  function initTheme() {
+    var stored = null;
+    try { stored = localStorage.getItem(THEME_KEY); } catch (e) { /* ignore */ }
+    var mode = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    applyTheme(mode);
+  }
+
+  document.getElementById("theme-toggle").addEventListener("click", function () {
+    var current = document.documentElement.getAttribute("data-theme");
+    var next = current === "dark" ? "light" : "dark";
+    applyTheme(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) { /* ignore */ }
+  });
+
+  initTheme();
+
+  // -- generic helpers -----------------------------------------------
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function toast(message) {
+    var stack = document.getElementById("toast-stack");
+    var el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = message;
+    stack.appendChild(el);
+    setTimeout(function () { el.remove(); }, 5000);
+  }
+
+  async function api(path, opts) {
+    var res = await fetch(path, opts);
+    if (!res.ok) {
+      var detail = "";
+      try { detail = (await res.json()).detail || ""; } catch (e) { /* ignore */ }
+      throw new Error((detail || res.statusText || "request failed") + " (" + res.status + ")");
+    }
+    if (res.status === 204) return null;
+    return res.json();
+  }
+
+  async function guarded(fn) {
+    try {
+      return await fn();
+    } catch (err) {
+      toast(err.message || String(err));
+      return null;
+    }
+  }
+
+  function fmtTime(ts) {
+    if (!ts) return "—";
+    var d = new Date(ts * 1000);
+    return d.toLocaleString();
+  }
+
+  function emptyState(icon, title, body) {
+    return '<div class="wb-empty">' + icon + "<h3>" + escapeHtml(title) + "</h3><p>" + body + "</p></div>";
+  }
+
+  // -- minimal markdown, with optional char-offset highlighting --------
+
+  // ASCII sentinel tokens (never appear literally in normal prose) mark
+  // finding spans *before* HTML-escaping/markdown transforms run, so they
+  // ride along as plain text through both passes and get swapped for real
+  // <mark> tags at the very end -- this keeps char offsets exact even
+  // though escaping can change string length (e.g. "&" -> "&amp;").
+  var MARK_OPEN = "OPEN", MARK_SEP = "SEP", MARK_CLOSE = "CLOSE";
+
+  function insertMarks(text, findings) {
+    var spans = (findings || [])
+      .filter(function (f) { return f.span; })
+      .map(function (f) {
+        return { start: f.span.start, end: f.span.end, id: f.id, severity: f.severity, issue: f.issue, category: f.category };
+      })
+      .filter(function (s) { return s.start >= 0 && s.end <= text.length && s.start < s.end; })
+      .sort(function (a, b) { return a.start - b.start; });
+
+    var clean = [];
+    var lastEnd = -1;
+    spans.forEach(function (s) {
+      if (s.start >= lastEnd) { clean.push(s); lastEnd = s.end; }
+    });
+
+    var out = "";
+    var pos = 0;
+    clean.forEach(function (s, i) {
+      out += text.slice(pos, s.start);
+      out += MARK_OPEN + i + MARK_SEP + text.slice(s.start, s.end) + MARK_CLOSE;
+      pos = s.end;
+    });
+    out += text.slice(pos);
+    return { marked: out, spans: clean };
+  }
+
+  function renderMarkdown(text, findings) {
+    var inserted = insertMarks(text, findings || []);
+    var escaped = escapeHtml(inserted.marked);
+
+    // headers
+    escaped = escaped.replace(/^### (.*)$/gm, "<h3>$1</h3>");
+    escaped = escaped.replace(/^## (.*)$/gm, "<h2>$1</h2>");
+    escaped = escaped.replace(/^# (.*)$/gm, "<h1>$1</h1>");
+    // bold / italic
+    escaped = escaped.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    escaped = escaped.replace(/\*(.+?)\*/g, "<em>$1</em>");
+
+    // paragraphs: split on blank lines, leave headers as their own block
+    var blocks = escaped.split(/\n\s*\n/).map(function (b) { return b.trim(); }).filter(Boolean);
+    var html = blocks
+      .map(function (b) {
+        if (/^<h[1-3]>/.test(b)) return b;
+        return "<p>" + b.replace(/\n/g, "<br>") + "</p>";
+      })
+      .join("\n");
+
+    // splice in the finding <mark> tags
+    var openRe = new RegExp(MARK_OPEN + "(\\d+)" + MARK_SEP, "g");
+    html = html.replace(openRe, function (_, idx) {
+      var s = inserted.spans[Number(idx)];
+      var tip = escapeHtml((s.category ? "[" + s.category + "] " : "") + s.issue);
+      return '<mark class="finding sev-' + s.severity + '" title="' + tip + '">';
+    });
+    html = html.replace(new RegExp(MARK_CLOSE, "g"), "</mark>");
+    return html;
+  }
+
+  // -- nav ---------------------------------------------------------------
+
+  var VIEW_TITLES = { manuscript: "Manuscript", canon: "Canon", reviews: "Reviews", book: "Book", ledger: "Ledger" };
+  var loaders = {
+    manuscript: loadManuscript,
+    canon: loadCanon,
+    reviews: loadReviews,
+    book: loadBook,
+    ledger: loadLedger,
+  };
+
+  document.querySelectorAll(".rail-item").forEach(function (item) {
+    item.addEventListener("click", function () {
+      document.querySelectorAll(".rail-item").forEach(function (n) { n.classList.remove("is-selected"); });
+      document.querySelectorAll(".view-pane").forEach(function (v) { v.classList.remove("is-active"); });
+      item.classList.add("is-selected");
+      var view = item.dataset.view;
+      document.getElementById("view-" + view).classList.add("is-active");
+      document.getElementById("view-title").textContent = VIEW_TITLES[view];
+      document.getElementById("view-count").textContent = "";
+      loaders[view]();
+    });
+  });
+
+  function setNavCount(view, n) {
+    var el = document.querySelector('.ri-end[data-count="' + view + '"]');
+    if (el) el.textContent = n;
+  }
+
+  async function loadStatus() {
+    var s = await guarded(function () { return api("/api/status"); });
+    if (s) document.getElementById("project-name").textContent = s.name + " · " + s.words.toLocaleString() + " words";
+  }
+
+  // -- manuscript ----------------------------------------------------------
+
+  function statusChip(status) {
+    var s = status || "draft";
+    return '<span class="chip status-' + escapeHtml(s) + '">' + escapeHtml(s) + "</span>";
+  }
+
+  async function loadManuscript() {
+    var chapters = await guarded(function () { return api("/api/chapters"); });
+    var list = document.getElementById("chapter-list");
+    var detail = document.getElementById("chapter-detail");
+    if (!chapters) return;
+    setNavCount("manuscript", chapters.length);
+    if (!chapters.length) {
+      list.innerHTML = "";
+      detail.innerHTML = emptyState(ICONS.empty, "No chapters yet", "Draft your first chapter with the CLI, then come back here to review it.");
+      return;
+    }
+    list.innerHTML = chapters
+      .map(function (c) {
+        return (
+          '<button class="row-item" data-number="' + c.number + '" type="button">' +
+          '<div class="row-title">Ch ' + String(c.number).padStart(2, "0") + (c.title ? " — " + escapeHtml(c.title) : "") + "</div>" +
+          '<div class="row-meta">' + statusChip(c.status) + "<span>" + c.words.toLocaleString() + " words</span>" + (c.pov ? "<span>POV " + escapeHtml(c.pov) + "</span>" : "") + "</div>" +
+          "</button>"
+        );
+      })
+      .join("");
+    list.querySelectorAll(".row-item").forEach(function (row) {
+      row.addEventListener("click", function () {
+        list.querySelectorAll(".row-item").forEach(function (r) { r.classList.remove("is-selected"); });
+        row.classList.add("is-selected");
+        openChapter(Number(row.dataset.number));
+      });
+    });
+    if (!detail.dataset.filled) {
+      detail.innerHTML = emptyState(ICONS.manuscript, "Select a chapter", "Pick a chapter from the list to read it and run a slop check.");
+    }
+  }
+
+  var currentChapter = null;
+
+  async function openChapter(number) {
+    var chapter = await guarded(function () { return api("/api/chapters/" + number); });
+    var pane = document.getElementById("chapter-detail");
+    if (!chapter) return;
+    pane.dataset.filled = "1";
+    currentChapter = { number: number, body: chapter.body, fm: chapter.frontmatter };
+    pane.innerHTML =
+      '<div class="screen-inner">' +
+      '<div class="screen-head"><h1 class="screen-title">Ch ' + String(number).padStart(2, "0") + (chapter.frontmatter.title ? " — " + escapeHtml(chapter.frontmatter.title) : "") + "</h1></div>" +
+      '<div class="screen-sub">' + statusChip(chapter.frontmatter.status) + " &nbsp; " + (chapter.words || chapter.frontmatter.words || 0).toLocaleString() + " words" + (chapter.frontmatter.pov ? " &middot; POV " + escapeHtml(chapter.frontmatter.pov) : "") + "</div>" +
+      '<button class="btn btn-primary" id="run-slop" type="button">' + ICONS.reviews + "<span>Run slop check</span></button>" +
+      '<div id="slop-result"></div>' +
+      '<div class="md-preview" id="chapter-body" style="margin-top:22px">' + renderMarkdown(chapter.body, []) + "</div>" +
+      '<div id="chapter-findings"></div>' +
+      "</div>";
+    document.getElementById("run-slop").addEventListener("click", function () { runSlop(number); });
+  }
+
+  function verdictTone(verdict) {
+    return { clean: "ok", "touched up": "warn", "slop-adjacent": "warn", slop: "err" }[verdict] || "warn";
+  }
+  function scoreTone(value) {
+    return value >= 66 ? "err" : value >= 33 ? "warn" : "ok";
+  }
+
+  async function runSlop(number) {
+    var btn = document.getElementById("run-slop");
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span><span>Running…</span>';
+    var report = await guarded(function () { return api("/api/chapters/" + number + "/slop"); });
+    btn.disabled = false;
+    btn.innerHTML = ICONS.reviews + "<span>Run slop check</span>";
+    if (!report) return;
+
+    var verdict = (report.stats && report.stats.verdict) || "";
+    var tone = verdictTone(verdict);
+    var subscoreRows = Object.keys(report.subscores)
+      .sort()
+      .map(function (name) {
+        var value = report.subscores[name];
+        var pct = Math.max(0, Math.min(100, value));
+        var t = scoreTone(pct);
+        return (
+          '<div class="subscore-label">' + escapeHtml(name) + "</div>" +
+          '<div class="subscore-track"><div class="subscore-fill" style="width:' + pct + "%;background:var(--" + t + ')"></div></div>' +
+          '<div class="subscore-value">' + value.toFixed(1) + "</div>"
+        );
+      })
+      .join("");
+
+    document.getElementById("slop-result").innerHTML =
+      '<div class="score-card">' +
+      '<div class="score-side"><div class="score-number" style="color:var(--' + tone + ')">' + report.score.toFixed(1) + "</div>" +
+      '<span class="chip tone-' + tone + '">' + escapeHtml(verdict || "unscored") + "</span></div>" +
+      '<div class="subscores">' + subscoreRows + "</div>" +
+      "</div>";
+
+    document.getElementById("chapter-body").innerHTML = renderMarkdown(currentChapter.body, report.findings);
+
+    var groups = {};
+    report.findings.forEach(function (f) {
+      var key = f.category || f.source || "other";
+      (groups[key] = groups[key] || []).push(f);
+    });
+    var findingsHtml = Object.keys(groups)
+      .sort()
+      .map(function (cat) {
+        var rows = groups[cat]
+          .map(function (f) {
+            return (
+              '<div class="list-row">' +
+              '<div class="list-main">' +
+              '<div class="list-title"><span class="chip sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + "</span>" +
+              (f.quote ? '<span class="quote">“' + escapeHtml(f.quote) + "”</span>" : "") + "</div>" +
+              '<div class="list-meta">' + escapeHtml(f.issue || "") + (f.span ? " &middot; line " + f.span.line : "") + "</div>" +
+              "</div></div>"
+            );
+          })
+          .join("");
+        return (
+          '<div class="sec"><div class="sec-label">' + escapeHtml(cat) + '<span class="count">(' + groups[cat].length + ")</span></div>" +
+          '<div class="list">' + rows + "</div></div>"
+        );
+      })
+      .join("");
+    document.getElementById("chapter-findings").innerHTML =
+      findingsHtml || '<div class="sec"><p style="color:var(--faint);font-size:var(--t-12)">No findings.</p></div>';
+  }
+
+  // -- canon ---------------------------------------------------------------
+
+  async function loadCanon() {
+    var entries = await guarded(function () { return api("/api/canon"); });
+    var list = document.getElementById("canon-list");
+    var detail = document.getElementById("canon-detail");
+    if (!entries) return;
+    setNavCount("canon", entries.length);
+    if (!entries.length) {
+      list.innerHTML = "";
+      detail.innerHTML = emptyState(ICONS.canon, "No canon entries", "Scaffold canon files with the CLI to see characters, world, and style notes here.");
+      return;
+    }
+    var groups = {};
+    entries.forEach(function (e) { (groups[e.kind] = groups[e.kind] || []).push(e); });
+    var html = Object.keys(groups)
+      .sort()
+      .map(function (kind) {
+        var rows = groups[kind]
+          .map(function (e) {
+            return (
+              '<button class="row-item" data-path="' + escapeHtml(e.rel_path) + '" type="button">' +
+              '<div class="row-title">' + escapeHtml(e.name) + "</div>" +
+              '<div class="row-meta"><code class="mono">' + escapeHtml(e.rel_path) + "</code></div>" +
+              "</button>"
+            );
+          })
+          .join("");
+        return '<div class="row-group-label">' + escapeHtml(kind) + "</div>" + rows;
+      })
+      .join("");
+    list.innerHTML = html;
+    list.querySelectorAll(".row-item").forEach(function (row) {
+      row.addEventListener("click", function () {
+        list.querySelectorAll(".row-item").forEach(function (r) { r.classList.remove("is-selected"); });
+        row.classList.add("is-selected");
+        openCanonEntry(row.dataset.path);
+      });
+    });
+    if (!detail.dataset.filled) {
+      detail.innerHTML = emptyState(ICONS.canon, "Select a canon entry", "Pick an entry from the list to read its frontmatter and body.");
+    }
+  }
+
+  async function openCanonEntry(path) {
+    var entry = await guarded(function () { return api("/api/canon/entry?path=" + encodeURIComponent(path)); });
+    var pane = document.getElementById("canon-detail");
+    if (!entry) return;
+    pane.dataset.filled = "1";
+    var fmRows = Object.keys(entry.frontmatter || {})
+      .map(function (k) {
+        var v = entry.frontmatter[k];
+        return '<div class="about-row"><div class="about-k">' + escapeHtml(k) + '</div><div class="about-v">' + escapeHtml(typeof v === "object" ? JSON.stringify(v) : v) + "</div></div>";
+      })
+      .join("");
+    pane.innerHTML =
+      '<div class="screen-inner">' +
+      '<div class="screen-head"><h1 class="screen-title">' + escapeHtml(path) + "</h1></div>" +
+      '<div class="screen-sub">&nbsp;</div>' +
+      (fmRows ? '<div class="about-grid">' + fmRows + "</div>" : "") +
+      '<div class="md-preview">' + renderMarkdown(entry.body, []) + "</div>" +
+      "</div>";
+  }
+
+  // -- reviews ---------------------------------------------------------------
+
+  async function loadReviews() {
+    var reviews = await guarded(function () { return api("/api/reviews"); });
+    var list = document.getElementById("reviews-list");
+    var detail = document.getElementById("reviews-detail");
+    if (!reviews) return;
+    setNavCount("reviews", reviews.length);
+    if (!reviews.length) {
+      list.innerHTML = "";
+      detail.innerHTML = emptyState(ICONS.reviews, "No saved reports", "Run a slop check or a review pass to see saved reports here.");
+      return;
+    }
+    list.innerHTML = reviews
+      .map(function (r) {
+        return (
+          '<button class="row-item" data-file="' + escapeHtml(r.file) + '" type="button">' +
+          '<div class="row-title">' + escapeHtml(r.file) + "</div>" +
+          '<div class="row-meta"><span>' + escapeHtml(r.kind) + "</span>" + (r.chapter != null ? "<span>ch " + r.chapter + "</span>" : "") + "<span>" + fmtTime(r.created_at) + "</span></div>" +
+          "</button>"
+        );
+      })
+      .join("");
+    list.querySelectorAll(".row-item").forEach(function (row) {
+      row.addEventListener("click", function () {
+        list.querySelectorAll(".row-item").forEach(function (r) { r.classList.remove("is-selected"); });
+        row.classList.add("is-selected");
+        openReview(row.dataset.file);
+      });
+    });
+    if (!detail.dataset.filled) {
+      detail.innerHTML = emptyState(ICONS.reviews, "Select a saved report", "Pick a report from the list to see its findings.");
+    }
+  }
+
+  async function openReview(file) {
+    var report = await guarded(function () { return api("/api/reviews/" + encodeURIComponent(file)); });
+    var pane = document.getElementById("reviews-detail");
+    if (!report) return;
+    pane.dataset.filled = "1";
+    renderReviewDetail(pane, file, report);
+  }
+
+  function renderReviewDetail(pane, file, report) {
+    var findings = report.findings || [];
+    var rows = findings
+      .map(function (f) {
+        return (
+          '<div class="list-row" data-id="' + escapeHtml(f.id) + '">' +
+          '<div class="list-main">' +
+          '<div class="list-title"><span class="chip sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + "</span>" +
+          "<span>" + escapeHtml(f.category || f.source || "") + "</span>" +
+          '<span class="chip st-' + escapeHtml(f.status) + '">' + escapeHtml(f.status) + "</span></div>" +
+          (f.quote ? '<div class="list-meta quote">“' + escapeHtml(f.quote) + "”</div>" : "") +
+          '<div class="list-meta">' + escapeHtml(f.issue || "") + (f.suggestion ? " &middot; " + escapeHtml(f.suggestion) : "") + "</div>" +
+          "</div>" +
+          '<div class="list-trailing">' +
+          '<button class="btn btn-sm" data-action="accepted" type="button">Accept</button>' +
+          '<button class="btn btn-sm" data-action="dismissed" type="button">Dismiss</button>' +
+          "</div>" +
+          "</div>"
+        );
+      })
+      .join("");
+    pane.innerHTML =
+      '<div class="screen-inner">' +
+      '<div class="screen-head"><h1 class="screen-title">' + escapeHtml(file) + "</h1></div>" +
+      '<div class="screen-sub">' + escapeHtml(report.path || "") + " &middot; " + findings.length + " findings" + (report.summary ? "<br>" + escapeHtml(report.summary) : "") + "</div>" +
+      (rows ? '<div class="list">' + rows + "</div>" : '<p style="color:var(--faint);font-size:var(--t-12)">No findings.</p>') +
+      "</div>";
+
+    pane.querySelectorAll(".list-row[data-id] button").forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        var row = btn.closest(".list-row");
+        var id = row.dataset.id;
+        var status = btn.dataset.action;
+        var updated = await guarded(function () {
+          return api("/api/reviews/" + encodeURIComponent(file) + "/findings/" + encodeURIComponent(id), {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: status }),
+          });
+        });
+        if (!updated) return;
+        row.querySelector(".chip.st-open, .chip.st-accepted, .chip.st-dismissed, .chip.st-fixed").outerHTML =
+          '<span class="chip st-' + updated.status + '">' + updated.status + "</span>";
+        toast("Finding marked " + updated.status);
+      });
+    });
+  }
+
+  // -- book (autonomous run) ---------------------------------------------------
+
+  async function loadBook() {
+    var state = await guarded(function () { return api("/api/book"); });
+    var pane = document.getElementById("book-detail");
+    if (!state) return;
+    var hasData = state && Object.keys(state).length > 0;
+    setNavCount("book", hasData ? (state.phase || "—") : "");
+    if (!hasData) {
+      pane.innerHTML = emptyState(
+        ICONS.book,
+        "No autonomous run yet",
+        'Kick one off from the CLI: <code>stoner book</code>.'
+      );
+      return;
+    }
+
+    var planned = Array.isArray(state.chapters_planned) ? state.chapters_planned.length : (state.chapters_planned || 0);
+    var done = state.chapters_done && typeof state.chapters_done === "object" ? state.chapters_done : {};
+    var current = state.current;
+    var doneNumbers = Object.keys(done).map(Number).filter(function (n) { return !isNaN(n); });
+    var doneCount = doneNumbers.length;
+
+    var rows = "";
+    var total = Math.max(planned, doneNumbers.reduce(function (m, n) { return Math.max(m, n); }, 0), current || 0);
+    for (var n = 1; n <= total; n++) {
+      var d = done[String(n)] || done[n];
+      var isNow = current === n;
+      var isDone = !!d;
+      var check = isDone
+        ? '<div class="plan-check done">' + ICONS.check + "</div>"
+        : '<div class="plan-check' + (isNow ? " now" : "") + '"></div>';
+      var stats = [];
+      if (d) {
+        if (typeof d.words === "number") stats.push(d.words.toLocaleString() + " words");
+        if (typeof d.slop === "number") stats.push("slop " + d.slop.toFixed(1));
+        stats.push(d.reviewed ? "reviewed" : "not reviewed");
+        if (typeof d.revision_cycles === "number" && d.revision_cycles > 0) stats.push(d.revision_cycles + " revision" + (d.revision_cycles === 1 ? "" : "s"));
+      } else if (isNow) {
+        stats.push("drafting now");
+      } else {
+        stats.push("pending");
+      }
+      rows +=
+        '<div class="plan-item' + (isDone ? " is-done" : "") + '">' + check +
+        '<div class="plan-body"><div class="pt">Chapter ' + String(n).padStart(2, "0") + (isNow ? '<span class="plan-now-tag">current</span>' : "") + "</div>" +
+        '<div class="ps">' + escapeHtml(stats.join(" · ")) + "</div></div></div>";
+    }
+
+    var reviews = Array.isArray(state.book_reviews) ? state.book_reviews : [];
+    var reviewRows = reviews
+      .map(function (r) {
+        var majors = typeof r.majors === "number" ? r.majors : (Array.isArray(r.findings) ? r.findings.filter(function (f) { return f.severity === "major" || f.severity === "critical"; }).length : 0);
+        var tone = majors > 0 ? "warn" : "ok";
+        return (
+          '<div class="list-row"><div class="list-main">' +
+          '<div class="list-title">' + (r.at_chapter != null ? "Through chapter " + r.at_chapter : "Whole-manuscript review") + "</div>" +
+          '<div class="list-meta">' + fmtTime(r.created_at) + "</div></div>" +
+          '<div class="list-trailing"><span class="chip tone-' + tone + '">' + majors + " major" + (majors === 1 ? "" : "s") + "</span></div>" +
+          "</div>"
+        );
+      })
+      .join("");
+
+    pane.innerHTML =
+      '<div class="screen-inner">' +
+      '<div class="screen-head">' + ICONS.book + '<h1 class="screen-title">Autonomous run</h1>' +
+      (state.phase ? '<span class="chip tone-accent">' + escapeHtml(state.phase) + "</span>" : "") +
+      "</div>" +
+      '<div class="screen-sub">' + doneCount + " of " + (planned || total) + " chapters done" + (state.updated_at ? " &middot; updated " + fmtTime(state.updated_at) : "") + "</div>" +
+      '<div class="sec"><div class="sec-label">Chapters</div><div class="plan">' + (rows || '<p style="color:var(--faint);font-size:var(--t-12)">No chapters planned yet.</p>') + "</div></div>" +
+      '<div class="sec"><div class="sec-label">Book reviews<span class="count">(' + reviews.length + ")</span></div>" +
+      (reviewRows ? '<div class="list">' + reviewRows + "</div>" : '<p style="color:var(--faint);font-size:var(--t-12)">No whole-manuscript reviews yet.</p>') +
+      "</div></div>";
+  }
+
+  // -- ledger ---------------------------------------------------------------
+
+  async function loadLedger() {
+    var entries = await guarded(function () { return api("/api/ledger?n=200"); });
+    var pane = document.getElementById("ledger-detail");
+    if (!entries) return;
+    setNavCount("ledger", entries.length);
+    if (!entries.length) {
+      pane.innerHTML = emptyState(ICONS.ledger, "No ledger entries yet", "Actions the harness takes (drafts, slop checks, canon edits) will show up here.");
+      return;
+    }
+    var rows = entries
+      .slice()
+      .reverse()
+      .map(function (e) {
+        var detail = e.detail && Object.keys(e.detail).length ? JSON.stringify(e.detail) : "";
+        return (
+          '<div class="list-row"><div class="list-main">' +
+          '<div class="list-title"><code class="mono">' + escapeHtml(e.action) + "</code>" + (e.target ? "<span>" + escapeHtml(e.target) + "</span>" : "") + "</div>" +
+          (detail ? '<div class="list-meta"><code class="mono">' + escapeHtml(detail) + "</code></div>" : "") +
+          (e.session ? '<div class="list-meta">session ' + escapeHtml(e.session) + "</div>" : "") +
+          "</div>" +
+          '<div class="list-trailing"><span style="font-size:var(--t-12);color:var(--faint)">' + fmtTime(e.ts) + "</span></div>" +
+          "</div>"
+        );
+      })
+      .join("");
+    pane.innerHTML =
+      '<div class="screen-inner wide">' +
+      '<div class="screen-head">' + ICONS.ledger + '<h1 class="screen-title">Ledger</h1></div>' +
+      '<div class="screen-sub">Most recent actions first.</div>' +
+      '<div class="list">' + rows + "</div>" +
+      "</div>";
+  }
+
+  // -- boot ---------------------------------------------------------------
+
+  loadStatus();
+  loadManuscript();
+})();
+</script>

@@ -1,0 +1,151 @@
+# Regex constructions. `pattern` is a Python re pattern, matched
+# case-insensitively against the document body.
+# severity: info | minor | major | critical
+- name: not_just_but
+  pattern: \bnot (?:just|only|merely)\b[^.!?\n]{1,60},?\s*but\b
+  severity: major
+  note: '''not just X, but Y'' contrastive-negation construction'
+- name: its_not_about
+  pattern: \bit'?s not about\b[^.!?\n]{1,60}\bit'?s about\b
+  severity: major
+  note: '''it''s not about X, it''s about Y'' rhetorical parallelism'
+- name: little_did_know
+  pattern: \blittle did (?:he|she|they|\w+) know\b
+  severity: critical
+- name: eyes_found
+  pattern: \b(?:her|his|their) eyes (?:found|met|landed on|drifted to|fell on)\b
+  severity: minor
+  note: 'possessive body-part autonomy: eyes acting independently'
+- name: feet_carried
+  pattern: \b(?:her|his|their) feet (?:carried|led|took) (?:her|him|them)\b
+  severity: minor
+  note: 'possessive body-part autonomy: feet acting independently'
+- name: hands_moved_own_accord
+  pattern: \bof (?:their|its) own (?:accord|volition)\b
+  severity: minor
+- name: body_betrayed
+  pattern: \bbody betrayed (?:her|him|them)\b
+  severity: minor
+- name: legs_carried
+  pattern: \b(?:her|his|their) legs (?:carried|moved) (?:her|him|them)\b
+  severity: minor
+- name: something_inside
+  pattern: \bsomething (?:deep )?(?:inside|within) (?:him|her|them)\b
+  severity: info
+- name: as_if_sensing
+  pattern: \bas if (?:sensing|on cue|reading (?:his|her|their) (?:mind|thoughts))\b
+  severity: minor
+- name: more_than_cared_to_admit
+  pattern: \bmore than (?:he|she|they) (?:cared|liked) to admit\b
+  severity: minor
+- name: x_if_not_y
+  pattern: \b\w+(?:,)? if not \w+\b
+  severity: info
+  note: 'hedging intensifier: ''difficult, if not impossible'''
+- name: weight_of_abstraction
+  pattern: \bthe weight of (?:the|his|her|their)\s+\w+\s+(?:pressed|settled|bore down)\b
+  severity: major
+  note: '''the weight of X'' + abstraction pressing down'
+- name: heart_pounding_chest
+  pattern: \bheart (?:pounding|hammering|racing) (?:in|against) (?:his|her|their) chest\b
+  severity: major
+- name: breath_didnt_know
+  pattern: \b(?:let out|released) a breath (?:she|he|they) didn'?t (?:know|realize) (?:she|he|they)(?:'d|
+    had) been holding\b
+  severity: critical
+- name: mixture_of_x_and_y
+  pattern: \ba mixture of \w+(?:\s\w+){0,2} and \w+(?:\s\w+){0,2}\b
+  severity: minor
+- name: air_thick_with
+  pattern: \bair (?:was |grew |felt )?(?:thick|heavy) with\b
+  severity: minor
+- name: sent_shivers
+  pattern: \bsent (?:a )?shivers? (?:down|up|through) (?:his|her|their|\w+'s) spine\b
+  severity: major
+- name: world_seemed_to
+  pattern: \b(?:the )?world seemed to \w+\b
+  severity: minor
+- name: time_seemed_to
+  pattern: \btime (?:seemed|appeared) to (?:slow|stop|stand still)\b
+  severity: major
+- name: silence_deafening
+  pattern: \bsilence (?:was|felt) deafening\b
+  severity: minor
+- name: unspoken_understanding
+  pattern: \b(?:an?|the) unspoken understanding\b
+  severity: minor
+- name: electricity_between
+  pattern: \b(?:electricity|tension|something) (?:crackled|sparked) between them\b
+  severity: minor
+- name: shook_to_core
+  pattern: \bshook (?:her|him|them) to (?:the|her very|his very|their very) core\b
+  severity: minor
+- name: every_fiber
+  pattern: \bevery fiber of (?:her|his|their) being\b
+  severity: major
+- name: knew_in_bones
+  pattern: \bknew it in (?:her|his|their) bones\b
+  severity: minor
+- name: couldnt_shake_feeling
+  pattern: \bcouldn'?t shake (?:the|this) feeling\b
+  severity: minor
+- name: gut_told
+  pattern: \b(?:her|his|their) gut told (?:her|him|them)\b
+  severity: info
+- name: nothing_same_again
+  pattern: \bnothing would ever be the same\b
+  severity: major
+- name: point_no_return
+  pattern: \bpoint of no return\b
+  severity: info
+- name: calm_before_storm
+  pattern: \bcalm before the storm\b
+  severity: info
+- name: game_changer
+  pattern: \bgame[\s-]changer\b
+  severity: minor
+- name: only_time_will_tell
+  pattern: \bonly time (?:would|will) tell\b
+  severity: minor
+- name: in_that_moment_realized
+  pattern: \bin that moment,? (?:she|he|they) (?:realized|knew|understood)\b
+  severity: major
+- name: steeled_self
+  pattern: \bsteel(?:ed|ing) (?:herself|himself|themselves)\b
+  severity: minor
+- name: rule_of_three_adjectives
+  pattern: \b\w+ly \w+, \w+ly \w+, and \w+ly \w+\b
+  severity: minor
+  note: three parallel adverb+adjective pairs in a row
+- name: testament_to_power
+  pattern: \ba testament to the (?:power|resilience|strength) of\b
+  severity: critical
+- name: voice_barely_whisper
+  pattern: \bvoice (?:was|dropped to|barely above) a whisper\b
+  severity: minor
+- name: breath_hitched
+  pattern: \bbreath hitched\b
+  severity: info
+- name: bated_breath
+  pattern: \bwith bated breath\b
+  severity: minor
+- name: chills_down_spine
+  pattern: \bchills? (?:ran|raced|shot) down (?:his|her|their|\w+'s) spine\b
+  severity: major
+- name: cant_help_but
+  pattern: \bcan'?t help but \w+\b
+  severity: minor
+  note: present-tense variant of 'couldn't help but'
+- name: in_the_grand_scheme
+  pattern: \bin the grand scheme of things\b
+  severity: info
+- name: more_than_meets_eye
+  pattern: \bmore than meets the eye\b
+  severity: info
+- name: double_edged_sword
+  pattern: \bdouble[\s-]edged sword\b
+  severity: info
+- name: emphasis_underscore
+  pattern: \bunderscor(?:es|ed|ing)? (?:the|an?) (?:importance|significance|need) of\b
+  severity: minor
+  note: essay-register phrase leaking into narrative prose
