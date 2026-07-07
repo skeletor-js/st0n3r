@@ -40,7 +40,7 @@ class AgentResult:
     transcript_path: str
 
 
-_MAX_FORMAT_RETRIES = 3
+_MAX_FORMAT_RETRIES = 8
 
 
 def _call_signature(calls: list[ToolCall]) -> tuple:

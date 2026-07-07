@@ -146,3 +146,25 @@ def test_run_archive_preview_does_not_write(project):
     assert len(res.applied_facts) == 1
     # nothing persisted in preview mode
     assert "1" not in project.read_memory().get("chapters", {})
+
+
+def test_single_shot_draft_for_text_only_provider(project):
+    class TextOnly(ScriptedProvider):
+        supports_tools = False
+
+    provider = TextOnly([text_response(CLEAN_PROSE), text_response(ARCHIVIST_JSON)])
+    res = run_write(project, 9, provider=provider)
+    _, body = project.read_chapter(9)
+    assert "He walked to the window" in body
+    assert res.gate_passed
+    # exactly one draft call + one archivist call; no tool-loop churn
+    assert len(provider.requests) == 2
+
+
+def test_single_shot_draft_refuses_stub(project):
+    class TextOnly(ScriptedProvider):
+        supports_tools = False
+
+    provider = TextOnly([text_response("Too short.")])
+    with pytest.raises(RuntimeError, match="not saving"):
+        run_write(project, 10, provider=provider)

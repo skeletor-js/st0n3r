@@ -72,6 +72,39 @@ def draft_chapter(
         model_id = model_str.split("/", 1)[1] if "/" in model_str else model_str
 
     ledger = Ledger(project.root)
+
+    if not provider.supports_tools:
+        # Text-only backends (codex/claude CLI) draft in ONE comprehensive
+        # completion instead of the tool loop: every loop turn re-sends the
+        # whole conversation through the CLI and invites protocol drift,
+        # while the system prompt already carries canon, beats, and memory.
+        from ..types import CompletionRequest, Message
+
+        user = task or (
+            f"Write chapter {number} now, in full, as finished prose. "
+            "Everything you need — premise, style, canon, beat sheet, memory, "
+            "the tail of the previous chapter — is in your instructions above. "
+            "Reply with ONLY the chapter prose: no title line, no notes, no "
+            "commentary before or after."
+        )
+        resp = provider.complete(
+            CompletionRequest(
+                model=model_id,
+                system=system,
+                messages=[Message(role="user", content=user)],
+                max_tokens=project.config.max_tokens,
+                temperature=project.config.temperature,
+            )
+        )
+        body = resp.text.strip()
+        if count_words(body) <= 200:
+            raise RuntimeError(
+                f"Single-shot draft for chapter {number} came back with only "
+                f"{count_words(body)} words; not saving. Raise max_tokens or retry."
+            )
+        project.write_chapter(number, fm, body)
+        ledger.append("write.single_shot", target=project.chapter_rel(number))
+        return resp.usage
     agent = Agent(
         provider=provider,
         model_id=model_id,
