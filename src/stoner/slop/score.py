@@ -51,8 +51,18 @@ PATTERNS_MAJOR = 10.0
 REPETITION_MINOR = 2.0
 REPETITION_MAJOR = 6.0
 
-DENSITY_MINOR = 1.5
-DENSITY_MAJOR = 4.0
+# density sub-metrics each use their own native rate unit (per-1000 words,
+# or per-300 words for the rule-of-three check) rather than one combined
+# metric -- a combined metric is too sensitive to a single incidental match
+# in a short document.
+DENSITY_ADVERB_MINOR = 15.0
+DENSITY_ADVERB_MAJOR = 30.0
+DENSITY_FILTER_MINOR = 6.0
+DENSITY_FILTER_MAJOR = 14.0
+DENSITY_THREE_MINOR = 2.0
+DENSITY_THREE_MAJOR = 5.0
+DENSITY_ADJ_MINOR = 3.0
+DENSITY_ADJ_MAJOR = 8.0
 
 
 @dataclass
@@ -134,14 +144,17 @@ def score_rhythm(stats: dict[str, Any]) -> float:
 
 
 def score_density(stats: dict[str, Any], word_count: int) -> float:
-    weighted = (
-        stats.get("adverb_count", 0) * 0.4
-        + stats.get("filter_word_count", 0) * 0.4
-        + stats.get("rule_of_three_count", 0) * 1.5
-        + stats.get("adjective_stack_count", 0) * 1.5
-    )
-    rate = (weighted / max(word_count, 1)) * 1000.0
-    return _rate_score(rate, DENSITY_MINOR, DENSITY_MAJOR)
+    adverb_rate = stats.get("adverb_per_1000", 0.0)
+    filter_rate = stats.get("filter_word_per_1000", 0.0)
+    three_rate = stats.get("rule_of_three_per_300", 0.0)
+    adj_rate = (stats.get("adjective_stack_count", 0) / max(word_count, 1)) * 1000.0
+    scores = [
+        _rate_score(adverb_rate, DENSITY_ADVERB_MINOR, DENSITY_ADVERB_MAJOR),
+        _rate_score(filter_rate, DENSITY_FILTER_MINOR, DENSITY_FILTER_MAJOR),
+        _rate_score(three_rate, DENSITY_THREE_MINOR, DENSITY_THREE_MAJOR),
+        _rate_score(adj_rate, DENSITY_ADJ_MINOR, DENSITY_ADJ_MAJOR),
+    ]
+    return sum(scores) / len(scores)
 
 
 def combine(

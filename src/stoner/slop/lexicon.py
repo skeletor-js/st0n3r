@@ -54,16 +54,16 @@ def _load_yaml_list(path: Path) -> list[dict[str, Any]]:
 class WordEntry:
     term: str
     severity: Severity
-    note: str = ""
     regex: re.Pattern[str] = field(compare=False, repr=False)
+    note: str = ""
 
 
 @dataclass(frozen=True)
 class PhraseEntry:
     phrase: str
     severity: Severity
-    note: str = ""
     regex: re.Pattern[str] = field(compare=False, repr=False)
+    note: str = ""
 
 
 @dataclass(frozen=True)
@@ -71,8 +71,8 @@ class PatternEntry:
     name: str
     pattern: str
     severity: Severity
-    note: str = ""
     regex: re.Pattern[str] = field(compare=False, repr=False)
+    note: str = ""
 
 
 @dataclass(frozen=True)
