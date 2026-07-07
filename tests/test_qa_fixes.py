@@ -245,3 +245,30 @@ def test_runner_counts_usage_when_pass_unparseable(project):
     report = run_review(project, 1, passes=["line"], model="x/y", provider=GarbageProvider())
     assert report.usage.input_tokens == 100
     assert any("pass failed" in f.issue for f in report.findings)
+
+
+# --- banned terms from style.md reach the detector ---------------------------
+
+
+def test_banned_terms_flow_into_slop(project):
+    style = project.read("canon/style.md")
+    style = style.replace(
+        "```yaml",
+        "```yaml\nwords:\n  - frobnicate\nphrases:\n  - whispering pines\n", 1,
+    )
+    # write a style.md whose Banned block bans our probe terms
+    project.write(
+        "canon/style.md",
+        "# Style\n\n## Banned\n\n```yaml\nwords:\n  - frobnicate\nphrases:\n  - whispering pines\n```\n",
+    )
+    project.write_chapter(7, {"title": "Probe"}, "He frobnicate the gate under the whispering pines. " * 10)
+    from stoner.canon.store import CanonStore
+    from stoner.slop import run_slop
+
+    bw, bp = CanonStore(project).banned_terms()
+    assert "frobnicate" in bw and "whispering pines" in bp
+    _, body = project.read_chapter(7)
+    report = run_slop(body, banned_words=bw, banned_phrases=bp)
+    quotes = {f.quote.lower() for f in report.findings}
+    assert "frobnicate" in quotes
+    assert "whispering pines" in quotes

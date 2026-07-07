@@ -130,8 +130,9 @@ def run_write(
     res.usage += draft_chapter(project, number, model=model, provider=provider, task=task)
 
     # --- slop gate -----------------------------------------------------
+    bw, bp = CanonStore(project).banned_terms()
     _, body = project.read_chapter(number)
-    report = run_slop(body, path=project.chapter_rel(number))
+    report = run_slop(body, path=project.chapter_rel(number), banned_words=bw, banned_phrases=bp)
     res.slop_before = res.slop_after = report.score
     gates = project.config.gates
 
@@ -159,7 +160,7 @@ def run_write(
         )
         res.usage += revision.usage
         _, body = project.read_chapter(number)
-        report = run_slop(body, path=project.chapter_rel(number))
+        report = run_slop(body, path=project.chapter_rel(number), banned_words=bw, banned_phrases=bp)
         res.slop_after = report.score
 
     res.gate_passed = not _slop_gate_fails(

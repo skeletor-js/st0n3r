@@ -135,8 +135,11 @@ def slop(
             _fail(f"Not found: {target}")
         targets.append((target, p.read_text(encoding="utf-8")))
 
+    from ..canon.store import CanonStore
+
+    bw, bp = CanonStore(project).banned_terms()
     for rel, text in targets:
-        report = run_slop(text, path=rel)
+        report = run_slop(text, path=rel, banned_words=bw, banned_phrases=bp)
         # rich output already carries ANSI styling; print it verbatim so
         # bracketed quotes in findings aren't parsed as rich markup.
         typer.echo(render(report, fmt))
@@ -222,7 +225,8 @@ def canon_new(
         _fail(f"{rel} already exists.")
     project.write(rel, content)
     Ledger(project.root).append("canon.new", target=rel)
-    console.print(f"[green]Created[/green] {rel} — fill in the facts and voice sections.")
+    hint = "voice" if kind == "character" else "rules and description"
+    console.print(f"[green]Created[/green] {rel} — fill in the facts and {hint} sections.")
 
 
 @chapter_app.command("new")

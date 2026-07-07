@@ -84,7 +84,7 @@ phrases:
   - "couldn't help but"
 ```
 
-The writer agent reads the full style guide (banned list included) before every draft, and the revise stage passes the banned list explicitly with instructions to avoid the entries entirely — so the block shapes what gets *written*, upstream of detection. The `stoner slop` scorer itself uses the built-in lexicons, which already cover the template's default entries.
+This block works on both ends of the pipeline. Upstream, the writer agent reads the full style guide before every draft, and the revise stage passes the banned list explicitly with instructions to avoid the entries. Downstream, the detector itself flags every occurrence of your banned words and phrases as a `major` finding (marked "banned in canon/style.md") — in `stoner slop`, the write-pipeline gate, the agent's own `slop_check` tool, and the dashboard alike.
 
 **Scoring weights** are exposed programmatically via `SlopConfig` if you're scripting:
 

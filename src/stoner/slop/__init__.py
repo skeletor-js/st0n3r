@@ -10,7 +10,7 @@ Public API:
 from __future__ import annotations
 
 from ..project import count_words, split_frontmatter
-from ..types import Finding, SlopReport
+from ..types import Finding, Severity, SlopReport
 from .analyzers import (
     analyze_density,
     analyze_patterns,
@@ -21,7 +21,7 @@ from .analyzers import (
     analyze_words,
     mask_code_fences,
 )
-from .lexicon import Lexicon, load_lexicon
+from .lexicon import Lexicon, PhraseEntry, WordEntry, load_lexicon
 from .report import verdict
 from .score import (
     SlopConfig,
@@ -50,7 +50,47 @@ def _rebase_finding(finding: Finding, original: str, body_start: int) -> Finding
     return finding
 
 
-def run_slop(text: str, path: str = "", config: SlopConfig | None = None) -> SlopReport:
+def _banned_word_entries(terms: list[str]) -> list[WordEntry]:
+    import re as _re
+
+    out: list[WordEntry] = []
+    for t in terms:
+        t = str(t).strip()
+        if not t:
+            continue
+        out.append(
+            WordEntry(
+                term=t,
+                severity=Severity.major,
+                note="banned in canon/style.md",
+                regex=_re.compile(rf"\b{_re.escape(t)}\b", _re.IGNORECASE),
+            )
+        )
+    return out
+
+
+def _banned_phrase_entries(phrases: list[str]) -> list[PhraseEntry]:
+    import re as _re
+
+    out: list[PhraseEntry] = []
+    for ph in phrases:
+        ph = str(ph).strip()
+        if not ph:
+            continue
+        rx = _re.compile(r"\b" + r"\s+".join(_re.escape(w) for w in ph.split()) + r"\b", _re.IGNORECASE)
+        out.append(
+            PhraseEntry(phrase=ph, severity=Severity.major, note="banned in canon/style.md", regex=rx)
+        )
+    return out
+
+
+def run_slop(
+    text: str,
+    path: str = "",
+    config: SlopConfig | None = None,
+    banned_words: list[str] | None = None,
+    banned_phrases: list[str] | None = None,
+) -> SlopReport:
     """Run the full slop-detector pipeline over one document's raw text.
 
     ``text`` is the raw file content (markdown chapter, possibly with YAML
@@ -66,9 +106,11 @@ def run_slop(text: str, path: str = "", config: SlopConfig | None = None) -> Slo
     word_count = count_words(masked)
 
     lex = load_lexicon()
+    words = list(lex.words) + _banned_word_entries(banned_words or [])
+    phrases = list(lex.phrases) + _banned_phrase_entries(banned_phrases or [])
 
-    word_result = analyze_words(masked, list(lex.words))
-    phrase_result = analyze_phrases(masked, list(lex.phrases))
+    word_result = analyze_words(masked, words)
+    phrase_result = analyze_phrases(masked, phrases)
     pattern_result = analyze_patterns(masked, list(lex.patterns))
     punct_result = analyze_punctuation(masked, word_count)
     repetition_result = analyze_repetition(masked)

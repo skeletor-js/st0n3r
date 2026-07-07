@@ -197,10 +197,12 @@ def slop_check(project: WritingProject, chapter: Any) -> str:
         _fm, body = project.read_chapter(n)
     except (ProjectError, ValueError) as e:
         return f"ERROR: {e}"
+    from ..canon.store import CanonStore
     from ..slop import run_slop
     from ..slop.report import verdict
 
-    report = run_slop(body, path=project.chapter_rel(n))
+    bw, bp = CanonStore(project).banned_terms()
+    report = run_slop(body, path=project.chapter_rel(n), banned_words=bw, banned_phrases=bp)
     worst = sorted(
         report.findings,
         key=lambda f: {"critical": 0, "major": 1, "minor": 2, "info": 3}.get(f.severity.value, 4),

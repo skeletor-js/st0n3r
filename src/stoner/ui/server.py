@@ -204,7 +204,8 @@ def create_app(project: WritingProject) -> FastAPI:
             text = project.read(rel)
         except ProjectError as exc:
             raise _http404(f"chapter not found: ch-{number:02d}") from exc
-        report = run_slop(text, path=rel)
+        bw, bp = CanonStore(project).banned_terms()
+        report = run_slop(text, path=rel, banned_words=bw, banned_phrases=bp)
         data = report.model_dump(mode="json")
 
         # Findings carry spans over the *raw* file (frontmatter included) so
