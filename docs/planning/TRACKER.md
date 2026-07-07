@@ -9,15 +9,15 @@ _Last updated: 2026-07-07 (run 1)_
 
 | Phase | Item | Status | Notes |
 |-------|------|--------|-------|
-| 0 | Research: autonovel + slop corpora + codex CLI | wip | subagent running |
+| 0 | Research: autonovel + slop corpora + codex CLI | done | docs/research/RESEARCH.md |
 | 1 | Planning docs (PLAN/ARCHITECTURE/TRACKER) | done | this commit |
 | 1 | pyproject + package scaffold | done | commit 45e6b7e |
 | 1 | types.py / config.py / project.py / ledger.py | done | commit 45e6b7e |
 | 2 | providers: base + registry | done | commit 45e6b7e |
-| 2 | providers: anthropic | wip | subagent A running |
-| 2 | providers: openai_compat | wip | subagent A running |
-| 2 | providers: codex_cli | wip | subagent A running |
-| 2 | engine: agent loop + tools + prompts | wip | subagent A running |
+| 2 | providers: anthropic | done | commit 4de3131, 42 tests |
+| 2 | providers: openai_compat | done | commit 4de3131, 42 tests |
+| 2 | providers: codex_cli | done | commit 4de3131, 42 tests |
+| 2 | engine: agent loop + tools + prompts | done | commit 4de3131, 42 tests |
 | 3 | canon: store + templates + memory | wip | subagent C running |
 | 3 | canon: archivist | wip | subagent C running |
 | 4 | slop: lexicon data | wip | subagent B running; merge research when done |
@@ -57,3 +57,4 @@ _Last updated: 2026-07-07 (run 1)_
   launched research subagent. Next: scaffold package + core modules, then
   parallel subagent builds (A: providers+engine, B: slop, C: canon, D: ui).
 - **Run 1 (cont):** Repo confirmed private on GitHub. Wave-1 subagents launched (A: providers+engine, B: slop, C: canon).
+- **Run 1 (cont):** Subagent A landed: providers (anthropic/openai_compat/codex_cli) + engine (agent loop, tools, textproto, prompts), 42 tests green. Committed 4de3131.
