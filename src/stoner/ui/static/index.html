@@ -1,0 +1,666 @@
+<title>st0n3r</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --surface-1: #fcfcfb;
+    --surface-2: #f3f2ef;
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --gridline: #e1e0d9;
+    --border: rgba(11, 11, 11, 0.1);
+    --accent: #2a78d6;
+    --accent-strong: #1c5cab;
+    --good: #0ca30c;
+    --warning: #c98500;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+    --mark-info: rgba(42, 120, 214, 0.22);
+    --mark-minor: rgba(201, 133, 0, 0.28);
+    --mark-major: rgba(236, 131, 90, 0.32);
+    --mark-critical: rgba(208, 59, 59, 0.32);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface-1: #1a1a19;
+      --surface-2: #232322;
+      --page: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #898781;
+      --gridline: #2c2c2a;
+      --border: rgba(255, 255, 255, 0.1);
+      --accent: #3987e5;
+      --accent-strong: #6da7ec;
+      --good: #0ca30c;
+      --warning: #fab219;
+      --serious: #ec835a;
+      --critical: #e66767;
+      --mark-info: rgba(57, 135, 229, 0.28);
+      --mark-minor: rgba(250, 178, 25, 0.28);
+      --mark-major: rgba(236, 131, 90, 0.32);
+      --mark-critical: rgba(230, 103, 103, 0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--page);
+    color: var(--text-primary);
+    font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .app { display: flex; height: 100vh; overflow: hidden; }
+
+  /* -- sidebar -------------------------------------------------------- */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--surface-1);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 12px;
+  }
+  .brand { font-size: 16px; font-weight: 700; padding: 4px 8px 2px; }
+  .brand-sub { font-size: 12px; color: var(--text-muted); padding: 0 8px 16px; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-weight: 500;
+    user-select: none;
+  }
+  .nav-item:hover { background: var(--surface-2); color: var(--text-primary); }
+  .nav-item.active { background: var(--accent); color: #fff; }
+  .sidebar-footer {
+    margin-top: auto;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 8px;
+    border-top: 1px solid var(--gridline);
+  }
+
+  /* -- main ------------------------------------------------------------ */
+  .main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+  .view { flex: 1; display: none; overflow: hidden; }
+  .view.active { display: flex; }
+  .pane-list {
+    width: 300px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    background: var(--surface-1);
+  }
+  .pane-detail { flex: 1; overflow-y: auto; padding: 24px 32px; }
+  .pane-detail.empty { display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+
+  .list-row {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gridline);
+    cursor: pointer;
+  }
+  .list-row:hover { background: var(--surface-2); }
+  .list-row.active { background: var(--surface-2); box-shadow: inset 3px 0 0 var(--accent); }
+  .list-row-title { font-weight: 600; }
+  .list-row-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .list-group-header {
+    padding: 10px 16px 4px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .pill {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--surface-2);
+    color: var(--text-secondary);
+  }
+  .pill.status-outline { background: rgba(137, 135, 129, 0.2); color: var(--text-muted); }
+  .pill.status-draft { background: rgba(42, 120, 214, 0.15); color: var(--accent-strong); }
+  .pill.status-revised { background: rgba(201, 133, 0, 0.18); color: var(--warning); }
+  .pill.status-final { background: rgba(12, 163, 12, 0.18); color: var(--good); }
+
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+  .badge.sev-info { background: rgba(42, 120, 214, 0.15); color: var(--accent-strong); }
+  .badge.sev-minor { background: rgba(201, 133, 0, 0.18); color: var(--warning); }
+  .badge.sev-major { background: rgba(236, 131, 90, 0.2); color: var(--serious); }
+  .badge.sev-critical { background: rgba(208, 59, 59, 0.18); color: var(--critical); }
+  .badge.st-open { background: var(--surface-2); color: var(--text-secondary); }
+  .badge.st-accepted { background: rgba(12, 163, 12, 0.18); color: var(--good); }
+  .badge.st-dismissed { background: var(--surface-2); color: var(--text-muted); text-decoration: line-through; }
+  .badge.st-fixed { background: rgba(42, 120, 214, 0.15); color: var(--accent-strong); }
+
+  h1.doc-title { font-size: 22px; margin: 0 0 4px; }
+  .doc-meta { color: var(--text-muted); font-size: 12px; margin-bottom: 18px; }
+  .btn {
+    font: inherit;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: var(--accent-strong); }
+  .btn.small { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+
+  .score-card { display: flex; align-items: center; gap: 24px; margin: 16px 0 20px; padding: 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1); }
+  .score-number { font-size: 40px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .score-verdict { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; padding: 3px 10px; border-radius: 999px; margin-top: 4px; display: inline-block; }
+  .subscores { flex: 1; display: grid; grid-template-columns: 90px 1fr 36px; gap: 6px 10px; align-items: center; }
+  .subscore-label { font-size: 12px; color: var(--text-secondary); }
+  .subscore-track { height: 8px; border-radius: 4px; background: var(--gridline); overflow: hidden; }
+  .subscore-fill { height: 100%; background: var(--accent); border-radius: 4px; }
+  .subscore-value { font-size: 12px; color: var(--text-muted); text-align: right; font-variant-numeric: tabular-nums; }
+
+  .chapter-body { white-space: normal; }
+  .chapter-body p { margin: 0 0 1em; }
+  .chapter-body h1, .chapter-body h2, .chapter-body h3 { margin: 1.2em 0 0.4em; }
+  mark.finding {
+    border-radius: 3px;
+    padding: 0 1px;
+    cursor: help;
+  }
+  mark.sev-info { background: var(--mark-info); }
+  mark.sev-minor { background: var(--mark-minor); }
+  mark.sev-major { background: var(--mark-major); }
+  mark.sev-critical { background: var(--mark-critical); }
+
+  .findings-list { margin-top: 24px; }
+  .findings-group h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); margin: 20px 0 8px; }
+  .finding-row { display: flex; gap: 10px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--gridline); }
+  .finding-row .quote { color: var(--text-secondary); font-style: italic; }
+  .finding-row .issue { flex: 1; }
+  .finding-row .line { color: var(--text-muted); font-size: 11px; width: 40px; }
+
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.data-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); padding: 8px 10px; border-bottom: 1px solid var(--gridline); }
+  table.data-table td { padding: 8px 10px; border-bottom: 1px solid var(--gridline); vertical-align: top; }
+  table.data-table tr:hover td { background: var(--surface-2); }
+  table.fm-table td:first-child { color: var(--text-muted); width: 160px; font-weight: 600; }
+
+  .actions { display: flex; gap: 6px; }
+
+  .toast-stack { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 50; }
+  .toast { background: var(--critical); color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25); max-width: 360px; }
+
+  .status-strip { display: flex; gap: 18px; margin-bottom: 18px; color: var(--text-secondary); font-size: 13px; }
+  .status-strip b { color: var(--text-primary); }
+  code.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+</style>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="brand">st0n3r</div>
+    <div class="brand-sub" id="project-name">&nbsp;</div>
+    <div class="nav-item active" data-view="manuscript">Manuscript</div>
+    <div class="nav-item" data-view="canon">Canon</div>
+    <div class="nav-item" data-view="reviews">Reviews</div>
+    <div class="nav-item" data-view="ledger">Ledger</div>
+    <div class="sidebar-footer">127.0.0.1 &middot; local only</div>
+  </div>
+
+  <div class="main">
+    <!-- Manuscript -->
+    <div class="view active" id="view-manuscript">
+      <div class="pane-list" id="chapter-list"></div>
+      <div class="pane-detail empty" id="chapter-detail">Select a chapter.</div>
+    </div>
+
+    <!-- Canon -->
+    <div class="view" id="view-canon">
+      <div class="pane-list" id="canon-list"></div>
+      <div class="pane-detail empty" id="canon-detail">Select a canon entry.</div>
+    </div>
+
+    <!-- Reviews -->
+    <div class="view" id="view-reviews">
+      <div class="pane-list" id="reviews-list"></div>
+      <div class="pane-detail empty" id="reviews-detail">Select a saved report.</div>
+    </div>
+
+    <!-- Ledger -->
+    <div class="view" id="view-ledger">
+      <div class="pane-detail" id="ledger-detail" style="width: 100%;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toast-stack"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // -- generic helpers -----------------------------------------------
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function toast(message) {
+    var stack = document.getElementById("toast-stack");
+    var el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = message;
+    stack.appendChild(el);
+    setTimeout(function () { el.remove(); }, 5000);
+  }
+
+  async function api(path, opts) {
+    var res = await fetch(path, opts);
+    if (!res.ok) {
+      var detail = "";
+      try { detail = (await res.json()).detail || ""; } catch (e) { /* ignore */ }
+      throw new Error((detail || res.statusText || "request failed") + " (" + res.status + ")");
+    }
+    if (res.status === 204) return null;
+    return res.json();
+  }
+
+  async function guarded(fn) {
+    try {
+      return await fn();
+    } catch (err) {
+      toast(err.message || String(err));
+      return null;
+    }
+  }
+
+  function fmtTime(ts) {
+    if (!ts) return "-";
+    var d = new Date(ts * 1000);
+    return d.toLocaleString();
+  }
+
+  // -- minimal markdown, with optional char-offset highlighting --------
+
+  // ASCII sentinel tokens (never appear literally in normal prose) mark
+  // finding spans *before* HTML-escaping/markdown transforms run, so they
+  // ride along as plain text through both passes and get swapped for real
+  // <mark> tags at the very end -- this keeps char offsets exact even
+  // though escaping can change string length (e.g. "&" -> "&amp;").
+  var MARK_OPEN = "\u0001OPEN", MARK_SEP = "\u0001SEP\u0001", MARK_CLOSE = "\u0001CLOSE\u0001";
+
+  function insertMarks(text, findings) {
+    var spans = (findings || [])
+      .filter(function (f) { return f.span; })
+      .map(function (f) {
+        return { start: f.span.start, end: f.span.end, id: f.id, severity: f.severity, issue: f.issue, category: f.category };
+      })
+      .filter(function (s) { return s.start >= 0 && s.end <= text.length && s.start < s.end; })
+      .sort(function (a, b) { return a.start - b.start; });
+
+    var clean = [];
+    var lastEnd = -1;
+    spans.forEach(function (s) {
+      if (s.start >= lastEnd) { clean.push(s); lastEnd = s.end; }
+    });
+
+    var out = "";
+    var pos = 0;
+    clean.forEach(function (s, i) {
+      out += text.slice(pos, s.start);
+      out += MARK_OPEN + i + MARK_SEP + text.slice(s.start, s.end) + MARK_CLOSE;
+      pos = s.end;
+    });
+    out += text.slice(pos);
+    return { marked: out, spans: clean };
+  }
+
+  function renderMarkdown(text, findings) {
+    var inserted = insertMarks(text, findings || []);
+    var escaped = escapeHtml(inserted.marked);
+
+    // headers
+    escaped = escaped.replace(/^### (.*)$/gm, "<h3>$1</h3>");
+    escaped = escaped.replace(/^## (.*)$/gm, "<h2>$1</h2>");
+    escaped = escaped.replace(/^# (.*)$/gm, "<h1>$1</h1>");
+    // bold / italic
+    escaped = escaped.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    escaped = escaped.replace(/\*(.+?)\*/g, "<em>$1</em>");
+
+    // paragraphs: split on blank lines, leave headers as their own block
+    var blocks = escaped.split(/\n\s*\n/).map(function (b) { return b.trim(); }).filter(Boolean);
+    var html = blocks
+      .map(function (b) {
+        if (/^<h[1-3]>/.test(b)) return b;
+        return "<p>" + b.replace(/\n/g, "<br>") + "</p>";
+      })
+      .join("\n");
+
+    // splice in the finding <mark> tags
+    var openRe = new RegExp(MARK_OPEN + "(\\d+)" + MARK_SEP, "g");
+    html = html.replace(openRe, function (_, idx) {
+      var s = inserted.spans[Number(idx)];
+      var tip = escapeHtml((s.category ? "[" + s.category + "] " : "") + s.issue);
+      return '<mark class="finding sev-' + s.severity + '" title="' + tip + '">';
+    });
+    html = html.replace(new RegExp(MARK_CLOSE, "g"), "</mark>");
+    return html;
+  }
+
+
+  // -- nav ---------------------------------------------------------------
+
+  var loaders = {
+    manuscript: loadManuscript,
+    canon: loadCanon,
+    reviews: loadReviews,
+    ledger: loadLedger,
+  };
+
+  document.querySelectorAll(".nav-item").forEach(function (item) {
+    item.addEventListener("click", function () {
+      document.querySelectorAll(".nav-item").forEach(function (n) { n.classList.remove("active"); });
+      document.querySelectorAll(".view").forEach(function (v) { v.classList.remove("active"); });
+      item.classList.add("active");
+      var view = item.dataset.view;
+      document.getElementById("view-" + view).classList.add("active");
+      loaders[view]();
+    });
+  });
+
+  async function loadStatus() {
+    var s = await guarded(function () { return api("/api/status"); });
+    if (s) document.getElementById("project-name").textContent = s.name + " · " + s.words + " words";
+  }
+
+  // -- manuscript ----------------------------------------------------------
+
+  var STATUS_ORDER = ["outline", "draft", "revised", "final"];
+
+  function statusPill(status) {
+    return '<span class="pill status-' + escapeHtml(status || "draft") + '">' + escapeHtml(status || "draft") + "</span>";
+  }
+
+  async function loadManuscript() {
+    var chapters = await guarded(function () { return api("/api/chapters"); });
+    var list = document.getElementById("chapter-list");
+    if (!chapters) return;
+    if (!chapters.length) {
+      list.innerHTML = '<div class="list-group-header">No chapters yet</div>';
+      return;
+    }
+    list.innerHTML = chapters
+      .map(function (c) {
+        return (
+          '<div class="list-row" data-number="' + c.number + '">' +
+          '<div class="list-row-title">Ch ' + String(c.number).padStart(2, "0") + (c.title ? " — " + escapeHtml(c.title) : "") + "</div>" +
+          '<div class="list-row-meta">' + statusPill(c.status) + " &nbsp; " + c.words + " words" + (c.pov ? " &middot; POV " + escapeHtml(c.pov) : "") + "</div>" +
+          "</div>"
+        );
+      })
+      .join("");
+    list.querySelectorAll(".list-row").forEach(function (row) {
+      row.addEventListener("click", function () {
+        list.querySelectorAll(".list-row").forEach(function (r) { r.classList.remove("active"); });
+        row.classList.add("active");
+        openChapter(Number(row.dataset.number));
+      });
+    });
+  }
+
+  var currentChapter = null;
+
+  async function openChapter(number) {
+    var chapter = await guarded(function () { return api("/api/chapters/" + number); });
+    var pane = document.getElementById("chapter-detail");
+    pane.classList.remove("empty");
+    if (!chapter) return;
+    currentChapter = { number: number, body: chapter.body, fm: chapter.frontmatter };
+    pane.innerHTML =
+      '<h1 class="doc-title">Ch ' + String(number).padStart(2, "0") + (chapter.frontmatter.title ? " — " + escapeHtml(chapter.frontmatter.title) : "") + "</h1>" +
+      '<div class="doc-meta">' + statusPill(chapter.frontmatter.status) + " &nbsp; " + (chapter.frontmatter.words || 0) + " words" + (chapter.frontmatter.pov ? " &middot; POV " + escapeHtml(chapter.frontmatter.pov) : "") + "</div>" +
+      '<button class="btn primary" id="run-slop">Run slop check</button>' +
+      '<div id="slop-result"></div>' +
+      '<div class="chapter-body" id="chapter-body">' + renderMarkdown(chapter.body, []) + "</div>" +
+      '<div class="findings-list" id="chapter-findings"></div>';
+    document.getElementById("run-slop").addEventListener("click", function () { runSlop(number); });
+  }
+
+  function verdictColor(verdict) {
+    return { clean: "good", "touched up": "warning", "slop-adjacent": "serious", slop: "critical" }[verdict] || "warning";
+  }
+
+  async function runSlop(number) {
+    var btn = document.getElementById("run-slop");
+    btn.disabled = true;
+    btn.textContent = "Running…";
+    var report = await guarded(function () { return api("/api/chapters/" + number + "/slop"); });
+    btn.disabled = false;
+    btn.textContent = "Run slop check";
+    if (!report) return;
+
+    var verdict = (report.stats && report.stats.verdict) || "";
+    var color = verdictColor(verdict);
+    var subscoreRows = Object.keys(report.subscores)
+      .sort()
+      .map(function (name) {
+        var value = report.subscores[name];
+        var pct = Math.max(0, Math.min(100, value));
+        return (
+          '<div class="subscore-label">' + escapeHtml(name) + "</div>" +
+          '<div class="subscore-track"><div class="subscore-fill" style="width:' + pct + '%;background:var(--' + color + ')"></div></div>' +
+          '<div class="subscore-value">' + value.toFixed(1) + "</div>"
+        );
+      })
+      .join("");
+
+    document.getElementById("slop-result").innerHTML =
+      '<div class="score-card">' +
+      '<div><div class="score-number" style="color:var(--' + color + ')">' + report.score.toFixed(1) + '</div>' +
+      '<div class="score-verdict" style="background:var(--' + color + ');color:#fff">' + escapeHtml(verdict) + "</div></div>" +
+      '<div class="subscores">' + subscoreRows + "</div>" +
+      "</div>";
+
+    document.getElementById("chapter-body").innerHTML = renderMarkdown(currentChapter.body, report.findings);
+
+    var groups = {};
+    report.findings.forEach(function (f) {
+      var key = f.category || f.source || "other";
+      (groups[key] = groups[key] || []).push(f);
+    });
+    var findingsHtml = Object.keys(groups)
+      .sort()
+      .map(function (cat) {
+        var rows = groups[cat]
+          .map(function (f) {
+            return (
+              '<div class="finding-row">' +
+              '<span class="badge sev-' + f.severity + '">' + f.severity + "</span>" +
+              '<span class="line">L' + (f.span ? f.span.line : "-") + "</span>" +
+              '<span class="quote">' + escapeHtml(f.quote || "") + "</span>" +
+              '<span class="issue">' + escapeHtml(f.issue || "") + "</span>" +
+              "</div>"
+            );
+          })
+          .join("");
+        return '<div class="findings-group"><h3>' + escapeHtml(cat) + " (" + groups[cat].length + ')</h3>' + rows + "</div>";
+      })
+      .join("");
+    document.getElementById("chapter-findings").innerHTML =
+      "<h2>Findings (" + report.findings.length + ")</h2>" + (findingsHtml || "<p>No findings.</p>");
+  }
+
+  // -- canon ---------------------------------------------------------------
+
+  async function loadCanon() {
+    var entries = await guarded(function () { return api("/api/canon"); });
+    var list = document.getElementById("canon-list");
+    if (!entries) return;
+    var groups = {};
+    entries.forEach(function (e) { (groups[e.kind] = groups[e.kind] || []).push(e); });
+    var html = Object.keys(groups)
+      .sort()
+      .map(function (kind) {
+        var rows = groups[kind]
+          .map(function (e) {
+            return '<div class="list-row" data-path="' + escapeHtml(e.rel_path) + '"><div class="list-row-title">' + escapeHtml(e.name) + '</div><div class="list-row-meta">' + escapeHtml(e.rel_path) + "</div></div>";
+          })
+          .join("");
+        return '<div class="list-group-header">' + escapeHtml(kind) + "</div>" + rows;
+      })
+      .join("");
+    list.innerHTML = html || '<div class="list-group-header">No canon entries</div>';
+    list.querySelectorAll(".list-row").forEach(function (row) {
+      row.addEventListener("click", function () {
+        list.querySelectorAll(".list-row").forEach(function (r) { r.classList.remove("active"); });
+        row.classList.add("active");
+        openCanonEntry(row.dataset.path);
+      });
+    });
+  }
+
+  async function openCanonEntry(path) {
+    var entry = await guarded(function () { return api("/api/canon/entry?path=" + encodeURIComponent(path)); });
+    var pane = document.getElementById("canon-detail");
+    pane.classList.remove("empty");
+    if (!entry) return;
+    var fmRows = Object.keys(entry.frontmatter || {})
+      .map(function (k) {
+        var v = entry.frontmatter[k];
+        return "<tr><td>" + escapeHtml(k) + "</td><td>" + escapeHtml(typeof v === "object" ? JSON.stringify(v) : v) + "</td></tr>";
+      })
+      .join("");
+    pane.innerHTML =
+      '<h1 class="doc-title">' + escapeHtml(path) + "</h1>" +
+      (fmRows ? '<table class="data-table fm-table">' + fmRows + "</table>" : "") +
+      '<div class="chapter-body" style="margin-top:20px">' + renderMarkdown(entry.body, []) + "</div>";
+  }
+
+  // -- reviews ---------------------------------------------------------------
+
+  async function loadReviews() {
+    var reviews = await guarded(function () { return api("/api/reviews"); });
+    var list = document.getElementById("reviews-list");
+    if (!reviews) return;
+    if (!reviews.length) {
+      list.innerHTML = '<div class="list-group-header">No saved reports</div>';
+      return;
+    }
+    list.innerHTML = reviews
+      .map(function (r) {
+        return (
+          '<div class="list-row" data-file="' + escapeHtml(r.file) + '">' +
+          '<div class="list-row-title">' + escapeHtml(r.file) + "</div>" +
+          '<div class="list-row-meta">' + escapeHtml(r.kind) + (r.chapter != null ? " &middot; ch " + r.chapter : "") + " &middot; " + fmtTime(r.created_at) + "</div>" +
+          "</div>"
+        );
+      })
+      .join("");
+    list.querySelectorAll(".list-row").forEach(function (row) {
+      row.addEventListener("click", function () {
+        list.querySelectorAll(".list-row").forEach(function (r) { r.classList.remove("active"); });
+        row.classList.add("active");
+        openReview(row.dataset.file);
+      });
+    });
+  }
+
+  async function openReview(file) {
+    var report = await guarded(function () { return api("/api/reviews/" + encodeURIComponent(file)); });
+    var pane = document.getElementById("reviews-detail");
+    pane.classList.remove("empty");
+    if (!report) return;
+    renderReviewDetail(pane, file, report);
+  }
+
+  function renderReviewDetail(pane, file, report) {
+    var findings = report.findings || [];
+    var rows = findings
+      .map(function (f) {
+        return (
+          '<tr data-id="' + escapeHtml(f.id) + '">' +
+          '<td><span class="badge sev-' + f.severity + '">' + f.severity + "</span></td>" +
+          "<td>" + escapeHtml(f.category || f.source || "") + "</td>" +
+          '<td class="quote">' + escapeHtml(f.quote || "") + "</td>" +
+          "<td>" + escapeHtml(f.issue || "") + (f.suggestion ? "<br><span style='color:var(--text-muted)'>" + escapeHtml(f.suggestion) + "</span>" : "") + "</td>" +
+          '<td><span class="badge st-' + f.status + '">' + f.status + "</span></td>" +
+          '<td class="actions">' +
+          '<button class="btn small" data-action="accepted">Accept</button>' +
+          '<button class="btn small" data-action="dismissed">Dismiss</button>' +
+          "</td>" +
+          "</tr>"
+        );
+      })
+      .join("");
+    pane.innerHTML =
+      '<h1 class="doc-title">' + escapeHtml(file) + "</h1>" +
+      '<div class="doc-meta">' + escapeHtml(report.path || "") + " &middot; " + findings.length + " findings" + (report.summary ? "<br>" + escapeHtml(report.summary) : "") + "</div>" +
+      '<table class="data-table"><thead><tr><th>Sev</th><th>Category</th><th>Quote</th><th>Issue</th><th>Status</th><th></th></tr></thead><tbody>' +
+      rows +
+      "</tbody></table>";
+
+    pane.querySelectorAll("tr[data-id] button").forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        var tr = btn.closest("tr");
+        var id = tr.dataset.id;
+        var status = btn.dataset.action;
+        var updated = await guarded(function () {
+          return api("/api/reviews/" + encodeURIComponent(file) + "/findings/" + encodeURIComponent(id), {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: status }),
+          });
+        });
+        if (!updated) return;
+        tr.querySelector(".badge.st-open, .badge.st-accepted, .badge.st-dismissed, .badge.st-fixed").outerHTML =
+          '<span class="badge st-' + updated.status + '">' + updated.status + "</span>";
+        toast("Finding marked " + updated.status);
+      });
+    });
+  }
+
+  // -- ledger ---------------------------------------------------------------
+
+  async function loadLedger() {
+    var entries = await guarded(function () { return api("/api/ledger?n=200"); });
+    var pane = document.getElementById("ledger-detail");
+    if (!entries) return;
+    if (!entries.length) {
+      pane.innerHTML = "<p>No ledger entries yet.</p>";
+      return;
+    }
+    var rows = entries
+      .slice()
+      .reverse()
+      .map(function (e) {
+        return (
+          "<tr><td>" + fmtTime(e.ts) + "</td><td><code class='mono'>" + escapeHtml(e.action) + "</code></td>" +
+          "<td>" + escapeHtml(e.target || "") + "</td><td>" + escapeHtml(e.session || "") + "</td>" +
+          "<td><code class='mono'>" + escapeHtml(JSON.stringify(e.detail || {})) + "</code></td></tr>"
+        );
+      })
+      .join("");
+    pane.innerHTML =
+      '<h1 class="doc-title">Ledger</h1>' +
+      '<table class="data-table"><thead><tr><th>Time</th><th>Action</th><th>Target</th><th>Session</th><th>Detail</th></tr></thead><tbody>' +
+      rows +
+      "</tbody></table>";
+  }
+
+  // -- boot ---------------------------------------------------------------
+
+  loadStatus();
+  loadManuscript();
+})();
+</script>
