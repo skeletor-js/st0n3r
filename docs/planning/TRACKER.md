@@ -12,11 +12,11 @@ errors (frozen as baseline; new code must not add errors).
 
 | Wave | Item | Status | Notes |
 |------|------|--------|-------|
-| W0 | 011 U1 seam conventions + report kinds | wip | run 2 |
-| W0 | 009 U1 snapshot store + chokepoint | wip | subagent, run 2 |
-| W0 | 009 U2 route rewrite paths through chokepoint | wip | subagent, run 2 |
-| W1 | 001 voice engine (all units) | todo | |
-| W1 | 004 pacing instrumentation (all units) | todo | |
+| W0 | 011 U1 seam conventions + report kinds | done | c34f89a |
+| W0 | 009 U1 snapshot store + chokepoint | done | 18b26cc, 15 tests |
+| W0 | 009 U2 route rewrite paths through chokepoint | done | 18b26cc; deviation: reason kwarg passed via inspect.signature guard (test stubs lack it) |
+| W1 | 001 voice engine (U1-U4, U6, U7 + gate helper; write.py gate deferred to wiring) | wip | subagent worktree, run 2 |
+| W1 | 004 pacing instrumentation (U1-U7) | wip | subagent worktree, run 2 |
 | W2 | 005 writers' room (all units) | todo | |
 | W2 | 003 draft tournaments (all units) | todo | |
 | W3 | 002 character interiority (all units) | todo | |
@@ -24,7 +24,7 @@ errors (frozen as baseline; new code must not add errors).
 | W4 | 007 promise & motif ledger (all units) | todo | |
 | W4 | 008 reader simulation (all units) | todo | |
 | W5 | 010 production line (all units) | todo | |
-| Wx | 009 U3-U8 (provenance/CLI/refactors) | todo | slots alongside waves |
+| Wx | 009 U3-U8 (provenance/CLI/refactors) | wip | subagent worktree, run 2 |
 | tail | 011 U4 cross-feature wiring | todo | |
 | tail | 011 U5 UI panel consolidation | todo | |
 | tail | 011 U6 docs reconciliation | todo | |
@@ -89,6 +89,17 @@ errors (frozen as baseline; new code must not add errors).
   mypy 33 pre-existing errors (baseline saved to scratchpad). Starting Wave 0:
   orchestrator does 011 U1 (report kinds + panel marker + register comment); subagent
   builds 009 U1-U2 (archaeology snapshot chokepoint).
+- **Run 2 (cont):** Wave 0 landed. 011 U1 committed (c34f89a: kind field on
+  SlopReport/ReviewReport/book payload, reviews API kind surfacing with legacy sniff
+  fallback, index.html FEATURE PANELS markers, main.py register-order comment). 009
+  U1-U2 committed (18b26cc: archaeology/snapshots.py chokepoint + all four rewrite
+  paths routed; 15 tests). Suite 243 passed / 1 skipped; ruff clean; mypy at 33-error
+  baseline. Orchestrator read ALL eleven plans in full. Deviation noted: revise_chapter
+  reason kwarg forwarded only when the callable's signature accepts it, because
+  test_pipeline/test_book stub revise_chapter without it and the plan requires existing
+  tests unmodified. Launching Wave 1 (001 voice + 004 pacing) plus 009 U3-U8, three
+  subagents in isolated git worktrees (shared-seam files: main.py/config.py/ui — merged
+  by orchestrator per plan 011 seam contracts).
 
 ## Run journal (run 1 — v1/v2)
 
