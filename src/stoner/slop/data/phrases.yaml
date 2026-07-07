@@ -1,0 +1,438 @@
+# Multi-word literal clichés. Matched as case-insensitive substrings.
+# severity: info | minor | major | critical
+- phrase: couldn't help but
+  severity: major
+- phrase: could not help but
+  severity: major
+- phrase: a testament to
+  severity: critical
+- phrase: stands as a testament
+  severity: critical
+- phrase: in the heart of
+  severity: minor
+- phrase: against the backdrop of
+  severity: major
+- phrase: the air was thick with
+  severity: major
+- phrase: hung heavy in the air
+  severity: major
+- phrase: hung in the air
+  severity: minor
+- phrase: a sense of
+  severity: info
+- phrase: washed over
+  severity: minor
+- phrase: washed over her
+  severity: major
+- phrase: washed over him
+  severity: major
+- phrase: washed over them
+  severity: major
+- phrase: steeled herself
+  severity: minor
+- phrase: steeled himself
+  severity: minor
+- phrase: steeled themselves
+  severity: minor
+- phrase: in that moment
+  severity: minor
+- phrase: in this moment
+  severity: minor
+- phrase: for the first time in a long time
+  severity: major
+- phrase: for what felt like an eternity
+  severity: major
+- phrase: it is important to note
+  severity: critical
+- phrase: it's important to note
+  severity: critical
+- phrase: it is worth noting
+  severity: major
+- phrase: in conclusion
+  severity: critical
+- phrase: to conclude
+  severity: minor
+- phrase: in summary
+  severity: minor
+- phrase: ultimately,
+  severity: minor
+- phrase: eyes widened
+  severity: minor
+- phrase: eyes widened in
+  severity: minor
+- phrase: eyes narrowed
+  severity: info
+- phrase: a mixture of emotions
+  severity: major
+- phrase: a wave of relief
+  severity: minor
+- phrase: a wave of emotion
+  severity: minor
+- phrase: a flicker of
+  severity: minor
+- phrase: a glimmer of hope
+  severity: major
+- phrase: a glimmer of
+  severity: minor
+- phrase: sent a shiver down
+  severity: major
+- phrase: sent shivers down
+  severity: major
+- phrase: shiver down her spine
+  severity: major
+- phrase: shiver down his spine
+  severity: major
+- phrase: heart pounding
+  severity: info
+- phrase: heart raced
+  severity: info
+- phrase: heart hammered
+  severity: info
+- phrase: time seemed to slow
+  severity: major
+- phrase: time seemed to stand still
+  severity: major
+- phrase: the weight of the world
+  severity: major
+- phrase: the weight of
+  severity: info
+- phrase: deep breath
+  severity: info
+- phrase: took a deep breath
+  severity: info
+- phrase: let out a breath
+  severity: minor
+- phrase: release a breath
+  severity: minor
+- phrase: released a breath
+  severity: minor
+- phrase: bated breath
+  severity: minor
+- phrase: baited breath
+  severity: minor
+- phrase: with bated breath
+  severity: minor
+- phrase: a testament to the power of
+  severity: critical
+- phrase: power of friendship
+  severity: minor
+- phrase: power of love
+  severity: info
+- phrase: little did he know
+  severity: critical
+- phrase: little did she know
+  severity: critical
+- phrase: little did they know
+  severity: critical
+- phrase: if only he knew
+  severity: minor
+- phrase: if only she knew
+  severity: minor
+- phrase: what he didn't know
+  severity: minor
+- phrase: what she didn't know
+  severity: minor
+- phrase: didn't know it yet
+  severity: minor
+- phrase: didn't realize it yet
+  severity: minor
+- phrase: in the blink of an eye
+  severity: minor
+- phrase: in the grand scheme of things
+  severity: minor
+- phrase: at the end of the day
+  severity: minor
+- phrase: when all was said and done
+  severity: minor
+- phrase: only time would tell
+  severity: minor
+- phrase: time would tell
+  severity: minor
+- phrase: only time will tell
+  severity: minor
+- phrase: as if on cue
+  severity: minor
+- phrase: as if sensing
+  severity: minor
+- phrase: as if reading
+  severity: minor
+- phrase: as if in a trance
+  severity: minor
+- phrase: lost in thought
+  severity: info
+- phrase: mind raced
+  severity: info
+- phrase: mind was racing
+  severity: info
+- phrase: thoughts raced
+  severity: info
+- phrase: thoughts swirled
+  severity: minor
+- phrase: world seemed to
+  severity: minor
+- phrase: seemed to freeze
+  severity: minor
+- phrase: froze in place
+  severity: info
+- phrase: rooted to the spot
+  severity: minor
+- phrase: rooted in place
+  severity: minor
+- phrase: a chill ran down
+  severity: minor
+- phrase: chill ran down her spine
+  severity: major
+- phrase: chill ran down his spine
+  severity: major
+- phrase: goosebumps rose
+  severity: minor
+- phrase: goosebumps prickled
+  severity: minor
+- phrase: skin prickled
+  severity: minor
+- phrase: blood ran cold
+  severity: minor
+- phrase: blood turned to ice
+  severity: minor
+- phrase: pit of her stomach
+  severity: minor
+- phrase: pit of his stomach
+  severity: minor
+- phrase: stomach dropped
+  severity: info
+- phrase: knot in her stomach
+  severity: minor
+- phrase: knot in his stomach
+  severity: minor
+- phrase: lump in her throat
+  severity: minor
+- phrase: lump in his throat
+  severity: minor
+- phrase: throat tightened
+  severity: minor
+- phrase: voice caught in her throat
+  severity: minor
+- phrase: voice caught in his throat
+  severity: minor
+- phrase: words caught in her throat
+  severity: minor
+- phrase: words caught in his throat
+  severity: minor
+- phrase: a testament to her resilience
+  severity: critical
+- phrase: a testament to his resilience
+  severity: critical
+- phrase: more than words could say
+  severity: minor
+- phrase: more than she could put into words
+  severity: minor
+- phrase: more than he could put into words
+  severity: minor
+- phrase: beyond words
+  severity: info
+- phrase: words failed her
+  severity: minor
+- phrase: words failed him
+  severity: minor
+- phrase: at a loss for words
+  severity: info
+- phrase: in the pit of
+  severity: minor
+- phrase: sense of foreboding
+  severity: minor
+- phrase: sense of unease
+  severity: minor
+- phrase: sense of dread
+  severity: info
+- phrase: sense of belonging
+  severity: minor
+- phrase: sense of purpose
+  severity: info
+- phrase: sense of wonder
+  severity: minor
+- phrase: filled with a sense of
+  severity: major
+- phrase: overwhelmed with a sense of
+  severity: major
+- phrase: consumed by
+  severity: minor
+- phrase: consumed with guilt
+  severity: minor
+- phrase: swallowed by the darkness
+  severity: minor
+- phrase: enveloped in darkness
+  severity: minor
+- phrase: bathed in moonlight
+  severity: minor
+- phrase: bathed in light
+  severity: minor
+- phrase: bathed in golden light
+  severity: major
+- phrase: golden hour
+  severity: info
+- phrase: the world around her
+  severity: info
+- phrase: the world around him
+  severity: info
+- phrase: everything around her seemed to
+  severity: minor
+- phrase: everything around him seemed to
+  severity: minor
+- phrase: in the depths of
+  severity: minor
+- phrase: depths of despair
+  severity: minor
+- phrase: depths of her soul
+  severity: minor
+- phrase: depths of his soul
+  severity: minor
+- phrase: to the core
+  severity: info
+- phrase: shook her to the core
+  severity: minor
+- phrase: shook him to the core
+  severity: minor
+- phrase: to her very core
+  severity: minor
+- phrase: to his very core
+  severity: minor
+- phrase: with every fiber of her being
+  severity: major
+- phrase: with every fiber of his being
+  severity: major
+- phrase: every fiber of her being
+  severity: major
+- phrase: every fiber of his being
+  severity: major
+- phrase: in her bones
+  severity: minor
+- phrase: in his bones
+  severity: minor
+- phrase: knew it in her bones
+  severity: minor
+- phrase: knew it in his bones
+  severity: minor
+- phrase: a part of her knew
+  severity: minor
+- phrase: a part of him knew
+  severity: minor
+- phrase: something inside her
+  severity: info
+- phrase: something inside him
+  severity: info
+- phrase: something shifted
+  severity: minor
+- phrase: something shifted inside
+  severity: minor
+- phrase: the unspoken understanding
+  severity: minor
+- phrase: an unspoken understanding
+  severity: minor
+- phrase: unspoken words
+  severity: info
+- phrase: a silent understanding passed between them
+  severity: critical
+- phrase: passed between them
+  severity: minor
+- phrase: electricity between them
+  severity: minor
+- phrase: crackled between them
+  severity: minor
+- phrase: tension crackled
+  severity: minor
+- phrase: air crackled with tension
+  severity: major
+- phrase: thick with tension
+  severity: minor
+- phrase: charged with tension
+  severity: minor
+- phrase: hung thick in the air
+  severity: minor
+- phrase: silence stretched between them
+  severity: minor
+- phrase: silence hung between them
+  severity: minor
+- phrase: the silence was deafening
+  severity: major
+- phrase: deafening silence
+  severity: minor
+- phrase: time stood still
+  severity: minor
+- phrase: world fell away
+  severity: minor
+- phrase: everything else fell away
+  severity: minor
+- phrase: all else fell away
+  severity: minor
+- phrase: nothing else mattered
+  severity: info
+- phrase: in a way she couldn't explain
+  severity: minor
+- phrase: in a way he couldn't explain
+  severity: minor
+- phrase: in ways she couldn't
+  severity: minor
+- phrase: in ways he couldn't
+  severity: minor
+- phrase: more than she cared to admit
+  severity: minor
+- phrase: more than he cared to admit
+  severity: minor
+- phrase: more than she'd like to admit
+  severity: minor
+- phrase: more than he'd like to admit
+  severity: minor
+- phrase: she couldn't put her finger on
+  severity: minor
+- phrase: he couldn't put her finger on
+  severity: minor
+- phrase: couldn't quite place
+  severity: minor
+- phrase: couldn't shake the feeling
+  severity: minor
+- phrase: a feeling she couldn't shake
+  severity: minor
+- phrase: a feeling he couldn't shake
+  severity: minor
+- phrase: gut feeling
+  severity: info
+- phrase: her gut told her
+  severity: minor
+- phrase: his gut told him
+  severity: minor
+- phrase: against all odds
+  severity: minor
+- phrase: no turning back
+  severity: info
+- phrase: there was no turning back
+  severity: minor
+- phrase: point of no return
+  severity: info
+- phrase: the calm before the storm
+  severity: minor
+- phrase: storm was coming
+  severity: info
+- phrase: game changer
+  severity: minor
+- phrase: changed everything
+  severity: info
+- phrase: nothing would ever be the same
+  severity: major
+- phrase: life as she knew it
+  severity: minor
+- phrase: life as he knew it
+  severity: minor
+- phrase: in the grand tapestry of
+  severity: critical
+- phrase: tapestry of life
+  severity: critical
+- phrase: rich tapestry
+  severity: critical
+- phrase: in a world where
+  severity: minor
+- phrase: only time will heal
+  severity: minor
+- phrase: only time can heal
+  severity: minor
+- phrase: with a mixture of
+  severity: minor

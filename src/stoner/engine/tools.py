@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable
-from pathlib import Path
 from typing import Any
 
 from ..project import ProjectError, WritingProject, count_words, split_frontmatter
