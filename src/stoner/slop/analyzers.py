@@ -60,7 +60,7 @@ STOPWORDS = {
     "any", "both", "each", "few", "more", "most", "other", "some", "such",
     "only", "own", "same", "will", "would", "can", "could", "should",
     "shall", "may", "might", "must", "do", "does", "did", "have", "has",
-    "had", "had", "one",
+    "had", "one",
 }
 
 
