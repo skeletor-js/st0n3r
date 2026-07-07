@@ -16,6 +16,12 @@ st0n3r stands on the shoulders of prior work:
 - **sam-paech/slop-forensics** and the **EQ-Bench slop score** — the statistical
   framing (over-represented vocabulary, burstiness) behind our rhythm and
   lexicon analyzers.
+- **Burrows' Delta** (John Burrows, *"Delta: a Measure of Stylistic
+  Difference"*, 2002) — the function-word z-distance framing behind the voice
+  engine's drift scoring. The shipped function-word list
+  (`src/stoner/voice/data/function_words.yaml`) is hand-assembled from the
+  standard closed-class inventories of English grammar — no external corpus,
+  frequency list, or copyrighted word list was copied.
 - ***Stoner* by John Williams** — the name. A book about doing the work with
   quiet devotion, whatever the outcome. (And yes, the other reading of the
   name is intentional too.)

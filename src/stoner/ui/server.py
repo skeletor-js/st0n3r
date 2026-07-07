@@ -24,6 +24,8 @@ from ..canon.store import CanonStore
 from ..ledger import Ledger
 from ..project import ProjectError, WritingProject, count_words, split_frontmatter
 from ..slop import run_slop
+from ..voice.drift import run_voice
+from ..voice.fingerprint import FingerprintError, load_fingerprint
 
 if TYPE_CHECKING:  # pragma: no cover - typing only, fastapi may be absent
     from fastapi import FastAPI
@@ -221,6 +223,51 @@ def create_app(project: WritingProject) -> FastAPI:
         # the CLI can point at the source file directly. The UI only ever
         # renders the frontmatter-stripped `body` (matching GET
         # /api/chapters/{number}), so rebase spans onto that same string.
+        _fm, body = split_frontmatter(text)
+        body_start = len(text) - len(body)
+        for finding in data["findings"]:
+            span = finding.get("span")
+            if not span:
+                continue
+            span["start"] = max(0, span["start"] - body_start)
+            span["end"] = max(0, span["end"] - body_start)
+            span["line"] = body.count("\n", 0, span["start"]) + 1
+        return data
+
+    # -- voice ---------------------------------------------------------------
+
+    @app.get("/api/voice")
+    def api_voice() -> dict[str, Any]:
+        """Fingerprint meta, or a 404 whose detail names `stoner voice learn`."""
+        try:
+            fp = load_fingerprint(project)
+        except FingerprintError as exc:
+            raise _http404(str(exc)) from exc
+        return {
+            "version": fp.version,
+            "exemplars": fp.exemplars,
+            "segment_count": fp.segment_count,
+            "total_words": fp.total_words,
+            "thin": fp.thin,
+            "created_at": fp.created_at,
+        }
+
+    @app.get("/api/chapters/{number}/voice")
+    def api_chapter_voice(number: int) -> dict[str, Any]:
+        rel = project.chapter_rel(number)
+        try:
+            text = project.read(rel)
+        except ProjectError as exc:
+            raise _http404(f"chapter not found: ch-{number:02d}") from exc
+        try:
+            fp = load_fingerprint(project)
+        except FingerprintError as exc:
+            raise _http404(str(exc)) from exc
+        report = run_voice(text, fp, path=rel, config=project.config.voice)
+        data = report.model_dump(mode="json")
+
+        # Same span rebase as api_chapter_slop: findings carry spans over the
+        # raw file; the UI renders the frontmatter-stripped body.
         _fm, body = split_frontmatter(text)
         body_start = len(text) - len(body)
         for finding in data["findings"]:

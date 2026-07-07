@@ -12,6 +12,7 @@ before this becomes `CompletionRequest.system`):
   {memory_summary}    - rolling book-so-far summary from .stoner/memory.json
   {previous_tail}     - last ~500 words of the prior chapter, for continuity of voice/pacing
   {threads}           - open plot threads relevant to this chapter (from canon/threads.md)
+  {voice_digest}      - measured voice-fingerprint digest (`stoner voice learn`); "" when none learned
 
 All placeholders are optional from the template's point of view — the
 pipeline may pass "" for anything not yet available (e.g. first chapter has
@@ -42,6 +43,9 @@ character to discuss the fact that you are an AI.
 
 ### Style guide
 {style_guide}
+
+### Measured voice fingerprint (deterministic; empty until `stoner voice learn`)
+{voice_digest}
 
 ### Book-so-far memory
 {memory_summary}

@@ -28,6 +28,7 @@ from ..canon.memory import Memory
 from ..canon.store import CanonStore
 from ..project import ProjectError, WritingProject
 from ..types import Finding, Severity, Span
+from ..voice.drift import voice_context_digest
 
 _MAX_FINDINGS_PER_PASS = 25
 _CANON_DIGEST_CHARS = 8000
@@ -50,6 +51,7 @@ class PassContext:
     style_excerpt: str
     prior_tail: str
     frontmatter: dict[str, Any] = field(default_factory=dict)
+    voice_digest: str = ""  # measured fingerprint digest; "" when none learned
 
 
 def build_context(project: WritingProject, chapter: int) -> PassContext:
@@ -79,6 +81,8 @@ def build_context(project: WritingProject, chapter: int) -> PassContext:
         style_excerpt=style_excerpt,
         prior_tail=prior_tail,
         frontmatter=fm,
+        # "" when no fingerprint has been learned -- passes behave as before.
+        voice_digest=voice_context_digest(project, body),
     )
 
 
@@ -278,6 +282,15 @@ def _voice_prompt(ctx: PassContext) -> tuple[str, str]:
         "constructions ('not X, but Y'), and 'everyone sounds the same' "
         "problems."
     )
+    if ctx.voice_digest:
+        task += (
+            "\n\n## Measured voice fingerprint\n\n"
+            + ctx.voice_digest
+            + "\n\nThe fingerprint above is a deterministic measurement of this "
+            "writer's voice. Use it to explain and localize where the chapter "
+            "drifts from the measured voice -- do not re-score or re-compute "
+            "the numbers, and do not treat them as a gate."
+        )
     return _VOICE_SYSTEM, _std_user_prompt(ctx, task)
 
 

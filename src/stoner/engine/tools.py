@@ -220,6 +220,38 @@ def slop_check(project: WritingProject, chapter: Any) -> str:
     return "\n".join(lines)
 
 
+def voice_check(project: WritingProject, chapter: Any) -> str:
+    """Run the deterministic voice-drift check on a chapter (self-serve)."""
+    try:
+        n = _as_int(chapter, "chapter")
+        _fm, body = project.read_chapter(n)
+    except (ProjectError, ValueError) as e:
+        return f"ERROR: {e}"
+    from ..voice.drift import run_voice
+    from ..voice.fingerprint import FingerprintError, load_fingerprint
+    from ..voice.report import verdict
+
+    try:
+        fingerprint = load_fingerprint(project)
+    except FingerprintError as e:
+        return f"ERROR: no fingerprint -- {e}"
+    report = run_voice(body, fingerprint, path=project.chapter_rel(n), config=project.config.voice)
+    worst = sorted(
+        report.findings,
+        key=lambda f: {"critical": 0, "major": 1, "minor": 2, "info": 3}.get(f.severity.value, 4),
+    )[:10]
+    lines = [
+        f"voice drift: {report.score:.1f}/100 ({verdict(report.score)}); "
+        f"{len(report.findings)} drifting passage(s), worst first:"
+    ]
+    for f in worst:
+        loc = f"L{f.span.line}" if f.span else "-"
+        lines.append(f"- [{f.severity.value}] {loc} {f.issue} -- {f.suggestion}")
+    if len(report.findings) > len(worst):
+        lines.append(f"...and {len(report.findings) - len(worst)} more.")
+    return "\n".join(lines)
+
+
 def word_count(project: WritingProject, chapter: Any = None) -> str:
     try:
         if chapter is None or chapter == "":
@@ -437,5 +469,22 @@ def default_registry() -> ToolRegistry:
             },
         ),
         slop_check,
+    )
+    reg.register(
+        ToolSpec(
+            name="voice_check",
+            description=(
+                "Run the deterministic voice-drift check on a chapter you have "
+                "written; returns a 0-100 drift score (0 = in voice) and the "
+                "worst drifting passages. Returns an error string when no "
+                "fingerprint has been learned yet."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {"chapter": {"type": "integer"}},
+                "required": ["chapter"],
+            },
+        ),
+        voice_check,
     )
     return reg

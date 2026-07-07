@@ -95,6 +95,14 @@ def chapter_context(project: WritingProject, number: int) -> dict[str, str]:
         for t in store.threads()
         if t.status == "open"
     )
+    # Measured voice digest for the writer prompt; "" when no fingerprint
+    # has been learned (the template section reads as empty -- R8/R11).
+    from ..voice.fingerprint import FingerprintError, load_fingerprint, render_digest
+
+    try:
+        voice_digest = render_digest(load_fingerprint(project))
+    except FingerprintError:
+        voice_digest = ""
     return {
         "project_name": project.config.project_name,
         "style_guide": read_or_empty("canon/style.md"),
@@ -105,4 +113,5 @@ def chapter_context(project: WritingProject, number: int) -> dict[str, str]:
         "previous_tail": previous_tail,
         "threads": threads,
         "existing_canon": store.context_pack(max_chars=8000),
+        "voice_digest": voice_digest,
     }
