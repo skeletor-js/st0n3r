@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -83,7 +83,7 @@ class CompletionResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class Severity(str, Enum):
+class Severity(StrEnum):
     info = "info"
     minor = "minor"
     major = "major"
