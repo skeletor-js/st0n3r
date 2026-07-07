@@ -84,7 +84,7 @@ phrases:
   - "couldn't help but"
 ```
 
-This block works on both ends of the pipeline. Upstream, the writer agent reads the full style guide before every draft, and the revise stage passes the banned list explicitly with instructions to avoid the entries. Downstream, the detector itself flags every occurrence of your banned words and phrases as a `major` finding (marked "banned in canon/style.md") — in `stoner slop`, the write-pipeline gate, the agent's own `slop_check` tool, and the dashboard alike.
+This block works on both ends of the pipeline. Upstream, the writer agent reads the full style guide before every draft, and the revise stage passes the banned list explicitly with instructions to avoid the entries. Downstream, the detector itself flags every occurrence of your banned words and phrases as a `major` finding (marked "banned in canon/style.md") — in `stoner slop`, the write-pipeline gate, the agent's own `slop_check` tool, and the dashboard alike. Matching is whole-word and case-insensitive, so `shimmering` catches "Shimmering" but not "shimmeringly" — list the inflections you actually want banned. Note that a major finding raises the score but doesn't by itself fail the default gate (only `critical` severities block); add `major` to `slop_block_severities` if you want banned terms to be absolute.
 
 **Scoring weights** are exposed programmatically via `SlopConfig` if you're scripting:
 

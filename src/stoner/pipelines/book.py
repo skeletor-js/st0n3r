@@ -180,7 +180,7 @@ def _review_and_revise(
     last_report: BookReviewReport | None = None
     rounds = 0
     while rounds < max_review_rounds:
-        report = run_book_review(project, model=model, provider=provider)
+        report = run_book_review(project, provider=provider)
         result.usage = result.usage + report.usage
         rounds += 1
         result.review_rounds += 1
@@ -218,7 +218,7 @@ def _review_and_revise(
             if not chapter_majors:
                 continue
             try:
-                revision = revise_chapter(project, n, chapter_majors, model=model, provider=provider)
+                revision = revise_chapter(project, n, chapter_majors, provider=provider)
             except (ValueError, RuntimeError):
                 continue
             result.usage = result.usage + revision.usage

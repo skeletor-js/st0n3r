@@ -86,7 +86,44 @@ mybook/
   .stoner/               # memory, ledger, transcripts, reports
 ```
 
-Now do the part no tool can do for you: fill in `canon/premise.md` and `canon/style.md`. Every template file opens with guidance comments. The more specific the style guide, the better everything downstream behaves — the writer agent reads it before every draft, and the reviewer holds chapters to it.
+From here there are two ways to a manuscript. The fast path lets the harness build the bible and draft the book; the manual path keeps every step in your hands. They share all the same files, so you can switch between them freely.
+
+## The fast path: seed to book
+
+Three commands, two edit stops:
+
+```
+$ stoner brainstorm "an aging cannabis grower in Humboldt faces legalization"
+Brainstormed — wrote canon/premise.md, canon/style.md
+Logline: When California legalization arrives with a permit process, ...
+Review/edit canon/premise.md and canon/style.md, then run: stoner foundation
+```
+
+Edit those two files — they're the book's DNA — then generate the rest of the bible:
+
+```
+$ stoner foundation
+characters (4): ruth-vann, casey-berg, ...
+world (3): the-vann-parcel, ...
+threads (6): t1, t2, t3, t4, t5, t6
+outline: 18 chapter(s)
+evaluate: 1 loop(s), verdict: ship
+```
+
+Edit the outline and beat sheets, then let it write:
+
+```
+$ stoner book --max-chapters 4
+ch-01 drafted — 2,481 words, slop 11.2
+...
+review round 1: 7 major finding(s), verdict needs-work
+```
+
+`stoner book` drafts every planned chapter through the full pipeline, runs whole-book reviews as it goes, and saves resumable state before every model call — Ctrl-C is safe, and rerunning picks up where it stopped. Budgets, resume semantics, and cost math are in [Autonomous mode](autonomous.md).
+
+## The manual path
+
+Prefer to steer? Do the part no tool can do for you: fill in `canon/premise.md` and `canon/style.md` yourself. Every template file opens with guidance comments. The more specific the style guide, the better everything downstream behaves — the writer agent reads it before every draft, the reviewer holds chapters to it, and the slop detector enforces its `## Banned` list.
 
 ## Structure before prose (no API key needed)
 
@@ -154,9 +191,11 @@ Score: 47.2 / 100 -- verdict: slop-adjacent
 ...
 ```
 
-`--fmt markdown` or `--fmt json` for machine-readable output, `--save` to keep the report in `.stoner/reviews/`. How to read the score: [The slop detector](slop.md).
+`--fmt markdown` or `--fmt json` for machine-readable output, `--save` to keep the report in `.stoner/reviews/`. Words and phrases you list under `## Banned` in `canon/style.md` are flagged too, as major findings. How to read the score: [The slop detector](slop.md).
 
-**`stoner review <n>`** — LLM critic passes (continuity, pacing, voice, line by default) that save a findings report. **`stoner revise <n>`** — applies accepted findings by rewriting the chapter. Both are covered in [Review & revise](review.md).
+**`stoner review <n>`** — LLM critic passes (continuity, pacing, voice, line by default) that save a findings report. **`stoner revise <n>`** — applies accepted findings by rewriting the chapter. Both are covered in [Review & revise](review.md). **`stoner review-book`** — one whole-manuscript review, findings grouped by chapter.
+
+**`stoner brainstorm | foundation | book`** — the autonomous pipeline: seed to premise, premise to bible, bible to drafted manuscript. See [Autonomous mode](autonomous.md).
 
 **`stoner archive <n>`** — previews what facts a chapter would add to canon; `--auto` applies the non-conflicting ones.
 
@@ -177,7 +216,8 @@ $ stoner ledger --n 3
 ## Where to go next
 
 - [Concepts](concepts.md) — why the harness is shaped this way
-- [Providers & models](providers.md) — model strings, roles, custom endpoints, Codex CLI
+- [Autonomous mode](autonomous.md) — brainstorm, foundation, book, review-book
+- [Providers & models](providers.md) — model strings, roles, custom endpoints, Codex and Claude Code CLIs
 - [The slop detector](slop.md) and [Review & revise](review.md) — the two quality systems
 - [FAQ](faq.md) — nonfiction, existing manuscripts, costs, privacy
 

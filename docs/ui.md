@@ -9,9 +9,11 @@ INFO:     Uvicorn running on http://127.0.0.1:8377 (Press CTRL+C to quit)
 
 It's a single static page plus a small JSON API — no build step, no CDN, no external requests. Every view reads straight from disk on each request, so edits made in your editor, by the CLI, or by an agent mid-run show up on the next refresh. The UI is read-mostly: the one thing it writes is finding statuses during triage.
 
+The dashboard is built on the Hearth design system: a warm paper light theme and a warm charcoal dark theme. It follows your system preference by default; the sidebar's theme toggle overrides that, and the choice persists in the browser across visits.
+
 ## Panels
 
-The sidebar has four views.
+The sidebar rail has five views.
 
 ### Manuscript
 
@@ -33,6 +35,16 @@ Browse the story bible: premise, style, characters, world entries, timeline, thr
 Every saved report from `.stoner/reviews/` — both `stoner review` reports and slop reports saved with `--save` — newest first, tagged by chapter and kind.
 
 Open a review report and you get the **findings triage table**: severity, category, quote, issue, and status for each finding, with **Accept** and **Dismiss** buttons. Statuses are written back into the report file itself, which is exactly what `stoner revise` reads — accept the findings you agree with here, then run `stoner revise N` in the terminal. The full flow is in [Review & revise](review.md#the-revise-flow).
+
+### Book
+
+Progress of an [autonomous run](autonomous.md), rendered from `.stoner/book-state.json`. If no run has happened yet it says so and points you at `stoner book`; otherwise you get:
+
+- the run's current phase (drafting / reviewing / done) and when the state last changed;
+- a per-chapter checklist — done chapters with word count, slop score, review status, and revision cycles; the chapter being drafted marked **current**; the rest pending;
+- the history of whole-book review rounds, each with its major-finding count.
+
+Since the state file is saved before every model call, refreshing this panel during a run is a live progress view — and after a Ctrl-C it shows exactly where a resumed run will pick up.
 
 ### Ledger
 

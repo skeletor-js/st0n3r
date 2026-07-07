@@ -988,7 +988,7 @@
       return;
     }
 
-    var planned = state.chapters_planned || 0;
+    var planned = Array.isArray(state.chapters_planned) ? state.chapters_planned.length : (state.chapters_planned || 0);
     var done = state.chapters_done && typeof state.chapters_done === "object" ? state.chapters_done : {};
     var current = state.current;
     var doneNumbers = Object.keys(done).map(Number).filter(function (n) { return !isNaN(n); });

@@ -42,8 +42,9 @@
 
 <!-- Read by both the writer agent and `stoner slop`. Add anything that has
      crept into your own drafts and now makes you wince on a reread. Keep
-     entries short and exact — matching is case-insensitive substring, so
-     one entry catches all inflections that contain it. -->
+     entries short and exact — matching is case-insensitive and whole-word
+     (an entry of "glow" will not flag "glowing"; list inflections you want
+     caught). Banned hits show up as major findings in every slop check. -->
 
 ```yaml
 words:

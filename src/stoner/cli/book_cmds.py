@@ -66,7 +66,7 @@ def register(app: typer.Typer) -> None:
         review_every: int = typer.Option(4, "--review-every", help="Run a whole-book review every N chapters."),
         max_review_rounds: int = typer.Option(2, "--max-rounds", help="Max whole-book review/revise rounds per pass."),
         max_minutes: float = typer.Option(None, "--max-minutes", help="Wall-clock cap for this run (minutes)."),
-        model: str = typer.Option(None, "--model", help="Override the writer model."),
+        model: str = typer.Option(None, "--model", help="Override the writer model for drafting (review/revise keep their configured roles)."),
         resume: bool = typer.Option(True, "--resume/--no-resume", help="Resume from saved book state (skip written chapters)."),
     ) -> None:
         """Write the whole book: draft every planned chapter, then review and revise."""

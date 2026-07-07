@@ -506,10 +506,15 @@ def providers() -> None:
     if project_cfg:
         merged.update(project_cfg.providers)
     for name, pc in sorted(merged.items()):
-        if pc.kind == "codex_cli":
+        if pc.kind in ("codex_cli", "claude_code"):
             import shutil
 
-            auth = "codex CLI found" if shutil.which("codex") else "[red]codex CLI missing[/red]"
+            binary = "codex" if pc.kind == "codex_cli" else "claude"
+            auth = (
+                f"{binary} CLI found"
+                if shutil.which(binary)
+                else f"[red]{binary} CLI missing[/red]"
+            )
         elif pc.kind == "openai_compat" and not pc.api_key_env:
             auth = "no key needed"
         else:

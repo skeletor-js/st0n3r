@@ -2,7 +2,7 @@
 
 ### Does st0n3r send my writing anywhere?
 
-Only when you run a command that calls a model — `write`, `review`, `revise`, `archive` — and then only to the provider you configured, carrying the chapter plus the canon/memory context for that call. Everything else (`slop`, `chapter`, `canon`, `beats`, `threads`, `status`, `ledger`, the UI) works entirely on local files and makes no network requests. For a fully offline pipeline, point the model roles at [Ollama or another local server](providers.md#ollama-and-other-local-servers).
+Only when you run a command that calls a model — `write`, `review`, `revise`, `archive`, `review-book`, and the autonomous trio `brainstorm`/`foundation`/`book` — and then only to the provider you configured, carrying the chapter plus the canon/memory context for that call (`review-book` sends the manuscript itself). Everything else (`slop`, `chapter`, `canon`, `beats`, `threads`, `status`, `ledger`, the UI) works entirely on local files and makes no network requests. For a fully offline pipeline, point the model roles at [Ollama or another local server](providers.md#ollama-and-other-local-servers).
 
 ### What if I already have a manuscript?
 
@@ -30,9 +30,13 @@ Yes, and it's a first-class workflow. Chapters are plain markdown; write them in
 
 Mostly. The slop detector, review passes like `line`, `pacing`, and `adversarial`, the project structure, and the ledger are genre-agnostic. The canon templates and passes like `continuity` and `voice` assume characters, threads, and scenes — for a memoir they map surprisingly well; for a technical book you'd ignore the character machinery and treat canon as your fact sheet. Nothing breaks; some vocabulary just reads fictional.
 
+### Can it write the whole book by itself?
+
+Mechanically, yes: `stoner brainstorm "<seed>"` builds the premise and style, `stoner foundation` generates characters, world, threads, outline, and beat sheets, and `stoner book` drafts every chapter with slop gates, archiving, and whole-book review/revision rounds — resumable at any point. See [Autonomous mode](autonomous.md). Practically, the output is only as good as the two human checkpoints in the middle: editing the premise/style after `brainstorm`, and the outline/beats after `foundation`. Skip those and you'll get a book-shaped object; take them seriously and the machine does the typing while you do the authoring.
+
 ### Why did the slop gate reject my chapter?
 
-Two triggers, configured under `gates:` in `stoner.yaml`: the score exceeded `slop_max_score` (default 25), or a finding hit a severity in `slop_block_severities` (default: any `critical` — a single "little did she know" does it). During `stoner write` the harness auto-revises up to `max_revision_loops` times; if it still fails, the chapter is kept on disk and the failure reported. Run `stoner slop N` to see exactly what fired, and read [the slop doc](slop.md#limitations-and-false-positives) before deciding whether to fix the prose or loosen the gate — deliberate style tics are a legitimate reason to raise the threshold.
+Two triggers, configured under `gates:` in `stoner.yaml`: the score exceeded `slop_max_score` (default 25), or a finding hit a severity in `slop_block_severities` (default: any `critical` — a single "little did she know" does it). Words you've listed under `## Banned` in `canon/style.md` count as major findings, so a banned-word habit can push the score over the threshold too. During `stoner write` the harness auto-revises up to `max_revision_loops` times; if it still fails, the chapter is kept on disk and the failure reported. Run `stoner slop N` to see exactly what fired, and read [the slop doc](slop.md#limitations-and-false-positives) before deciding whether to fix the prose or loosen the gate — deliberate style tics are a legitimate reason to raise the threshold.
 
 ### How do I control costs?
 
@@ -41,6 +45,10 @@ Two triggers, configured under `gates:` in `stoner.yaml`: the score exceeded `sl
 - Agents never read the whole manuscript ([by design](concepts.md#memory-why-agents-never-read-the-whole-manuscript)), so per-call cost stays roughly flat as the book grows.
 - Review reports record token usage; agent transcripts in `.stoner/sessions/` record it per turn.
 - `stoner slop` is free — run it as often as you like.
+
+### What does an autonomous run cost, and how do I cap it?
+
+Each chapter is a handful of model calls (the draft, up to two slop-gate revisions, one archivist extraction); whole-book review rounds add one large call each plus a revision per flagged chapter. The caps: `stoner book --max-chapters N` bounds a run to N chapters, `--max-minutes M` is a wall-clock limit checked between chapters, and `--review-every 0` drops the interim reviews. Because state is saved before every model call, hitting a cap (or Ctrl-C) just pauses the run — rerunning `stoner book` resumes it. Small daily capped runs are a legitimate way to write a book on a fixed budget; the arithmetic is in [Autonomous mode](autonomous.md#budgets-and-cost).
 
 ### Can I use local models via Ollama?
 

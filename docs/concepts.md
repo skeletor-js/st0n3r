@@ -33,7 +33,11 @@ Every action — a chapter drafted, a fact applied, a slop check, each agent tur
 
 1. **Draft.** The writer agent gets the beat sheet, canon pack, memory, and style guide, plus tools (`query_canon`, `write_chapter`, `slop_check`, ...). It's instructed to check canon before inventing facts and can self-check its own slop score before finishing. The chapter lands in `manuscript/ch-NN.md`.
 2. **Slop gate.** The deterministic detector scores the draft. If the score exceeds `gates.slop_max_score` (default 25) or any finding hits a blocked severity (default: `critical`), the harness feeds the worst findings to an automatic revision — up to `gates.max_revision_loops` times (default 2). If it still fails, the chapter is kept and the failure is *reported*, not hidden: you decide what happens next.
-3. **Archive.** The archivist extracts facts from the finished prose, diffs them against canon, applies the safe ones, appends timeline rows, updates threads, writes the chapter summary into memory. Contradictions become **conflicts** for you to resolve by hand — canon is never auto-overwritten. See [Review & revise](review.md#archivist-conflicts).
+3. **Archive.** The archivist extracts facts from the finished prose, diffs them against canon, applies the safe ones, appends timeline rows, updates threads, writes the chapter summary into memory. Contradictions become **conflicts** for you to resolve by hand — canon is never auto-overwritten. See [Review & revise](review.md#archivist-conflicts-and-how-to-resolve-them).
+
+(One nuance: [text-only providers](providers.md#cli-backed-providers-codex-and-claude-code) draft in a single comprehensive completion instead of the tool loop — the system prompt already carries everything the tools would fetch.)
+
+This same pipeline is the unit of [autonomous mode](autonomous.md): `stoner book` runs it for every planned chapter, adding whole-book review and revision rounds on top, and `stoner brainstorm`/`stoner foundation` build the canon it draws from.
 
 ## Two immune systems
 
@@ -64,6 +68,7 @@ Ask a model to rate a chapter 1–10 and nearly everything comes back a 7 or an 
 | `.stoner/memory.json` | rolling summaries | archivist |
 | `.stoner/ledger.jsonl` | action log | everything |
 | `.stoner/sessions/` | full agent transcripts | agent runs |
-| `.stoner/reviews/` | slop + review reports | `slop --save`, `review` |
+| `.stoner/reviews/` | slop, review, and book-review reports | `slop --save`, `review`, `review-book` |
+| `.stoner/book-state.json` | resumable autonomous-run state | `stoner book` |
 
 Everything is plain markdown, YAML, and JSON. There's no database, no lock-in; the whole project diffs cleanly under git, and you can edit any file by hand at any time — the harness reads from disk fresh on every operation.

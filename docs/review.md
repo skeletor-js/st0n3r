@@ -36,7 +36,7 @@ ch-03-1783437321.json   # structured: findings with severity, quote, span, statu
 ch-03-1783437321.md     # human-readable rendering of the same
 ```
 
-Findings quote the chapter verbatim, and the harness locates each quote to a line/character span where it can — that's what lets the [UI](ui.md) highlight them in the text. Reports also record token usage per run. Slop reports saved with `stoner slop --save` land in the same directory.
+Findings quote the chapter verbatim, and the harness locates each quote to a line/character span where it can — that's what lets the [UI](ui.md) highlight them in the text. Reports also record token usage per run. Slop reports saved with `stoner slop --save` land in the same directory, as do whole-manuscript reports (`book-<ts>.json`/`.md`) from `stoner review-book` — the single cross-chapter pass that [autonomous mode](autonomous.md#4-stoner-review-book--one-whole-manuscript-pass) also runs between drafting batches.
 
 ## The revise flow
 
