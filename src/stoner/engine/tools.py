@@ -12,7 +12,7 @@ import json
 from collections.abc import Callable
 from typing import Any
 
-from ..project import ProjectError, WritingProject, count_words, split_frontmatter
+from ..project import ProjectError, WritingProject, count_words
 from ..types import ToolCall, ToolResult, ToolSpec
 
 ToolFunc = Callable[..., str]
