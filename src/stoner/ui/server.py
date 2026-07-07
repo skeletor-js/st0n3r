@@ -142,7 +142,7 @@ def _list_reviews(project: WritingProject) -> list[dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 
-def create_app(project: WritingProject) -> "FastAPI":
+def create_app(project: WritingProject) -> FastAPI:
     """Build the FastAPI app serving `project`'s dashboard + JSON API.
 
     Raises `RuntimeError` (not `ImportError`) if `fastapi` is not installed,
@@ -159,7 +159,7 @@ def create_app(project: WritingProject) -> "FastAPI":
     canon = CanonStore(project)
     ledger = Ledger(project.root)
 
-    def _http404(detail: str) -> "HTTPException":
+    def _http404(detail: str) -> HTTPException:
         return HTTPException(status_code=404, detail=detail)
 
     # -- static dashboard -------------------------------------------------

@@ -22,7 +22,7 @@ _Last updated: 2026-07-07 (run 1)_
 | 3 | canon: archivist | done | apply_updates(auto=False)=dry-run preview |
 | 4 | slop: lexicon data | done | 158 words / 218 phrases / 46 patterns |
 | 4 | slop: analyzers + score + report | done | 26 tests, commit 4d3dbc8 |
-| 5 | review: passes + runner + revise | wip | subagent D running |
+| 5 | review: passes + runner + revise | done | commit f64c60f, 19 tests |
 | 6 | cli: init/status/write/review/slop/canon/revise/ui | done | commit 3e38db6, 16 tests |
 | 6 | pipelines: write pipeline | done | commit 3e38db6 |
 | 7 | ui: server + static dashboard | wip | subagent E running |
@@ -60,3 +60,4 @@ _Last updated: 2026-07-07 (run 1)_
 - **Run 1 (cont):** Subagent A landed: providers (anthropic/openai_compat/codex_cli) + engine (agent loop, tools, textproto, prompts), 42 tests green. Committed 4de3131.
 - **Run 1 (cont):** Subagent C landed: canon store/templates/memory/archivist, 37 tests. Note: archivist apply_updates(auto=False) is a dry-run preview; new_entities surfaced for triage, never auto-created.
 - **Run 1 (cont):** Slop detector landed (26 tests). Orchestrator wrote CLI + write pipeline (16 tests). Wave 2 running: D=review engine, E=web UI. 119 tests green outside in-flight scopes.
+- **Run 1 (cont):** Review engine landed (8 passes, 19 tests, 168 repo-wide green). UI subagent still running.
