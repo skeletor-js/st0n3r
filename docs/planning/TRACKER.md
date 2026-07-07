@@ -25,11 +25,11 @@ _Last updated: 2026-07-07 (run 1)_
 | 5 | review: passes + runner + revise | done | commit f64c60f, 19 tests |
 | 6 | cli: init/status/write/review/slop/canon/revise/ui | done | commit 3e38db6, 16 tests |
 | 6 | pipelines: write pipeline | done | commit 3e38db6 |
-| 7 | ui: server + static dashboard | wip | subagent E running |
-| 8 | tests: unit + smoke | todo | alongside modules |
-| 8 | reviewer subagent QA pass + fixes | todo | |
-| 9 | README + docs/ | todo | |
-| 9 | LICENSE (MIT) + attribution | todo | |
+| 7 | ui: server + static dashboard | done | 30 tests; in 903f562 |
+| 8 | tests: unit + smoke | done | 168 tests green |
+| 8 | reviewer subagent QA pass + fixes | wip | QA workflow launching |
+| 9 | README + docs/ | wip | docs agent + orchestrator README |
+| 9 | LICENSE (MIT) + attribution | done | LICENSE + docs/CREDITS.md |
 | 9 | final push | todo | |
 
 ## Decisions log
@@ -61,3 +61,4 @@ _Last updated: 2026-07-07 (run 1)_
 - **Run 1 (cont):** Subagent C landed: canon store/templates/memory/archivist, 37 tests. Note: archivist apply_updates(auto=False) is a dry-run preview; new_entities surfaced for triage, never auto-created.
 - **Run 1 (cont):** Slop detector landed (26 tests). Orchestrator wrote CLI + write pipeline (16 tests). Wave 2 running: D=review engine, E=web UI. 119 tests green outside in-flight scopes.
 - **Run 1 (cont):** Review engine landed (8 passes, 19 tests, 168 repo-wide green). UI subagent still running.
+- **Run 1 (cont):** UI landed (30 tests). All modules built; 168 tests green. CLI smoke-tested (init/status/providers). Launching QA workflow (find->verify) + docs agent + README.
