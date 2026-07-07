@@ -107,7 +107,7 @@ class Provider(ABC):
   append → until stop/budget. Transcript saved to `.stoner/sessions/`.
 - Budgets: max turns, max tokens, wall clock.
 - Tools (all scoped to the project root, path-jail enforced):
-  `read_chapter`, `write_chapter`, `list_project`, `search_text`,
+  `read_chapter`, `write_chapter` (frontmatter-merging), `list_project`, `search_text`,
   `query_canon`, `update_canon`, `read_outline`, `update_beats`,
   `get_memory`, `slop_check` (self-serve), `word_count`.
 

@@ -112,9 +112,19 @@ def run_write(
     skip_archive: bool = False,
     task: str = "",
 ) -> WriteResult:
-    """Full pipeline: draft -> slop gate (auto-revise) -> archivist."""
+    """Full pipeline: draft -> slop gate (auto-revise) -> archivist.
+
+    `model` overrides the *writer* role only; the revise and archivist
+    stages keep their configured role models (unless a `provider` instance
+    is injected, which routes every stage — that path exists for tests).
+    """
     res = WriteResult(chapter=number)
     ledger = Ledger(project.root)
+    if provider is None:
+        # Auth-preflight the writer provider before logging the pipeline
+        # start, so a missing API key doesn't leave an orphaned start entry
+        # with no matching done. Each stage still resolves its own role.
+        get_provider(resolve_role_model(project.config, "writer", model), project.config)
     ledger.append("pipeline.write.start", target=project.chapter_rel(number))
 
     res.usage += draft_chapter(project, number, model=model, provider=provider, task=task)
@@ -142,8 +152,10 @@ def run_write(
             for f in report.findings
             if f.severity.value in ("major", "critical") or report.score > gates.slop_max_score
         ][:40]
+        # model deliberately not forwarded: the revise stage keeps its
+        # configured reviewer role even when the writer model is overridden.
         revision = revise_chapter(
-            project, number, blocked or report.findings[:40], model=model, provider=provider
+            project, number, blocked or report.findings[:40], provider=provider
         )
         res.usage += revision.usage
         _, body = project.read_chapter(number)
@@ -161,7 +173,7 @@ def run_write(
 
     # --- archivist -------------------------------------------------------
     if not skip_archive:
-        res.archive = run_archive(project, number, model=model, provider=provider, auto=True)
+        res.archive = run_archive(project, number, provider=provider, auto=True)
 
     fm, body = project.read_chapter(number)
     res.words = count_words(body)

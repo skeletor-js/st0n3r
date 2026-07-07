@@ -54,21 +54,30 @@ def write_chapter(
     number: Any,
     title: str = "",
     body: str = "",
-    status: str = "draft",
+    status: str = "",
     pov: str = "",
 ) -> str:
     try:
         n = _as_int(number, "number")
         if not body.strip():
             return "ERROR: body must not be empty"
-        fm: dict[str, Any] = {"title": title, "status": status}
+        # Merge with any existing frontmatter so a redraft doesn't silently
+        # drop pov/status or other keys set by earlier stages.
+        try:
+            fm, _old_body = project.read_chapter(n)
+            fm = dict(fm)
+        except ProjectError:
+            fm = {}
+        if title:
+            fm["title"] = title
+        fm["status"] = status or fm.get("status") or "draft"
         if pov:
             fm["pov"] = pov
         path = project.write_chapter(n, fm, body)
     except (ProjectError, ValueError) as e:
         return f"ERROR: {e}"
     words = count_words(body)
-    return f"Wrote {path.relative_to(project.root)} ({words} words, status={status})"
+    return f"Wrote {path.relative_to(project.root)} ({words} words, status={fm['status']})"
 
 
 def list_project(project: WritingProject) -> str:
@@ -179,6 +188,33 @@ def update_beats(project: WritingProject, chapter: Any, content: str) -> str:
 
 def get_memory(project: WritingProject) -> str:
     return json.dumps(project.read_memory(), ensure_ascii=False, indent=2)
+
+
+def slop_check(project: WritingProject, chapter: Any) -> str:
+    """Run the deterministic slop detector on a chapter (self-serve for agents)."""
+    try:
+        n = _as_int(chapter, "chapter")
+        _fm, body = project.read_chapter(n)
+    except (ProjectError, ValueError) as e:
+        return f"ERROR: {e}"
+    from ..slop import run_slop
+    from ..slop.report import verdict
+
+    report = run_slop(body, path=project.chapter_rel(n))
+    worst = sorted(
+        report.findings,
+        key=lambda f: {"critical": 0, "major": 1, "minor": 2, "info": 3}.get(f.severity.value, 4),
+    )[:15]
+    lines = [
+        f"slop score: {report.score:.1f}/100 ({verdict(report.score)}); "
+        f"{len(report.findings)} findings, worst first:"
+    ]
+    for f in worst:
+        loc = f"L{f.span.line}" if f.span else "-"
+        lines.append(f"- [{f.severity.value}] {loc} {f.issue}")
+    if len(report.findings) > len(worst):
+        lines.append(f"...and {len(report.findings) - len(worst)} more.")
+    return "\n".join(lines)
 
 
 def word_count(project: WritingProject, chapter: Any = None) -> str:
@@ -382,5 +418,21 @@ def default_registry() -> ToolRegistry:
             parameters={"type": "object", "properties": {"chapter": {"type": "integer"}}},
         ),
         word_count,
+    )
+    reg.register(
+        ToolSpec(
+            name="slop_check",
+            description=(
+                "Run the deterministic AI-slop detector on a chapter you have "
+                "written; returns a 0-100 score and the worst findings. Use it "
+                "to self-check before finishing."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {"chapter": {"type": "integer"}},
+                "required": ["chapter"],
+            },
+        ),
+        slop_check,
     )
     return reg

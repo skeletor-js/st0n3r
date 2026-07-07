@@ -16,7 +16,7 @@ import yaml
 
 from .config import CONFIG_FILENAME, StonerConfig
 
-CHAPTER_RE = re.compile(r"^ch-(\d{2,3})\.md$")
+CHAPTER_RE = re.compile(r"^ch-(\d{2,})\.md$")
 
 DIRS = [
     "canon",

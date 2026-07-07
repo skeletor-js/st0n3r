@@ -155,6 +155,17 @@ def revise_chapter(
     resp = prov.complete(req)
 
     revised_body = _extract_revised_body(resp.text)
+    old_word_count = count_words(body)
+    new_word_count = count_words(revised_body)
+    # Never let a truncated/empty model response destroy a chapter: a real
+    # revision is prose of comparable length, not a stub.
+    if new_word_count == 0 or new_word_count < old_word_count // 4:
+        raise ValueError(
+            f"Revision for chapter {chapter} came back with {new_word_count} "
+            f"words (original: {old_word_count}); refusing to overwrite. "
+            "The model response was likely truncated — raise max_tokens in "
+            "stoner.yaml or retry. The original chapter is untouched."
+        )
     default_summary = f"Applied {len(findings)} finding(s) to chapter {chapter}."
     summary = _extract_summary(resp.text, default_summary)
 

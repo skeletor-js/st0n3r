@@ -486,7 +486,7 @@
           .map(function (f) {
             return (
               '<div class="finding-row">' +
-              '<span class="badge sev-' + f.severity + '">' + f.severity + "</span>" +
+              '<span class="badge sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + "</span>" +
               '<span class="line">L' + (f.span ? f.span.line : "-") + "</span>" +
               '<span class="quote">' + escapeHtml(f.quote || "") + "</span>" +
               '<span class="issue">' + escapeHtml(f.issue || "") + "</span>" +
@@ -590,11 +590,11 @@
       .map(function (f) {
         return (
           '<tr data-id="' + escapeHtml(f.id) + '">' +
-          '<td><span class="badge sev-' + f.severity + '">' + f.severity + "</span></td>" +
+          '<td><span class="badge sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + "</span></td>" +
           "<td>" + escapeHtml(f.category || f.source || "") + "</td>" +
           '<td class="quote">' + escapeHtml(f.quote || "") + "</td>" +
           "<td>" + escapeHtml(f.issue || "") + (f.suggestion ? "<br><span style='color:var(--text-muted)'>" + escapeHtml(f.suggestion) + "</span>" : "") + "</td>" +
-          '<td><span class="badge st-' + f.status + '">' + f.status + "</span></td>" +
+          '<td><span class="badge st-' + escapeHtml(f.status) + '">' + escapeHtml(f.status) + "</span></td>" +
           '<td class="actions">' +
           '<button class="btn small" data-action="accepted">Accept</button>' +
           '<button class="btn small" data-action="dismissed">Dismiss</button>' +

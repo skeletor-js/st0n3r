@@ -184,7 +184,12 @@ class Agent:
                 )
                 turn_record["loop_guard"] = "nudged"
 
-            messages.append(Message(role="tool", content=nudge, tool_results=results))
+            messages.append(Message(role="tool", tool_results=results))
+            if nudge:
+                # A separate user message: provider mappers drop `content` on
+                # tool-role messages that carry tool_results, so a nudge
+                # placed there would never reach the model.
+                messages.append(Message(role="user", content=nudge))
             transcript.data["turns"].append(turn_record)
             transcript.save()
 

@@ -81,6 +81,9 @@ contradicts — the manuscript and the bible cannot silently drift apart.
 | Command | What it does |
 |---|---|
 | `stoner init <name>` | Scaffold a project with instructive canon templates |
+| `stoner chapter new/import <n>` | Create a chapter stub or bring in existing prose (no AI, no key) |
+| `stoner canon new character/world <name>` | Instantiate a story-bible entry from the template |
+| `stoner beats <n>` | Create the beat sheet the writer agent drafts from |
 | `stoner write <n>` | Full pipeline: draft → slop gate (auto-revise) → archivist |
 | `stoner slop <n\|file\|all>` | Deterministic slop report with score, findings, spans |
 | `stoner review <n>` | Critic passes → structured findings saved to `.stoner/reviews/` |

@@ -27,7 +27,7 @@ _Last updated: 2026-07-07 (run 1)_
 | 6 | pipelines: write pipeline | done | commit 3e38db6 |
 | 7 | ui: server + static dashboard | done | 30 tests; in 903f562 |
 | 8 | tests: unit + smoke | done | 168 tests green |
-| 8 | reviewer subagent QA pass + fixes | wip | QA workflow launching |
+| 8 | reviewer subagent QA pass + fixes | done | 18/18 confirmed findings fixed, 11 regression tests |
 | 9 | README + docs/ | wip | docs agent + orchestrator README |
 | 9 | LICENSE (MIT) + attribution | done | LICENSE + docs/CREDITS.md |
 | 9 | final push | todo | |
@@ -62,3 +62,8 @@ _Last updated: 2026-07-07 (run 1)_
 - **Run 1 (cont):** Slop detector landed (26 tests). Orchestrator wrote CLI + write pipeline (16 tests). Wave 2 running: D=review engine, E=web UI. 119 tests green outside in-flight scopes.
 - **Run 1 (cont):** Review engine landed (8 passes, 19 tests, 168 repo-wide green). UI subagent still running.
 - **Run 1 (cont):** UI landed (30 tests). All modules built; 168 tests green. CLI smoke-tested (init/status/providers). Launching QA workflow (find->verify) + docs agent + README.
+- **Run 1 (cont):** QA workflow done: 5 reviewers (opus/sonnet) -> 36 adversarial verifications; 18 findings confirmed, all fixed:
+  2 critical (revise empty-body guard; archivist nested-frontmatter diffing), XSS escapes in UI tables, --model scoped to writer role,
+  loop-guard nudge now a user message, usage counted on parse failure, timeline idempotency, write_chapter frontmatter merge,
+  slop_check agent tool added, ch>=1000 regex, keyless CLI creation (chapter new/import, canon new, beats), archivist.md rewritten
+  truthful, unused reviewer.md removed. 179 tests green. README got screenshots (docs/assets) + demo-driven fixes (rich double-print, UI word count).

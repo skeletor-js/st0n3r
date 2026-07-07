@@ -69,3 +69,25 @@ def new_chapter_stub(number: int, title: str = "", pov: str = "") -> tuple[dict[
     fm.setdefault("status", "outline")
     fm.setdefault("words", 0)
     return fm, body
+
+
+def new_beats_stub(number: int) -> str:
+    """Beat-sheet template for any chapter (the shipped file only covers ch-01)."""
+    content = _read_template("beats/ch-01.md")
+    return content.replace("chapter: 1", f"chapter: {number}", 1)
+
+
+def new_canon_entry(kind: str, name: str) -> tuple[str, str]:
+    """Build (project-relative path, content) for a fresh character/world entry.
+
+    Fills the template's empty `name:` field; everything else stays as the
+    instructive template for the writer to complete.
+    """
+    if kind not in ("character", "world"):
+        raise ValueError(f"kind must be 'character' or 'world', not {kind!r}")
+    template = _read_template(f"{kind}s/_template.md" if kind == "character" else "world/_template.md")
+    content = template.replace("name:", f"name: {name}", 1)
+    from .store import slugify
+
+    rel = f"canon/{'characters' if kind == 'character' else 'world'}/{slugify(name)}.md"
+    return rel, content

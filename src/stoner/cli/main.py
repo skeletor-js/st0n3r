@@ -25,6 +25,8 @@ app = typer.Typer(
 )
 canon_app = typer.Typer(help="Inspect and search the canon (the story bible).", no_args_is_help=True)
 app.add_typer(canon_app, name="canon")
+chapter_app = typer.Typer(help="Create and import manuscript chapters (no API key needed).", no_args_is_help=True)
+app.add_typer(chapter_app, name="chapter")
 
 console = Console()
 err_console = Console(stderr=True, style="bold red")
@@ -203,6 +205,89 @@ def canon_pack(max_chars: int = typer.Option(12000)) -> None:
     console.print(CanonStore(_project()).context_pack(max_chars=max_chars))
 
 
+@canon_app.command("new")
+def canon_new(
+    kind: str = typer.Argument(..., help="character | world"),
+    name: str = typer.Argument(..., help="Entry name, e.g. 'Mara Quill'."),
+) -> None:
+    """Create a character or world entry from the template."""
+    from ..canon.scaffold import new_canon_entry
+
+    project = _project()
+    try:
+        rel, content = new_canon_entry(kind, name)
+    except ValueError as e:
+        _fail(str(e))
+    if (project.root / rel).exists():
+        _fail(f"{rel} already exists.")
+    project.write(rel, content)
+    Ledger(project.root).append("canon.new", target=rel)
+    console.print(f"[green]Created[/green] {rel} — fill in the facts and voice sections.")
+
+
+@chapter_app.command("new")
+def chapter_new(
+    number: int = typer.Argument(..., help="Chapter number."),
+    title: str = typer.Option("", help="Working title."),
+    pov: str = typer.Option("", help="POV character."),
+) -> None:
+    """Create an empty chapter stub (structure only, no AI involved)."""
+    from ..canon.scaffold import new_chapter_stub
+
+    project = _project()
+    rel = project.chapter_rel(number)
+    if (project.root / rel).exists():
+        _fail(f"{rel} already exists. Edit it directly, or pick another number.")
+    fm, body = new_chapter_stub(number, title=title, pov=pov)
+    project.write_chapter(number, fm, body)
+    Ledger(project.root).append("chapter.new", target=rel)
+    console.print(f"[green]Created[/green] {rel}")
+
+
+@chapter_app.command("import")
+def chapter_import(
+    number: int = typer.Argument(..., help="Chapter number to import into."),
+    source: Path = typer.Argument(..., help="File containing the prose (txt/md)."),
+    title: str = typer.Option("", help="Working title."),
+    pov: str = typer.Option("", help="POV character."),
+    status: str = typer.Option("draft", help="outline | draft | revised | final"),
+) -> None:
+    """Bring existing prose into the project as a chapter."""
+    project = _project()
+    if not source.exists():
+        _fail(f"Not found: {source}")
+    rel = project.chapter_rel(number)
+    if (project.root / rel).exists():
+        _fail(f"{rel} already exists — refusing to overwrite. Remove it first if you mean it.")
+    from ..project import split_frontmatter
+
+    fm, body = split_frontmatter(source.read_text(encoding="utf-8"))
+    fm = {**fm, "status": status}
+    if title:
+        fm["title"] = title
+    if pov:
+        fm["pov"] = pov
+    project.write_chapter(number, fm, body)
+    Ledger(project.root).append("chapter.import", target=rel, source=str(source))
+    console.print(f"[green]Imported[/green] {source} -> {rel}")
+
+
+@app.command()
+def beats(
+    chapter: int = typer.Argument(..., help="Chapter number to create a beat sheet for."),
+) -> None:
+    """Create a beat sheet stub for a chapter (outline/beats/ch-NN.md)."""
+    from ..canon.scaffold import new_beats_stub
+
+    project = _project()
+    rel = f"outline/beats/ch-{chapter:02d}.md"
+    if (project.root / rel).exists():
+        _fail(f"{rel} already exists.")
+    project.write(rel, new_beats_stub(chapter))
+    Ledger(project.root).append("beats.new", target=rel)
+    console.print(f"[green]Created[/green] {rel} — the writer agent drafts from this.")
+
+
 @app.command()
 def threads() -> None:
     """List plot threads and their status."""
@@ -225,7 +310,11 @@ def threads() -> None:
 @app.command()
 def write(
     chapter: int = typer.Argument(..., help="Chapter number to draft."),
-    model: str = typer.Option(None, help="Override writer model, e.g. openai/gpt-5.2."),
+    model: str = typer.Option(
+        None,
+        help="Override the writer model for drafting, e.g. openai/gpt-5.2 "
+        "(revise and archivist stages keep their configured roles).",
+    ),
     task: str = typer.Option("", help="Extra drafting instructions."),
     skip_archive: bool = typer.Option(False, help="Skip the archivist canon-sync stage."),
 ) -> None:

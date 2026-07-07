@@ -46,7 +46,7 @@ JSON must match this shape exactly:
     {
       "entity": "<character or world-entry name as it appears in canon>",
       "kind": "character|world|timeline|thread",
-      "field": "<frontmatter field this fact updates, e.g. age, status, eyes>",
+      "field": "<frontmatter field this fact updates, e.g. age, status, appearance.eyes -- use dotted paths for nested fields>",
       "value": "<the new/confirmed value>",
       "quote": "<short verbatim quote from the chapter supporting this fact>"
     }
@@ -149,6 +149,48 @@ def _looks_numeric(*values: Any) -> bool:
     return True
 
 
+def _find_field(frontmatter: dict[str, Any], field_name: str) -> tuple[str | None, Any]:
+    """Locate a fact's field at the top level or one level deep.
+
+    Character/world templates nest hard facts (e.g. `appearance: {eyes: gray}`),
+    while the model may report either `eyes` or `appearance.eyes`. Returns
+    (dotted_path, value) for wherever the field actually lives, or
+    (None, None) if canon has never recorded it.
+    """
+    if "." in field_name:
+        head, _, tail = field_name.partition(".")
+        sub = frontmatter.get(head)
+        if isinstance(sub, dict) and tail in sub:
+            return field_name, sub[tail]
+        return None, None
+    if field_name in frontmatter:
+        return field_name, frontmatter[field_name]
+    for key, sub in frontmatter.items():
+        if isinstance(sub, dict) and field_name in sub:
+            return f"{key}.{field_name}", sub[field_name]
+    return None, None
+
+
+def _nested_update(
+    frontmatter: dict[str, Any], field_name: str, value: Any
+) -> dict[str, Any]:
+    """Build a shallow-merge-safe frontmatter update for a possibly-nested field.
+
+    Nested updates copy the existing sub-mapping so a shallow merge doesn't
+    clobber sibling keys (e.g. updating appearance.eyes must keep
+    appearance.hair).
+    """
+    path, _existing = _find_field(frontmatter, field_name)
+    target = path or field_name
+    if "." in target:
+        head, _, tail = target.partition(".")
+        sub = frontmatter.get(head)
+        merged = dict(sub) if isinstance(sub, dict) else {}
+        merged[tail] = value
+        return {head: merged}
+    return {target: value}
+
+
 def _values_conflict(field_name: str, canon_value: Any, new_value: Any) -> bool:
     if canon_value is None or new_value is None or new_value == "":
         return False
@@ -158,9 +200,10 @@ def _values_conflict(field_name: str, canon_value: Any, new_value: Any) -> bool:
 
 
 def _severity_for(field_name: str) -> Severity:
-    if field_name.lower() == "status":
+    leaf = field_name.rsplit(".", 1)[-1].lower()
+    if leaf == "status":
         return Severity.critical
-    if field_name.lower() in {"age", "eyes", "hair", "build", "role", "type"}:
+    if leaf in {"age", "eyes", "hair", "build", "role", "type"}:
         return Severity.major
     return Severity.minor
 
@@ -184,7 +227,7 @@ def diff_against_canon(facts: list[dict[str, Any]], store: CanonStore) -> list[C
         entry = finder(entity)
         if entry is None:
             continue
-        canon_value = entry.frontmatter.get(field_name)
+        _path, canon_value = _find_field(entry.frontmatter, field_name)
         if _values_conflict(field_name, canon_value, new_value):
             conflicts.append(
                 Conflict(
@@ -252,18 +295,27 @@ def apply_updates(
             if auto:
                 existing = store.find_character_by_name(entity)
                 slug = existing.slug if existing else slugify(entity)
-                store.upsert_character(slug, {field_name: value})
+                updates = _nested_update(existing.frontmatter if existing else {}, field_name, value)
+                store.upsert_character(slug, updates)
             result.applied_facts.append(fact)
         elif kind == "world":
             if auto:
                 existing = store.find_world_by_name(entity)
                 slug = existing.slug if existing else slugify(entity)
-                store.upsert_world(slug, {field_name: value})
+                updates = _nested_update(existing.frontmatter if existing else {}, field_name, value)
+                store.upsert_world(slug, updates)
             result.applied_facts.append(fact)
         elif kind == "timeline" and field_name in ("event", "summary"):
-            if auto:
+            when = f"ch-{chapter_number:02d}"
+            # Re-running the archivist on the same chapter (routine during
+            # redrafts) must not duplicate timeline rows.
+            duplicate = any(
+                r.when == when and r.event.strip().lower() == str(value).strip().lower()
+                for r in store.timeline_rows()
+            )
+            if auto and not duplicate:
                 store.add_timeline_row(
-                    when=f"ch-{chapter_number:02d}",
+                    when=when,
                     event=str(value),
                     chapters=str(chapter_number),
                     characters=entity,

@@ -48,6 +48,7 @@ def _run_one_pass(
             "",
             Usage(),
         )
+    spent = Usage()  # tokens consumed even if the pass later fails to parse
     try:
         system, user = pass_obj.build_prompt(ctx)
         req = CompletionRequest(
@@ -58,6 +59,7 @@ def _run_one_pass(
             temperature=project.config.temperature,
         )
         resp = provider.complete(req)
+        spent = resp.usage
         data = extract_json(resp.text)
         if not data:
             raise ValueError("model response did not contain parseable JSON")
@@ -66,11 +68,11 @@ def _run_one_pass(
             if f.quote and f.span is None:
                 f.span = locate_span(ctx.chapter_body, f.quote)
         summary = str(data.get("summary", "")).strip()
-        return findings[:_MAX_FINDINGS_PER_PASS], summary, resp.usage
+        return findings[:_MAX_FINDINGS_PER_PASS], summary, spent
     except ProviderError as e:
-        return [Finding(source=source, severity=Severity.info, issue=f"pass failed: {e}")], "", Usage()
+        return [Finding(source=source, severity=Severity.info, issue=f"pass failed: {e}")], "", spent
     except Exception as e:  # noqa: BLE001 - any pass failure degrades to a Finding, never aborts the run
-        return [Finding(source=source, severity=Severity.info, issue=f"pass failed: {e}")], "", Usage()
+        return [Finding(source=source, severity=Severity.info, issue=f"pass failed: {e}")], "", spent
 
 
 def _render_markdown(report: ReviewReport) -> str:

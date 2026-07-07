@@ -26,9 +26,10 @@ class AnthropicProvider(Provider):
         self.pc = pc
         api_key = resolve_api_key(pc, ["ANTHROPIC_API_KEY"])
         if not api_key:
+            alt = pc.api_key_env if pc.api_key_env not in ("", "ANTHROPIC_API_KEY") else ""
             raise ProviderError(
                 "No Anthropic API key found. Set ANTHROPIC_API_KEY "
-                f"{f'(or {pc.api_key_env}) ' if pc.api_key_env else ''}"
+                f"{f'(or {alt}) ' if alt else ''}"
                 "in your environment, or add `api_key_env:` under this provider "
                 "in stoner.yaml."
             )
