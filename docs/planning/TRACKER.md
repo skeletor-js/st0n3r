@@ -3,7 +3,7 @@
 State file for cross-run continuity. Update after every meaningful step.
 Statuses: `todo` | `wip` | `done` | `blocked`.
 
-_Last updated: 2026-07-07 (run 1)_
+_Last updated: 2026-07-07 (run 1) — v2 COMPLETE_
 
 ## Phase status
 
@@ -30,13 +30,13 @@ _Last updated: 2026-07-07 (run 1)_
 | 8 | reviewer subagent QA pass + fixes | done | 18/18 confirmed findings fixed, 11 regression tests |
 | 9 | README + docs/ | wip | docs agent + orchestrator README |
 | 9 | LICENSE (MIT) + attribution | done | LICENSE + docs/CREDITS.md |
-| 9 | final push | todo | |
+| 9 | final push | done | v0.2.0 |
 | v2 | claude_code provider | done | bef8527; live-verified in-env |
 | v2 | foundation pipeline (brainstorm/canon gen) | done | d047f9e, 13 tests; CLI wired |
 | v2 | autonomous book mode + whole-book review | done | abeb1f4, 15 tests; CLI wired |
 | v2 | UI v2 (Hearth design system) | done | in a0ed68c; both themes verified vs Hearth |
-| v2 | proof of output (novella in examples/) | wip | run in progress: brainstorm done, foundation running |
-| v2 | docs v2 reconciliation | todo | |
+| v2 | proof of output (novella in examples/) | done | Sungrown: 15 ch / 25,241 words / 6 review rounds / 0 criticals |
+| v2 | docs v2 reconciliation | done | 4c68596 + autonomous.md |
 
 ## Decisions log
 
@@ -76,3 +76,10 @@ _Last updated: 2026-07-07 (run 1)_
 - **Run 1 (cont):** GOAL EXPANDED by owner: autonomy, proof of output, Hearth UI. claude CLI confirmed working in-env (claude_code provider = proof vehicle). Hearth cloned to scratchpad. Launching wave 3.
 - **Run 1 (cont):** claude_code provider landed + live smoke (PONG, real usage). Banned terms wired into detector. UI v2 agent launched with Hearth design brief. Foundation + book agents still running. Proof-of-output plan: novella on a legacy cannabis farm during legalization (Stoner-quiet, owner's industry), writer=claude/sonnet, archivist/reviewer=claude/haiku, under examples/.
 - **Run 1 (cont):** Foundation + book mode + Hearth UI all landed and wired (224 tests). Proof run started: examples/novella (Ruth Vann, Humboldt legalization novella), writer/reviewer=claude/sonnet, archivist=claude/haiku. Brainstorm complete; foundation generating.
+- **Run 1 (FINAL):** v2 complete. Sungrown novella finished (15 ch, 25,241 words, 6 whole-book
+  review rounds, 0 critical / 5 major remaining at plateau) and committed under examples/novella
+  with its own README. Two live-run bugs found and fixed with tests (textproto format-retry;
+  single-shot drafting for text-only providers) plus 4 doc-verification fixes. README rewritten
+  for v0.2.0 with Hearth-UI screenshots over the real book. 227 tests green. Repo remains private.
+  Remaining majors in the novella are honest reviewer findings a human author would triage in the
+  UI — left in place as a realistic artifact.

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "st0n3r"
-version = "0.1.0"
+version = "0.2.0"
 description = "An AI harness purpose-built for long-form writing: opinionated canon, slop detection, critic passes, and provider-agnostic agent pipelines."
 readme = "README.md"
 requires-python = ">=3.11"

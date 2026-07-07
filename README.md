@@ -29,7 +29,8 @@ structurally:
 | Context overflow | **Memory** — rolling chapter summaries; the agent never reads the whole manuscript, it queries canon and asks for what it needs |
 | AI slop | **Deterministic detector** — 7 analyzers, 400+ lexicon entries and patterns, statistical rhythm checks; a hard gate in the write pipeline, no LLM required |
 | Shallow self-review | **Critic passes** — continuity, pacing, voice, line, logic, adversarial cut-analysis, a four-persona reader panel, and comparative STRONG/FINE/WEAK/CUT grading (absolute 1–10 scores collapse; comparisons don't) |
-| Vendor lock-in | **Provider layer** — Anthropic API, any OpenAI-compatible endpoint (OpenAI, OpenRouter, Together, Groq, Ollama, vLLM…), or the Codex CLI on a ChatGPT subscription |
+| Vendor lock-in | **Provider layer** — Anthropic API, any OpenAI-compatible endpoint (OpenAI, OpenRouter, Together, Groq, Ollama, vLLM…), the Codex CLI on a ChatGPT subscription, or the Claude Code CLI on a Claude subscription |
+| "Now write the whole thing" | **Autonomous mode** — seed → brainstorm → generated canon/outline/beats → resumable chapter loop with whole-manuscript review rounds. [It has shipped a book.](examples/novella/) |
 
 The slop detector at work — no LLM involved, pure analysis:
 
@@ -46,6 +47,14 @@ stoner init my-novel && cd my-novel
 stoner write 1                     # draft -> slop gate -> archive
 stoner review 1                    # eight critic passes, saved report
 stoner ui                          # local dashboard: heatmaps, triage, canon
+```
+
+Or let it run the whole way:
+
+```bash
+stoner brainstorm "a quiet novella about ..."   # seed -> premise + style guide
+stoner foundation                               # characters, world, threads, outline, beats
+stoner book                                     # every chapter + whole-book review rounds; resumable
 ```
 
 Every command works on plain files. Nothing is hidden in a database; a writer
@@ -85,6 +94,10 @@ contradicts — the manuscript and the bible cannot silently drift apart.
 | `stoner canon new character/world <name>` | Instantiate a story-bible entry from the template |
 | `stoner beats <n>` | Create the beat sheet the writer agent drafts from |
 | `stoner write <n>` | Full pipeline: draft → slop gate (auto-revise) → archivist |
+| `stoner brainstorm "<seed>"` | Seed → premise.md + style.md |
+| `stoner foundation` | Generate characters/world/threads/outline/beats, with an evaluate-iterate loop |
+| `stoner book` | Autonomous mode: draft every chapter, whole-book reviews, revision rounds, resumable |
+| `stoner review-book` | One whole-manuscript review (critic + professor-of-fiction) |
 | `stoner slop <n\|file\|all>` | Deterministic slop report with score, findings, spans |
 | `stoner review <n>` | Critic passes → structured findings saved to `.stoner/reviews/` |
 | `stoner revise <n>` | Model rewrites the chapter applying accepted findings |
@@ -109,24 +122,37 @@ models:
 `anthropic`, `openai`, `openrouter`, `together`, `groq`, `ollama` work out of
 the box (keys via env vars); any other OpenAI-compatible endpoint is one
 `providers:` block away; `codex/<model>` drives the Codex CLI under your
-ChatGPT subscription. Providers that can't do native tool-calling get a
-fenced-JSON fallback automatically. See [docs/providers.md](docs/providers.md).
+ChatGPT subscription, and `claude/<model>` drives the Claude Code CLI under
+your Claude subscription. Text-only CLI backends draft chapters in one
+comprehensive completion; everywhere else they get a fenced-JSON tool
+fallback automatically. See [docs/providers.md](docs/providers.md).
+
+## Proof of output
+
+st0n3r has written a book with itself: [**Sungrown**](examples/novella/), a
+15-chapter, 25,000-word literary novella (a legacy Humboldt grower meets
+legalization), generated end-to-end — seed → canon → outline → chapters → six
+whole-manuscript review rounds — with every chapter passing the slop gate and
+the full canon/ledger/review trail committed alongside the prose.
 
 ## The dashboard
 
-`stoner ui` serves a local dashboard (nothing leaves 127.0.0.1). The
-manuscript browser runs live slop checks and paints every finding onto the
-prose:
+`stoner ui` serves a local dashboard (nothing leaves 127.0.0.1), built on the
+[Hearth](https://github.com/skeletor-js/Hearth) design system. The manuscript
+browser runs live slop checks and paints every finding onto the prose — here
+on the novella's real first chapter:
 
 ![Manuscript view with slop heatmap](docs/assets/ui-slop.png)
 
-Review findings are triaged here — accept or dismiss, then `stoner revise`
-applies what you accepted:
+The Book panel tracks autonomous runs chapter by chapter:
+
+![Autonomous run progress](docs/assets/ui-book.png)
+
+Review findings are triaged in place — accept or dismiss, then `stoner
+revise` applies what you accepted — and the canon browser shows the bible as
+the agent sees it:
 
 ![Review findings triage](docs/assets/ui-reviews.png)
-
-And the canon browser shows the bible as the agent sees it — hard facts in
-frontmatter, voice and arc in prose:
 
 ![Canon browser](docs/assets/ui-canon.png)
 
@@ -137,6 +163,7 @@ frontmatter, voice and arc in prose:
 - [Providers & models](docs/providers.md)
 - [Slop detection](docs/slop.md)
 - [Review & revision](docs/review.md)
+- [Autonomous mode](docs/autonomous.md)
 - [The web UI](docs/ui.md)
 - [FAQ](docs/faq.md)
 - [Credits](docs/CREDITS.md) — and the planning/research trail in
@@ -157,8 +184,9 @@ project root, and every action lands in `.stoner/ledger.jsonl`.
 
 ## Status
 
-v0.1.0 — functional end to end; young. Interfaces may move. Currently a
-private repo; MIT-licensed and structured for open-sourcing when it's ready.
+v0.2.0 — functional end to end, with a complete generated novella as proof.
+Young; interfaces may move. Currently a private repo; MIT-licensed and
+structured for open-sourcing when it's ready.
 
 ## License
 
