@@ -24,7 +24,7 @@ errors (frozen as baseline; new code must not add errors).
 | W4 | 007 promise & motif ledger (all units) | todo | |
 | W4 | 008 reader simulation (all units) | todo | |
 | W5 | 010 production line (all units) | todo | |
-| Wx | 009 U3-U8 (provenance/CLI/refactors) | wip | subagent worktree, run 2 |
+| Wx | 009 U3-U8 (provenance/CLI/refactors) | done | 5e4c4ff, +41 tests (284 green) |
 | tail | 011 U4 cross-feature wiring | todo | |
 | tail | 011 U5 UI panel consolidation | todo | |
 | tail | 011 U6 docs reconciliation | todo | |
@@ -100,6 +100,15 @@ errors (frozen as baseline; new code must not add errors).
   tests unmodified. Launching Wave 1 (001 voice + 004 pacing) plus 009 U3-U8, three
   subagents in isolated git worktrees (shared-seam files: main.py/config.py/ui — merged
   by orchestrator per plan 011 seam contracts).
+- **Run 2 (cont):** Voice + archaeology subagents each died once on transient API
+  server errors; resumed with context intact. Owner directive: all future subagents run
+  on Opus (model override) to control token cost. 009 U3-U8 landed and merged
+  (5e4c4ff): provenance/blame, drafts CLI, renumber+integrity, merge/split,
+  move-reveal/flip-pov, post-refactor verify; +41 tests -> 284 passed / 1 skipped,
+  ruff clean, mypy 33-error baseline. Deviations recorded in the commit message
+  (prune in snapshots.py; merge archives vacated drafts dir; renumber ledgers via
+  refactor entries; missing-chapter table refs advisory). Voice + pacing still
+  building.
 
 ## Run journal (run 1 — v1/v2)
 
