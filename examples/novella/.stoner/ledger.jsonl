@@ -175,3 +175,14 @@
 {"ts":1783445202.4427538,"action":"write.single_shot","target":"manuscript/ch-15.md","detail":{},"session":""}
 {"ts":1783445311.865725,"action":"canon.archive","target":"manuscript/ch-15.md","detail":{"applied":4,"conflicts":1,"auto":true},"session":""}
 {"ts":1783445311.86659,"action":"pipeline.write.done","target":"manuscript/ch-15.md","detail":{"words":1518,"slop":19.17,"gate_passed":true},"session":""}
+{"ts":1783445610.6575935,"action":"review.book","target":".stoner/reviews/book-1783445610.json","detail":{"model":"claude/claude-sonnet-5","findings":8,"majors":7,"verdict":"needs-work"},"session":""}
+{"ts":1783445678.294505,"action":"review.revise","target":"manuscript/ch-08.md","detail":{"chapter":8,"applied":1,"old_words":2264,"new_words":2364},"session":""}
+{"ts":1783445724.2847445,"action":"review.revise","target":"manuscript/ch-11.md","detail":{"chapter":11,"applied":2,"old_words":1440,"new_words":1388},"session":""}
+{"ts":1783445758.7047498,"action":"review.revise","target":"manuscript/ch-12.md","detail":{"chapter":12,"applied":1,"old_words":1656,"new_words":1678},"session":""}
+{"ts":1783445809.503938,"action":"review.revise","target":"manuscript/ch-13.md","detail":{"chapter":13,"applied":1,"old_words":1265,"new_words":1472},"session":""}
+{"ts":1783445917.4591124,"action":"review.revise","target":"manuscript/ch-14.md","detail":{"chapter":14,"applied":2,"old_words":1561,"new_words":1600},"session":""}
+{"ts":1783446203.7686412,"action":"review.book","target":".stoner/reviews/book-1783446203.json","detail":{"model":"claude/claude-sonnet-5","findings":6,"majors":5,"verdict":"needs-work"},"session":""}
+{"ts":1783446282.8335464,"action":"review.revise","target":"manuscript/ch-12.md","detail":{"chapter":12,"applied":2,"old_words":1678,"new_words":1550},"session":""}
+{"ts":1783446318.2610576,"action":"review.revise","target":"manuscript/ch-13.md","detail":{"chapter":13,"applied":1,"old_words":1472,"new_words":1498},"session":""}
+{"ts":1783446353.1869762,"action":"review.revise","target":"manuscript/ch-14.md","detail":{"chapter":14,"applied":1,"old_words":1600,"new_words":1576},"session":""}
+{"ts":1783446384.5924108,"action":"review.revise","target":"manuscript/ch-15.md","detail":{"chapter":15,"applied":1,"old_words":1518,"new_words":1511},"session":""}

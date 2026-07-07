@@ -97,6 +97,8 @@ def draft_chapter(
             )
         )
         body = resp.text.strip()
+        if fm.get("status") in (None, "", "outline"):
+            fm["status"] = "draft"
         if count_words(body) <= 200:
             raise RuntimeError(
                 f"Single-shot draft for chapter {number} came back with only "

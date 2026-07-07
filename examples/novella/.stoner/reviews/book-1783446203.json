@@ -1,0 +1,121 @@
+{
+  "created_at": 1783446203.7676973,
+  "model": "claude/claude-sonnet-5",
+  "verdict": "needs-work",
+  "overall": "The manuscript is unusually disciplined on the level of fact — the acreage, offer price, and violation measurements are consistent to the decimal across nine chapters of summary and six of full text, and the central thematic argument (embodied knowledge versus documentable knowledge) is sustained and paid off cleanly through the Iris and consulting-clause scenes. Its real liabilities are structural repetition rather than plot failure: a financial deadline invoked for urgency early on that silently persists unchanged for four months, a narrative thread (the independently commissioned surveyor) set up with real weight and then dropped, and a small cluster of rhetorical tics — the triadic 'She thought of...' backstory dump, the recurring 'not X exactly, but Y' hedge, the reflexive 'she understood' telling construction, and the folder-on-the-kitchen-table image as a default chapter-closing beat — that a revision pass should vary, thin, or cut. None of these break the book, but a serious editor would ask for another pass before calling it finished.",
+  "chapters_full": [
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "chapters_summarized": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "usage": {
+    "input_tokens": 2,
+    "output_tokens": 25630
+  },
+  "findings": [
+    {
+      "id": "f_44bad9086b",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-13:continuity/stakes",
+      "span": {
+        "start": 6595,
+        "end": 6835,
+        "line": 19
+      },
+      "quote": "Corinne asked, evenly, whether Ruth understood the offer had been good through the end of the month and there wasn't another one coming behind it, and Ruth said she understood that, and that she didn't need the rest of the month to know it.",
+      "issue": "The Canopy offer is introduced (ch. 6 summary) as 'valid through month's end,' the ticking clock that turns the money into 'a weight she can no longer ignore.' That deadline should have expired months earlier, yet the identical offer is still open, unchanged, in the September re-negotiation (ch. 12: 'The purchase price had not moved') and is still described in October as expiring 'through the end of the month' with no acknowledgment that it has already been extended at least twice. The reader is never shown Canopy renewing it, so the central economic pressure driving Ruth's whole summer reads as elastic rather than real.",
+      "suggestion": "Dramatize at least one extension on-page — a call or letter from Corinne pushing the deadline — so readers understand why an urgent, one-time offer is still sitting on the table four months later. Even a single line ('Canopy had pushed the date twice already, first to September, then to the harvest') would restore the stakes instead of quietly resetting them.",
+      "status": "open"
+    },
+    {
+      "id": "f_445930e559",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-12:dropped thread",
+      "span": {
+        "start": 8677,
+        "end": 9069,
+        "line": 31
+      },
+      "quote": "Before she went to bed she called the surveyor Corinne's team had used for the intake dam and asked him what it would cost her, on her own dime, to get an independent number on the setback for the shed — not for Canopy, for herself, so that whatever she signed, if she signed anything, would carry her own arithmetic under it and not only theirs. He said he could come out the following week.",
+      "issue": "This is staged as a turning point — Ruth's first act of independent agency against Canopy's numbers, marked on the calendar as 'the only entry on a month otherwise empty of appointments.' It is never mentioned again. The shed setback is still simply '38 vs 50' at the ch. 14 hearing, argued from Ruth's own testimony with no reference to whatever the independent surveyor found or whether he ever came.",
+      "suggestion": "Either pay this off (the survey confirms her judgment about the grade, or contradicts it and complicates the hearing) or cut the beat. As written it's a Chekhov's gun that never fires, and a reader will notice its absence at the hearing scene.",
+      "status": "open"
+    },
+    {
+      "id": "f_8936a9a961",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-12:pacing / triadic structure",
+      "span": {
+        "start": 2917,
+        "end": 3126,
+        "line": 13
+      },
+      "quote": "She thought of the low tunnel behind Alta Furse's barn in 1998, the two of them on their knees in the mud with a flashlight held in Ruth's teeth, Alta's hands moving over a plant showing early signs of bud rot",
+      "issue": "At the exact moment Ruth is standing over the consulting-agreement clause deciding whether to speak, the scene stalls for three consecutive 'She thought of...' paragraphs (Alta Furse in 1998, the July decision to teach Wyatt, the dam quote) before she finally answers 'No.' The rule-of-three backstory dump drains tension from the negotiation's live beat instead of compressing it.",
+      "suggestion": "Cut two of the three digressions or fold them into a single, tighter image. Let the scene's present tension (Ruth still standing, not sitting, page four in her hand) carry the moment, and trust one well-chosen memory rather than three.",
+      "status": "open"
+    },
+    {
+      "id": "f_b0edc7de59",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-15:prose tic",
+      "span": {
+        "start": 1807,
+        "end": 1975,
+        "line": 5
+      },
+      "quote": "It was the one piece of the work she had kept back, not out of secrecy exactly, but because it took a year to teach right and she had never yet had anyone worth a year.",
+      "issue": "The hedge construction 'not [X] exactly, but/only [Y]' recurs almost verbatim across the back half of the book: ch. 11 ('did not feel triumph exactly, only the flat, physical certainty'), ch. 13 ('not with fear exactly but with the old attention'), ch. 13 again ('did not think of it as decision-making so much as listening'), and here in ch. 15. Used once it's a controlled narratorial move; used four-plus times it reads as a default reflex for qualifying Ruth's interiority rather than a deliberate choice.",
+      "suggestion": "Flag every instance of this construction in a revision pass and cut it to one, maybe two, uses across the whole manuscript. Replace the others with a plain declarative or a concrete physical detail instead of a qualified abstraction.",
+      "status": "open"
+    },
+    {
+      "id": "f_585a610c47",
+      "source": "review:book",
+      "severity": "major",
+      "category": "ch-14:over-explaining / filter words",
+      "span": {
+        "start": 3168,
+        "end": 3440,
+        "line": 9
+      },
+      "quote": "the very thing that had kept her alive on this ground for forty years — the not being seen — was now being read into the record as an absence. Forty years on the ground counted, on the county's file, as no years at all, because the county had never been permitted to look.",
+      "issue": "The second sentence restates the first in more aphoristic language rather than adding information — a redundant double-statement of the same insight, and part of a wider pattern of the narration announcing its own theme via 'she understood/she realized' (also ch. 10, ch. 12 twice, ch. 13, ch. 14 again) rather than letting the reader arrive at it from the scene alone.",
+      "suggestion": "Cut the second sentence and let the first stand; it already lands the irony. Elsewhere, audit 'she understood' moments and see which can be replaced by an action or a piece of dialogue that implies the realization without naming it.",
+      "status": "open"
+    },
+    {
+      "id": "f_aa0b7c6b0c",
+      "source": "review:book",
+      "severity": "minor",
+      "category": "ch-13:repeated image",
+      "span": {
+        "start": 5881,
+        "end": 6069,
+        "line": 17
+      },
+      "quote": "She did not call Corinne Yee that night. She went inside, ate standing at the counter, and left the folder exactly where it had sat for weeks, unopened, the price still unsigned inside it.",
+      "issue": "The folder on the kitchen table closes or opens chapters 10, 12, 13, 14, and 15 as the default shorthand for 'decision still pending.' By the fourth appearance the image has lost its charge and reads as a structural tic rather than a controlled motif — every chapter of the back half reaches for the same object at the same rhetorical position (the final beat).",
+      "suggestion": "Keep the folder as a motif but vary where and how it appears — let at least one or two chapter endings land on a different image (the barn, the creek, Wyatt's truck) so the folder's reappearances feel chosen rather than automatic.",
+      "status": "open"
+    }
+  ]
+}

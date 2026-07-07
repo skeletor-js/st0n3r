@@ -60,10 +60,10 @@
       "revision_cycles": 2
     },
     "8": {
-      "words": 2264,
+      "words": 2364,
       "slop": 15.91,
       "reviewed": true,
-      "revision_cycles": 4
+      "revision_cycles": 5
     },
     "9": {
       "words": 1315,
@@ -78,38 +78,38 @@
       "revision_cycles": 0
     },
     "11": {
-      "words": 1440,
+      "words": 1388,
       "slop": 19.14,
-      "reviewed": false,
-      "revision_cycles": 0
-    },
-    "12": {
-      "words": 1656,
-      "slop": 17.27,
       "reviewed": true,
       "revision_cycles": 1
     },
+    "12": {
+      "words": 1550,
+      "slop": 17.27,
+      "reviewed": true,
+      "revision_cycles": 3
+    },
     "13": {
-      "words": 1265,
+      "words": 1498,
       "slop": 15.31,
-      "reviewed": false,
-      "revision_cycles": 0
+      "reviewed": true,
+      "revision_cycles": 2
     },
     "14": {
-      "words": 1561,
+      "words": 1576,
       "slop": 17.8,
-      "reviewed": false,
-      "revision_cycles": 0
+      "reviewed": true,
+      "revision_cycles": 2
     },
     "15": {
-      "words": 1518,
+      "words": 1511,
       "slop": 19.17,
-      "reviewed": false,
-      "revision_cycles": 0
+      "reviewed": true,
+      "revision_cycles": 1
     }
   },
   "current": null,
-  "phase": "reviewing",
+  "phase": "done",
   "book_reviews": [
     {
       "ts": 1783440549.0907328,
@@ -146,6 +146,18 @@
       "findings": 7,
       "major_count": 5,
       "verdict": "needs-work"
+    },
+    {
+      "ts": 1783445610.6564941,
+      "findings": 8,
+      "major_count": 7,
+      "verdict": "needs-work"
+    },
+    {
+      "ts": 1783446203.7676973,
+      "findings": 6,
+      "major_count": 5,
+      "verdict": "needs-work"
     }
   ],
   "budget": {
@@ -153,5 +165,5 @@
     "max_chapters_per_run": null
   },
   "started_at": 1783439030.5029495,
-  "updated_at": 1783445311.8773286
+  "updated_at": 1783446384.5941556
 }
