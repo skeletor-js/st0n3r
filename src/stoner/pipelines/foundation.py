@@ -315,7 +315,7 @@ def _generate_characters(
     items = data.get("characters") if isinstance(data, dict) else None
     if not isinstance(items, list) or not items:
         raise FoundationError("model did not return a non-empty 'characters' JSON list")
-    return [it for it in items if isinstance(it, dict)][: n or None], usage
+    return [it for it in items if isinstance(it, dict)][:n], usage
 
 
 def _write_characters(store: CanonStore, items: list[dict[str, Any]]) -> list[str]:
@@ -375,7 +375,7 @@ def _generate_world(
     items = data.get("world") if isinstance(data, dict) else None
     if not isinstance(items, list) or not items:
         raise FoundationError("model did not return a non-empty 'world' JSON list")
-    return [it for it in items if isinstance(it, dict)][: n or None], usage
+    return [it for it in items if isinstance(it, dict)][:n], usage
 
 
 _WORLD_TYPES = {"place", "faction", "system", "item"}
