@@ -33,6 +33,16 @@ class GateConfig(BaseModel):
     max_revision_loops: int = 2
 
 
+class PacingConfig(BaseModel):
+    """Thresholds for the advisory pacing instrument layer (never gating)."""
+
+    in_scene_min_ratio: float = 0.70
+    ending_echo_min_run: int = 3
+    flatline_min_run: int = 3
+    pov_break_min_run: int = 4
+    llm_instruments: bool = True
+
+
 class ModelRoles(BaseModel):
     """Which model handles which job. Any `provider/model` string."""
 
@@ -52,6 +62,7 @@ class StonerConfig(BaseModel):
     max_tokens: int = 8192
     temperature: float | None = None
     extra: dict[str, Any] = Field(default_factory=dict)
+    pacing: PacingConfig = Field(default_factory=PacingConfig)
 
     # ------------------------------------------------------------------
     @classmethod

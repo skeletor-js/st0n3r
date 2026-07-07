@@ -538,10 +538,11 @@ def ui(
     run_server(project, host=host, port=port)
 
 
-from . import book_cmds, foundation_cmds  # noqa: E402
+from . import book_cmds, foundation_cmds, pacing_cmds  # noqa: E402
 
 book_cmds.register(app)
 foundation_cmds.register(app)
+pacing_cmds.register(app)
 
 
 def app_main() -> None:
