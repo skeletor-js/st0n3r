@@ -107,6 +107,23 @@ contradicts — the manuscript and the bible cannot silently drift apart.
 | `stoner providers` | Which backends are configured and authed |
 | `stoner ui` | Local web dashboard (manuscript, slop heatmap, findings triage) |
 
+Ten instrument groups extend the harness past drafting into measurement, revision, and shipping — each its own config block and ledger namespace, most of them off until you opt in:
+
+| Group | What it does |
+|---|---|
+| `stoner voice` | Measured voice fingerprint (function-word stats, Burrows' Delta drift); `learn`/`show`/`check`, all deterministic. Optional drift gate in the write pipeline. See [Voice](docs/voice.md) |
+| `stoner cast` | Private per-character interiority the writer agent can't see: knowledge-boundedness checks, scene simulation. See [Cast](docs/cast.md) |
+| `stoner tournament` | Draft tournaments — N angled takes, blind pairwise judging, human-confirmed winner. See [Tournaments](docs/tournaments.md) |
+| `stoner pacing` | Book-level pacing instruments: scene maps, tension curve, flatlines. Advisory. See [Pacing](docs/pacing.md) |
+| `stoner room` | The Writers' Room — persistent editors with notebooks, cross-examination, and margin comments. Advisory. See [Writers' Room](docs/room.md) |
+| `stoner facts` | The fact locker: sourced real-world detail, opt-in web research, a verisimilitude sweep. See [Facts](docs/facts.md) |
+| `stoner promises` / `motifs` | The promise ledger (a deterministic no-unfired-guns gate) and motif registry (recurrence, candidate mining, ending-rhymes-with-opening). See [Promises & motifs](docs/motifs.md) |
+| `stoner readers` | Reader simulation at scale: personas read the manuscript and vote; attention heatmaps; blind benchmarking against public-domain comps. See [Readers](docs/readers.md) |
+| `stoner drafts` | Draft archaeology: snapshots, provenance, blame, restore, structural refactors. See [Drafts](docs/drafts.md) |
+| `stoner ship` | The production line: EPUB/PDF/DOCX export, blurbs, table-read audio. See [Ship](docs/ship.md) |
+
+`ship pdf` and `ship docx` need the `export` extra (`pip install 'st0n3r[export]'`, or `[all]`, which includes it); EPUB export is dependency-free.
+
 ## Providers
 
 Model strings are `provider/model`:
@@ -165,6 +182,11 @@ the agent sees it:
 - [Review & revision](docs/review.md)
 - [Autonomous mode](docs/autonomous.md)
 - [The web UI](docs/ui.md)
+- The instrument groups: [Voice](docs/voice.md), [Cast](docs/cast.md),
+  [Tournaments](docs/tournaments.md), [Pacing](docs/pacing.md),
+  [Writers' Room](docs/room.md), [Facts](docs/facts.md),
+  [Promises & motifs](docs/motifs.md), [Readers](docs/readers.md),
+  [Drafts](docs/drafts.md), [Ship](docs/ship.md)
 - [FAQ](docs/faq.md)
 - [Credits](docs/CREDITS.md) — and the planning/research trail in
   [docs/planning/](docs/planning/) and [docs/research/](docs/research/)

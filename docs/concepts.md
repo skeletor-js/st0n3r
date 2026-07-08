@@ -58,17 +58,60 @@ Ask a model to rate a chapter 1–10 and nearly everything comes back a 7 or an 
 
 "Which paragraph is weakest?" gets a useful answer where "how good is this?" gets flattery. The slop *score* is 0–100, but it's computed arithmetic, not model opinion — that's the other half of why the two immune systems stay separate.
 
+## The instrument layer
+
+The core loop above — canon, memory, the write pipeline, the two immune systems — is the whole harness at v0.2.0. Everything below is an additive layer of *instruments*: measurement, revision, and shipping tools that sit on top of the loop without changing it. Each owns its own directory, config block, and ledger namespace; each is off (or empty, or opt-in) until you reach for it, so a project that only wants to draft chapters pays nothing for the rest. They share one discipline with the core: deterministic checks may gate, model judgments only advise.
+
+### Voice as a measured fingerprint
+
+Style guides say "spare, declarative"; that's a wish, not a measurement. The **voice fingerprint** turns a body of exemplar prose into numbers — function-word frequencies, sentence-length distribution, punctuation rates, and other closed-class habits — and scores new prose as a *drift* against them, in the spirit of [Burrows' Delta](CREDITS.md). It is entirely deterministic (no model, like the slop detector), so it can act as an optional gate in the write pipeline. Where slop measures *distance from good prose in general*, voice measures *distance from your prose in particular* — a chapter can be clean of slop and still not sound like your book. See [Voice](voice.md).
+
+### Interiority the narrator can't see
+
+Canon is fed straight into the writer's prompt, which is exactly why canon cannot hold secrets — a character's unspoken want or active lie that reaches the prompt gets narrated onto the page, and subtext dies. So **cast sheets** live outside canon, in private per-character state (knowledge with the chapter it was learned, wants stated vs. real, lies, refusals) that the writer-facing context path never reads. From that private state comes a machine-checkable **knowledge-boundedness** check — a character acting on a fact before they could know it is a violation — and scene simulation where character agents collide by genuine information asymmetry. See [Cast](cast.md).
+
+### Taste as a comparison, not a score
+
+The same reason [absolute scores collapse](#comparative-grading-over-absolute-scores) shapes the revision instruments. A **draft tournament** drafts N takes of a chapter from distinct angles, judges them in *blind pairwise* comparisons, and proposes a winner for a human to confirm — "which of these two is better" is answerable where "rate this 1–10" is not. **Reader simulation** runs a roster of personas over the finished manuscript and reports where enough of them independently disagree, and can **benchmark** the book blind against a public-domain comp, chapter-aligned. Both turn judgment into votes. See [Tournaments](tournaments.md) and [Readers](readers.md).
+
+### Advisory instruments: pacing and the room
+
+Two instruments produce findings that never gate, only inform. **Pacing** reads the whole book as a shape — scene-vs-summary ratio, a tension curve, flatline and POV-whiplash runs — mixing deterministic structural measures with optional per-chapter LLM instruments. The **Writers' Room** is a persistent roster of editor personas that keep *notebooks*: a running opinion and open items that survive across sessions, so an editor can note "still not convinced the middle earns its length" in chapter 7 and re-check it later, cross-examine its own prior flags, and pin margin comments to spans. See [Pacing](pacing.md) and [Writers' Room](room.md).
+
+### Verisimilitude: facts as canon
+
+Models hallucinate checkable real-world detail confidently. The **fact locker** stores sourced specifics — a fee, a statute, a form, a brand — as first-class canon artifacts under `canon/facts/`, each requiring a source URL (a fact with no source is dropped, never stored). Facts feed the writer through the same context-pack channel as the rest of canon; the **verisimilitude sweep** holds a chapter against them, flagging contradictions and unsourced confident claims. Web research to *build* the locker is a pluggable, explicitly opt-in capability with a ledgered trail for every network action. See [Facts](facts.md).
+
+### Promises and motifs
+
+`canon/threads.md` already tracks open questions; the **promise ledger** types those rows by kind (mystery, threat, want, image) and tracks each from plant to payoff, giving a *deterministic* no-unfired-guns gate — a promise-kind row still open when the book ends fails the check, no model required. The **motif registry** is the recurrence half: a deterministic matrix of every registered motif across chapters, plus model-assisted candidate mining and an ending-rhymes-with-opening scan. See [Promises & motifs](motifs.md).
+
+### Provenance and shipping
+
+Every rewrite the harness makes — draft, slop-revise, review-revise, tournament graft, refactor, restore — routes through a single snapshot chokepoint, so **draft archaeology** can show a chapter's full history, attribute each current sentence to the rewrite event that introduced it (**blame**, deterministic), restore reversibly, and perform guarded structural refactors (merge, split, move-reveal, flip-POV). At the end, the **production line** runs a readiness check (gaps, non-shippable statuses, and unfired guns are blockers; plain open threads only warn) and exports dependency-free EPUB, typeset PDF, submission DOCX, marketing blurbs, and stitched table-read audio. See [Drafts](drafts.md) and [Ship](ship.md).
+
 ## Where things live
 
 | Path | What | Who writes it |
 |---|---|---|
 | `canon/` | the bible | you + archivist (facts only) |
+| `canon/facts/` | sourced real-world facts | you + `facts` (diff, not overwrite) |
+| `canon/threads.md` | plot threads, typed by promise kind | you + archivist + `promises` |
+| `canon/motifs.md` | the motif registry | you + `motifs` |
 | `outline/beats/` | per-chapter beat sheets | you (or the agent, via `update_beats`) |
 | `manuscript/` | the prose | you and/or the writer agent |
+| `notes/exemplars/` | voice-fingerprint exemplar prose | you |
+| `export/` | shipped EPUB/PDF/DOCX, blurbs, audio | `ship` |
 | `.stoner/memory.json` | rolling summaries | archivist |
 | `.stoner/ledger.jsonl` | action log | everything |
 | `.stoner/sessions/` | full agent transcripts | agent runs |
-| `.stoner/reviews/` | slop, review, and book-review reports | `slop --save`, `review`, `review-book` |
+| `.stoner/reviews/` | reports, tagged by `kind` (review, slop, book, voice, pacing, cast, readers) | `slop --save`, `review`, `review-book`, `pacing`, `voice --save`, `cast check`, `facts sweep`, `readers`, `motifs rhyme` |
+| `.stoner/voice/` | the learned voice fingerprint | `voice learn` |
+| `.stoner/cast/` | private per-character sheets + scene scripts | `cast` |
+| `.stoner/tournaments/` `.stoner/taste/` | tournament runs and the learned taste model | `tournament` |
+| `.stoner/room/` | editor notebooks, session records, margin comments | `room` |
+| `.stoner/readers/` | reader runs, heatmaps, benchmarks | `readers` |
+| `.stoner/drafts/` | per-chapter snapshot history (provenance) | every rewrite path |
 | `.stoner/book-state.json` | resumable autonomous-run state | `stoner book` |
 
 Everything is plain markdown, YAML, and JSON. There's no database, no lock-in; the whole project diffs cleanly under git, and you can edit any file by hand at any time — the harness reads from disk fresh on every operation.

@@ -109,6 +109,19 @@ providers:
 - **Drafting is single-shot.** For text-only providers, `stoner write` skips the tool loop and drafts the chapter in one comprehensive completion — the system prompt already carries canon, beats, memory, and the previous chapter's tail, so nothing essential is lost, and a multi-turn loop through a CLI invites protocol drift. A draft that comes back suspiciously short (≤200 words) is refused rather than saved.
 - **When these providers do run agentically** (anywhere else the tool loop is used), the engine degrades to a fenced-JSON protocol: the tool catalog is appended to the system prompt and the model replies with ` ```tool_call ` blocks that the harness parses and executes. It works, but it's more fragile than native tools; malformed calls are reported back to the model and the loop carries on.
 
+## Web search capability
+
+One provider capability matters only for [`facts research`](facts.md): whether the backend can run a **native web search**. Providers advertise it with a `supports_web_search` flag, and the rule is deliberate — a provider that can't honor a search request **fails loudly** rather than pretending, because silently returning unsourced "facts" is worse than an error.
+
+| Provider | Native web search | Notes |
+|---|---|---|
+| `anthropic` | yes | Anthropic's `web_search` server tool; billed by the provider, per-search count and queries/URLs reported to the ledger |
+| `claude` | yes | search via the Claude Code CLI; cannot enforce a domain allowlist and reports no per-search count |
+| `openai`, `openrouter`, `together`, `groq`, `ollama` (any `openai_compat`) | no | handed a native-search spec, they raise a clear `ProviderError` pointing you at an Anthropic researcher role or the `claude` provider |
+| `codex` | no | same — raises rather than faking a search |
+
+This only governs *discovery* — searching the open web. `facts research` also has a **fetch** mode that reads specific URLs you seed with `--url` (or that the locker already knows), and fetch is harness-side (`httpx` plus a stdlib HTML-to-text reducer), so it works with **any tool-capable provider** regardless of `supports_web_search`. The [fact locker](facts.md#the-three-web-paths) documents the full search/fetch/none decision and the `facts.*` ledger trail. Nothing outside `facts research` uses this capability — drafting, review, and every other model call never touch the web.
+
 ## Errors you'll actually see
 
 Provider failures surface as one-line, actionable messages, not tracebacks:

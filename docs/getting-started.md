@@ -13,7 +13,7 @@ pip install st0n3r                # core: slop detector, project structure, cano
 pip install 'st0n3r[all]'         # everything: Anthropic + OpenAI SDKs + web UI
 ```
 
-Individual extras: `st0n3r[anthropic]`, `st0n3r[openai]` (also covers OpenRouter, Together, Groq, Ollama, and any OpenAI-compatible endpoint), `st0n3r[ui]` for the dashboard.
+Individual extras: `st0n3r[anthropic]`, `st0n3r[openai]` (also covers OpenRouter, Together, Groq, Ollama, and any OpenAI-compatible endpoint), `st0n3r[ui]` for the dashboard, and `st0n3r[export]` for `stoner ship pdf`/`docx` (EPUB export is dependency-free). `[all]` includes them all.
 
 From source, with [uv](https://docs.astral.sh/uv/):
 
@@ -212,6 +212,21 @@ $ stoner ledger --n 3
 ```
 
 **`stoner ui`** — a local dashboard for browsing the manuscript, triaging review findings, and seeing slop findings highlighted in the prose. See [The web UI](ui.md).
+
+## Beyond drafting: the instrument groups
+
+Once you're drafting comfortably, ten instrument groups add measurement, revision, and shipping on top of the core loop. Each is its own config block and mostly off until you opt in, so you can adopt them one at a time:
+
+- **[Voice](voice.md)** — learn a deterministic fingerprint of your prose and check drafts for drift (`stoner voice learn` / `check`).
+- **[Cast](cast.md)** — private per-character interiority the writer can't see, plus a knowledge-boundedness check (`stoner cast`).
+- **[Tournaments](tournaments.md)** — draft N angled takes and judge them blind (`stoner tournament run`, or `stoner write N --tournament K`).
+- **[Pacing](pacing.md)** — book-level scene/tension/flatline instruments (`stoner pacing report`).
+- **[Writers' Room](room.md)** — persistent editor personas with notebooks and margin comments (`stoner room session`).
+- **[Facts](facts.md)** — a sourced fact locker and a verisimilitude sweep (`stoner facts`).
+- **[Promises & motifs](motifs.md)** — a deterministic no-unfired-guns gate and a recurrence registry (`stoner promises check`, `stoner motifs scan`).
+- **[Readers](readers.md)** — persona reader simulation, attention heatmaps, blind comp benchmarking (`stoner readers run`).
+- **[Drafts](drafts.md)** — snapshot provenance, blame, restore, structural refactors (`stoner drafts`).
+- **[Ship](ship.md)** — readiness check and EPUB/PDF/DOCX/blurbs/audio export (`stoner ship`).
 
 ## Where to go next
 
