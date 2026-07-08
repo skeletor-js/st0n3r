@@ -267,6 +267,17 @@ errors (frozen as baseline; new code must not add errors).
   preamble/log scaffolding because the angle task mentioned write_chapter on
   the single-shot path; task contract now branches on provider.supports_tools.
   Suite 853 passed / 1 skipped, ruff clean, mypy baseline.
+- **Run 3 (close-out): all live-proof follow-ups FIXED by Opus subagents and
+  merged** — cast want_shift rendering (real want text, 80-char truncation);
+  narrowly-scoped filter for FastAPI's StarletteDeprecationWarning (suite now
+  warning-free); single-shot draft sanitation (deterministic strip of
+  system-reminder blocks / tool-XML wrappers / provider log lines / JSON tails,
+  fail-open at half word count, sanitized=[...] ledgered); pacing judge single
+  format-correction retry (retried=true detail; double failure still degrades
+  uncached). 865 passed / 1 skipped, 0 warnings, ruff clean, mypy clean.
+  uv.lock committed (owner-pushed repo should be reproducible; first lockfile
+  in repo history — new dev setup is `uv sync --extra dev --extra export`).
+  Pushed to origin/main at owner request.
 - **Live-proof follow-ups (recorded, not blocking):** (1) cast update prints
   "want_shift: want_shift" — value echoes field name, cosmetic extraction/
   display nit in the curator output path; (2) haiku pacing judge repeatably
