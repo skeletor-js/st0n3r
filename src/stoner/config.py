@@ -208,6 +208,26 @@ class MotifsConfig(BaseModel):
     rhyme_window: int = 1
 
 
+class ReadersConfig(BaseModel):
+    """Reader Simulation at Scale settings (src/stoner/readers/).
+
+    `roster` names explicit persona ids (empty = a deterministic default roster
+    of `roster_size` maximizing attribute spread). `personas_per_call` is the
+    cost lever: k personas per completion turns call count from personas ×
+    chapters into ceil(personas/k) × chapters. `max_calls_per_run` is the hard
+    budget cap a run stops cleanly at (and `--resume` continues from).
+    `agreement_threshold` is the fraction of the roster that must agree on a
+    negative segment for it to become an advisory `Finding` (and be mirrored
+    into `.stoner/reviews/`).
+    """
+
+    roster: list[str] = Field(default_factory=list)
+    roster_size: int = 12
+    personas_per_call: int = 4
+    max_calls_per_run: int = 150
+    agreement_threshold: float = 0.5
+
+
 class ArchaeologyConfig(BaseModel):
     """Draft snapshot store (`.stoner/drafts/`) behavior."""
 
@@ -224,6 +244,7 @@ class ModelRoles(BaseModel):
     reviewer: str = "anthropic/claude-sonnet-5"
     archivist: str = "anthropic/claude-haiku-4-5-20251001"
     researcher: str = ""  # empty resolves against the writer role
+    reader: str = "anthropic/claude-haiku-4-5-20251001"  # high-volume reader reactions
 
 
 class StonerConfig(BaseModel):
@@ -244,6 +265,7 @@ class StonerConfig(BaseModel):
     room: RoomConfig = Field(default_factory=RoomConfig)
     facts: FactsConfig = Field(default_factory=FactsConfig)
     motifs: MotifsConfig = Field(default_factory=MotifsConfig)
+    readers: ReadersConfig = Field(default_factory=ReadersConfig)
     archaeology: ArchaeologyConfig = Field(default_factory=ArchaeologyConfig)
 
     # ------------------------------------------------------------------

@@ -25,3 +25,26 @@ st0n3r stands on the shoulders of prior work:
 - ***Stoner* by John Williams** — the name. A book about doing the work with
   quiet devotion, whatever the outcome. (And yes, the other reading of the
   name is intentional too.)
+
+## Reader-simulation comps (public domain only)
+
+The reader-simulation feature (`stoner readers bench`) compares your manuscript
+against **comp** texts you supply yourself. No comp text ships in this package,
+and there is no fetch-from-URL: `stoner readers comps add` ingests a *local*
+file you already have.
+
+Only ingest texts that are in the **public domain** (or that you otherwise hold
+the right to use). st0r3r records the provenance you give it — title, author,
+year, and source — but it cannot verify licensing; that responsibility is
+yours.
+
+Attribution convention for comps:
+
+- Prefer authoritative public-domain sources (e.g. Project Gutenberg, Standard
+  Ebooks, Wikisource, the Internet Archive) and record where the text came from
+  in the `--source` field so the comp's `comp.json` carries a citable origin.
+- Record the original author and year of first publication in `--author` and
+  `--year`; public-domain status usually turns on the year and the author's
+  death date in your jurisdiction.
+- Comps live under `comps/<slug>/` in your project and are never packaged,
+  published, or transmitted by st0n3r — they stay on your machine.

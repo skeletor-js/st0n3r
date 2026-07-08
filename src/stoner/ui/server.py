@@ -359,6 +359,86 @@ def _tournament_detail(project: WritingProject, state: TournamentState) -> dict[
     return detail
 
 
+# ---------------------------------------------------------------------------
+# Readers: path-jailed run listing + heatmap payloads (read-only)
+# ---------------------------------------------------------------------------
+
+_READERS_RUN_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+
+def _readers_runs_base(project: WritingProject) -> Path:
+    return project.root / ".stoner" / "readers" / "runs"
+
+
+def _safe_readers_run_dir(project: WritingProject, run_id: str) -> Path:
+    """Jail a reader run id to `.stoner/readers/runs/`, no traversal. Plain
+    python (no fastapi) so it stays unit-testable without the extra."""
+    if not run_id or not _READERS_RUN_ID_RE.match(run_id) or Path(run_id).name != run_id:
+        raise _BadPath(f"invalid run id: {run_id}")
+    base = _readers_runs_base(project)
+    resolved = (base / run_id).resolve()
+    if not resolved.is_relative_to(base.resolve()):
+        raise _BadPath(f"invalid run id: {run_id}")
+    if not (resolved / "state.json").exists():
+        raise _NotFound(f"reader run not found: {run_id}")
+    return resolved
+
+
+def _read_json_obj(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _readers_run_summary(run_dir: Path, state: dict[str, Any]) -> dict[str, Any]:
+    raw_chapters = state.get("chapters")
+    chapters: list[Any] = raw_chapters if isinstance(raw_chapters, list) else []
+    chapter_range = [min(chapters), max(chapters)] if chapters else []
+    raw_roster = state.get("roster")
+    roster: list[Any] = raw_roster if isinstance(raw_roster, list) else []
+    return {
+        "run_id": state.get("run_id") or run_dir.name,
+        "kind": state.get("kind", "readers"),
+        "chapters": len(chapters),
+        "chapter_range": chapter_range,
+        "roster_size": len(roster),
+        "created_at": state.get("started_at"),
+        "updated_at": state.get("updated_at"),
+        "has_heatmap": (run_dir / "heatmap.json").exists(),
+        "has_bench": (run_dir / "bench.json").exists(),
+    }
+
+
+def _list_readers_runs(project: WritingProject) -> list[dict[str, Any]]:
+    base = _readers_runs_base(project)
+    if not base.exists():
+        return []
+    out: list[dict[str, Any]] = []
+    for d in sorted(base.iterdir()):
+        if not d.is_dir():
+            continue
+        state = _read_json_obj(d / "state.json")
+        if state is None:
+            continue
+        out.append(_readers_run_summary(d, state))
+    out.sort(key=lambda r: r["created_at"] or 0, reverse=True)
+    return out
+
+
+def _readers_run_detail(run_dir: Path) -> dict[str, Any]:
+    state = _read_json_obj(run_dir / "state.json") or {}
+    roster = state.get("roster") if isinstance(state.get("roster"), list) else []
+    detail = _readers_run_summary(run_dir, state)
+    detail["roster"] = roster
+    detail["heatmap"] = _read_json_obj(run_dir / "heatmap.json")
+    detail["bench"] = _read_json_obj(run_dir / "bench.json")
+    return detail
+
+
 def _list_reviews(project: WritingProject) -> list[dict[str, Any]]:
     base = _reviews_dir(project)
     if not base.exists():
@@ -628,6 +708,22 @@ def create_app(project: WritingProject) -> FastAPI:
             if isinstance(data, dict):
                 return data
         return {}
+
+    # -- readers (attention heatmap; read-only) --------------------------------
+
+    @app.get("/api/readers/runs")
+    def api_readers_runs() -> list[dict[str, Any]]:
+        return _list_readers_runs(project)
+
+    @app.get("/api/readers/runs/{run_id}")
+    def api_readers_run_detail(run_id: str) -> dict[str, Any]:
+        try:
+            run_dir = _safe_readers_run_dir(project, run_id)
+        except _BadPath as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except _NotFound as exc:
+            raise _http404(str(exc)) from exc
+        return _readers_run_detail(run_dir)
 
     # -- tournaments (blind A/B voting; apply stays CLI-only) ------------------
 
