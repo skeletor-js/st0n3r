@@ -321,13 +321,28 @@ def write(
     ),
     task: str = typer.Option("", help="Extra drafting instructions."),
     skip_archive: bool = typer.Option(False, help="Skip the archivist canon-sync stage."),
+    tournament: int = typer.Option(
+        None,
+        "--tournament",
+        help="Draft N angled takes, judge them blind, and apply the winner "
+        "before the slop gate. Passing --tournament IS explicit consent to "
+        "apply the proposed winner automatically (otherwise a separate human "
+        "`stoner tournament apply` step).",
+    ),
 ) -> None:
     """Draft a chapter through the full pipeline (draft -> slop gate -> archive)."""
     from ..pipelines.write import run_write
 
     project = _project()
     try:
-        res = run_write(project, chapter, model=model, skip_archive=skip_archive, task=task)
+        res = run_write(
+            project,
+            chapter,
+            model=model,
+            skip_archive=skip_archive,
+            task=task,
+            tournament=tournament,
+        )
     except (ProviderError, RuntimeError, ValueError) as e:
         _fail(str(e))
     console.print(f"[green]ch-{chapter:02d} written[/green] — {res.words:,} words")

@@ -25,6 +25,23 @@ from ..review.passes import PASSES
 
 _SLUG_STRIP_RE = re.compile(r"[^a-z0-9]+")
 
+#: Opt-in passes an editor may reference in a project's `stoner.yaml` roster,
+#: on top of the built-in eight the default four editors use. Both are advisory
+#: and only meaningful when their owning subsystem has state: `interiority`
+#: needs cast sheets (`.stoner/cast/`), `verisimilitude` needs a populated fact
+#: locker. Naming one on a project without that state runs the pass anyway — it
+#: reports "no sheets"/"no facts" and returns no findings — so a roster stays
+#: safe to opt in early. Deliberately NOT added to the default roster
+#: (`config._default_editors`); a project assigns them explicitly, e.g.:
+#:
+#:     room:
+#:       editors:
+#:         - name: Continuity Pedant
+#:           passes: [continuity, interiority]
+#:         - name: Fact-Checker
+#:           passes: [verisimilitude]
+OPT_IN_PASSES: tuple[str, ...] = ("interiority", "verisimilitude")
+
 
 def slugify(name: str) -> str:
     """Filesystem-safe slug for an editor name: lowercase, hyphen-joined."""

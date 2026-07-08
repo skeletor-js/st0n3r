@@ -263,11 +263,18 @@ def run_book(
     resume: bool = True,
     on_event: EventFn | None = None,
     max_minutes: float | None = None,
+    tournament: bool = False,
 ) -> BookResult:
     """Draft every planned, unwritten chapter in order, running whole-book
     review + revision rounds every `review_every` chapters and once at the
     end. State is saved before every model call, so a crash/Ctrl-C is always
     resumable with `resume=True`. Chapter files are never deleted.
+
+    `tournament=True` (opt-in) drafts the slot chapters — opening (ch-01) and
+    ending (last planned) — via a per-slot tournament when
+    `config.tournament.slot_takes` has an entry for that slot; middle chapters
+    draft once (plan 003 seam, plan 011 U4). Default-off: byte-identical to the
+    single-draft behavior.
     """
     planned = planned_chapters(project)
     if not planned:
@@ -302,7 +309,16 @@ def run_book(
         state.budget.chapters_this_run = result.chapters_written
         save_state(project, state)
 
-        write = run_write(project, n, model=model, provider=provider)
+        tournament_takes: int | None = None
+        if tournament:
+            from ..tournament.angles import slot_for_chapter
+
+            slot = slot_for_chapter(project, n)
+            slot_takes = project.config.tournament.slot_takes
+            if slot is not None and slot in slot_takes:
+                tournament_takes = slot_takes[slot]
+
+        write = run_write(project, n, model=model, provider=provider, tournament=tournament_takes)
         result.usage = result.usage + write.usage
         result.chapters_written += 1
         drafted_since_review += 1
