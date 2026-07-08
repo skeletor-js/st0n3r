@@ -499,3 +499,148 @@ def test_reviews_listing_labels_pacing_kind_and_keeps_existing_kinds(client, pro
     assert listing["pacing-1234.json"]["kind"] == "pacing"
     assert listing["ch-01-slop.json"]["kind"] == "slop"  # regression
     assert listing["ch-01-review.json"]["kind"] == "review"  # regression
+
+
+# ---------------------------------------------------------------------------
+# tournaments (blind A/B voting; second write endpoint after the finding PATCH)
+# ---------------------------------------------------------------------------
+
+
+def _seed_tournament(project: WritingProject, tid: str = "ch-01-1111", status: str = "proposed"):
+    from stoner.tournament.state import (
+        Comparison,
+        TakeRecord,
+        TournamentState,
+        save_state,
+        takes_dir,
+    )
+
+    state = TournamentState(id=tid, chapter=1, status=status)
+    bodies = {
+        1: ("dialogue_led", "He crossed the yard and said nothing. The gate sagged.\n"),
+        2: ("pov_distant", "The kettle sat cold. She counted the hours by the light.\n"),
+    }
+    for idx, (angle, body) in bodies.items():
+        rel = str((takes_dir(project, tid) / f"take-{idx:02d}.md").relative_to(project.root))
+        project.write(rel, f"---\nangle: {angle}\n---\n\n{body}")
+        state.takes.append(
+            TakeRecord(index=idx, angle=angle, rel_path=rel, words=len(body.split()))
+        )
+    state.comparisons = [Comparison(a=1, b=2, verdict="a")]
+    state.ratings = {1: 1216.0, 2: 1184.0}
+    state.proposed_winner = 1
+    save_state(project, state)
+    return state
+
+
+def test_tournaments_list_empty(client):
+    res = client.get("/api/tournaments")
+    assert res.status_code == 200
+    assert res.json() == []
+
+
+def test_tournaments_list_and_detail_payloads(client, project: WritingProject):
+    _seed_tournament(project)
+    res = client.get("/api/tournaments")
+    assert res.status_code == 200
+    listing = res.json()
+    assert len(listing) == 1
+    assert listing[0]["id"] == "ch-01-1111"
+    assert listing[0]["chapter"] == 1
+    assert listing[0]["status"] == "proposed"
+    assert listing[0]["takes"] == 2
+
+    res = client.get("/api/tournaments/ch-01-1111")
+    assert res.status_code == 200
+    detail = res.json()
+    assert detail["votable"] is True
+    assert len(detail["standings"]) == 2
+    assert detail["standings"][0]["rating"] == 1216.0  # ordered by Elo
+    assert len(detail["pairs"]) == 1
+    pair = detail["pairs"][0]
+    assert set(pair) == {"token", "a", "b"}
+    assert {pair["a"].strip(), pair["b"].strip()} == {
+        "He crossed the yard and said nothing. The gate sagged.",
+        "The kettle sat cold. She counted the hours by the light.",
+    }
+
+
+def test_tournament_detail_withholds_angle_and_verdict_while_votable(client, project: WritingProject):
+    _seed_tournament(project)
+    detail = client.get("/api/tournaments/ch-01-1111").json()
+    body = json.dumps(detail)
+    assert "dialogue_led" not in body
+    assert "pov_distant" not in body
+    assert "comparisons" not in detail  # judge verdicts withheld too
+
+    # Once voting closes (applied), angles and verdicts are revealed.
+    _seed_tournament(project, tid="ch-01-2222", status="applied")
+    revealed = client.get("/api/tournaments/ch-01-2222").json()
+    assert revealed["votable"] is False
+    assert {r["angle"] for r in revealed["standings"]} == {"dialogue_led", "pov_distant"}
+    assert revealed["comparisons"] == [{"a": 1, "b": 2, "verdict": "a"}]
+    assert revealed["pairs"] == []
+
+
+def test_tournament_detail_unknown_id_404(client):
+    assert client.get("/api/tournaments/ch-09-nope").status_code == 404
+
+
+@pytest.mark.parametrize("bad_id", ["../stoner", "..", ".hidden", "a/b"])
+def test_tournament_id_traversal_rejected(client, project: WritingProject, bad_id):
+    _seed_tournament(project)
+    res = client.get(f"/api/tournaments/{bad_id}")
+    assert res.status_code in (400, 404)
+    res = client.post(f"/api/tournaments/{bad_id}/votes", json={"token": "x", "pick": "a"})
+    assert res.status_code in (400, 404)
+
+
+def test_tournament_vote_round_trip_never_touches_manuscript(client, project: WritingProject):
+    _seed_tournament(project)
+    chapter_path = project.root / "manuscript" / "ch-01.md"
+    manuscript_before = chapter_path.read_bytes()
+
+    detail = client.get("/api/tournaments/ch-01-1111").json()
+    token = detail["pairs"][0]["token"]
+    res = client.post("/api/tournaments/ch-01-1111/votes", json={"token": token, "pick": "a"})
+    assert res.status_code == 200
+    reveal = res.json()
+    assert reveal["picked"] in (1, 2)
+    # The post-vote reveal carries angles and the judge's pick.
+    assert reveal["take_a"]["angle"] == "dialogue_led"
+    assert reveal["take_b"]["angle"] == "pov_distant"
+    assert reveal["judge_pick"] == 1
+
+    taste = json.loads((project.root / ".stoner" / "taste.json").read_text(encoding="utf-8"))
+    assert len(taste["votes"]) == 1
+    assert taste["votes"][0]["picked"] == reveal["picked"]
+
+    # A voted pair leaves the votable list.
+    detail = client.get("/api/tournaments/ch-01-1111").json()
+    assert detail["pairs"] == []
+    assert detail["votes"] == 1
+
+    # No endpoint mutated the manuscript.
+    assert chapter_path.read_bytes() == manuscript_before
+
+
+def test_tournament_vote_invalid_token_404(client, project: WritingProject):
+    _seed_tournament(project)
+    res = client.post(
+        "/api/tournaments/ch-01-1111/votes", json={"token": "beefbeefbeefbeef", "pick": "a"}
+    )
+    assert res.status_code == 404
+
+
+def test_tournament_vote_closed_when_applied_409(client, project: WritingProject):
+    _seed_tournament(project, tid="ch-01-3333", status="applied")
+    res = client.post(
+        "/api/tournaments/ch-01-3333/votes", json={"token": "beefbeefbeefbeef", "pick": "a"}
+    )
+    assert res.status_code == 409
+
+
+def test_tournament_vote_invalid_pick_422(client, project: WritingProject):
+    _seed_tournament(project)
+    res = client.post("/api/tournaments/ch-01-1111/votes", json={"token": "x", "pick": "c"})
+    assert res.status_code == 422
