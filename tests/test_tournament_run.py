@@ -336,3 +336,17 @@ def test_steals_land_on_losing_takes(project):
         loser = state.take(loser_idx)
         assert loser is not None
         assert any("keep the dog" in s for s in loser.steals)
+
+
+def test_angle_task_omits_tool_mention_for_text_only_providers():
+    """Text-only takes go through the single-shot path, which saves the raw
+    completion; a write_chapter mention there invites tool-call XML into the
+    take file (live-run bug found in the plan-011 proof run)."""
+    from stoner.tournament.takes import _angle_task
+
+    text_only = _angle_task(3, "in_scene", "Stay in the room.", tool_capable=False)
+    assert "write_chapter" not in text_only
+    assert "ONLY the chapter prose" in text_only
+
+    tooled = _angle_task(3, "in_scene", "Stay in the room.", tool_capable=True)
+    assert "write_chapter" in tooled

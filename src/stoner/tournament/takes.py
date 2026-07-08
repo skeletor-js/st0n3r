@@ -51,23 +51,30 @@ def _emit(on_event: EventFn | None, event: dict[str, Any]) -> None:
             pass
 
 
-def _angle_task(number: int, angle_name: str, instruction: str) -> str:
+def _angle_task(number: int, angle_name: str, instruction: str, tool_capable: bool) -> str:
     """Angle-specific drafting task, layered on the writer.md system prompt.
 
-    Works on both provider paths: for tool providers it replaces the default
-    agent task (the write_chapter mention keeps the tool loop on rails); for
-    text-only providers it replaces the single-shot user message, so it must
-    repeat the "reply with ONLY the chapter prose" contract from
-    `draft_chapter`.
+    The closing contract must match the provider path: on the tool loop the
+    write_chapter mention keeps the agent on rails, but in the single-shot
+    text path the same mention invites the model to emit tool-call XML and
+    preamble that would be saved verbatim as the take (live-run bug found in
+    the plan-011 proof run) -- text-only providers get the plain
+    "reply with ONLY the chapter prose" contract from `draft_chapter`.
     """
+    closing = (
+        f"Save with the write_chapter tool (number={number})."
+        if tool_capable
+        else (
+            "Reply with ONLY the chapter prose: no title line, no notes, "
+            "no tool calls or markup, no commentary before or after."
+        )
+    )
     return (
         f"Draft chapter {number} now, in full, as finished prose -- from "
         f"this specific angle ({angle_name}):\n\n{instruction}\n\n"
         "Everything else you need -- premise, style, canon, beat sheet, "
-        "memory, the tail of the previous chapter -- is in your "
-        "instructions above. If you can save with the write_chapter tool "
-        f"(number={number}), do so; otherwise reply with ONLY the chapter "
-        "prose: no title line, no notes, no commentary before or after."
+        f"memory, the tail of the previous chapter -- is in your "
+        f"instructions above. {closing}"
     )
 
 
@@ -122,12 +129,20 @@ def draft_takes(
     ledger `tournament.take`, restore the snapshot. A refusal-guard failure
     records a note and continues; fewer than 2 captured takes raises.
     """
+    from ..pipelines.common import resolve_role_model
     from ..pipelines.write import draft_chapter  # late: heavy module
+    from ..providers.registry import get_provider
 
     usage = Usage()
     ledger = Ledger(project.root)
     bw, bp = CanonStore(project).banned_terms()
     done = {t.index for t in state.takes}
+
+    if provider is None:
+        # Resolve once so the angle task can match the provider path (tool
+        # loop vs single-shot) and every take reuses one provider instance.
+        model_str = resolve_role_model(project.config, "writer", model)
+        provider, _model_id = get_provider(model_str, project.config)
 
     from .angles import all_angles
 
@@ -138,7 +153,12 @@ def draft_takes(
             continue
         # Save intent BEFORE the model call so a crash mid-draft is resumable.
         save_state(project, state)
-        task = _angle_task(state.chapter, angle_name, instructions.get(angle_name, angle_name))
+        task = _angle_task(
+            state.chapter,
+            angle_name,
+            instructions.get(angle_name, angle_name),
+            tool_capable=provider.supports_tools,
+        )
         try:
             usage += draft_chapter(
                 project, state.chapter, model=model, provider=provider, task=task
