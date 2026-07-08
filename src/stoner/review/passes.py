@@ -550,6 +550,42 @@ def _parse_grade(text: str) -> list[Finding]:
     return out[:_MAX_FINDINGS_PER_PASS]
 
 
+# -- interiority --------------------------------------------------------
+
+_INTERIORITY_SYSTEM = (
+    "You are an interiority editor. You check a chapter against the cast's "
+    "private state -- what each character knows, wants, fears, lies about, and "
+    "refuses to say -- to protect subtext, dramatic irony, and information "
+    "asymmetry. This is the one editor allowed to see private cast sheets."
+)
+
+
+def _interiority_prompt(ctx: PassContext) -> tuple[str, str]:
+    # Import the digest helper lazily so the review module carries no
+    # load-time dependency on the interiority feature (it is additive and
+    # opt-in): the pass simply renders no sheets when the feature is unused.
+    from ..interiority import review_digest
+
+    digest = review_digest(ctx.project, ctx.chapter)
+    if digest:
+        task = (
+            "Check this chapter against the cast's private state below. Flag: "
+            "refusals violated without an on-page cause; active lies "
+            "contradicted with no exposure beat; stated-vs-real want collapses "
+            "(a character baldly narrating their real want); and missed "
+            "dramatic-irony setups (reader-known secrets a scene simply "
+            "ignores). Do not flag a character acting on knowledge they hold as "
+            "of this chapter -- that is correct.\n\n"
+            "## Cast private state (PRIVATE)\n\n" + digest
+        )
+    else:
+        task = (
+            "No cast sheets exist for this project, so there is no private "
+            "state to check the chapter against. Return an empty findings list."
+        )
+    return _INTERIORITY_SYSTEM, _std_user_prompt(ctx, task)
+
+
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -602,5 +638,11 @@ PASSES: dict[str, ReviewPass] = {
         description="Paragraph-level STRONG/FINE/WEAK/CUT comparative grading with distribution stats.",
         build_prompt=_grade_prompt,
         parse=_parse_grade,
+    ),
+    "interiority": ReviewPass(
+        name="interiority",
+        description="Cast private state vs. the draft: broken refusals, dropped lies, want collapses, missed irony (advisory; opt-in).",
+        build_prompt=_interiority_prompt,
+        parse=_make_standard_parser("interiority"),
     ),
 }

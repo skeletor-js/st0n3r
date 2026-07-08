@@ -51,6 +51,25 @@ class VoiceConfig(BaseModel):
     weights: dict[str, float] = Field(default_factory=_default_voice_weights)
 
 
+class CastConfig(BaseModel):
+    """Character Interiority Agents settings (src/stoner/interiority/).
+
+    `auto_update` gates the post-archivist cast-curator hook in `run_write`
+    (only fires when cast sheets exist, so a project that never opts in pays
+    nothing). `scene_*` bound a scene sim's cost the way TournamentConfig bounds
+    a tournament: `scene_max_rounds` caps round-robin turns and
+    `scene_token_budget` caps total tokens. `scene_mode` is auto|multi|single
+    (auto picks single-call on text-only providers). `sheet_digest_chars` caps
+    a character's bounded private digest in scene prompts.
+    """
+
+    auto_update: bool = True
+    scene_max_rounds: int = 8
+    scene_token_budget: int = 60000
+    scene_mode: str = "auto"  # auto | multi | single
+    sheet_digest_chars: int = 4000
+
+
 class TournamentConfig(BaseModel):
     """Draft-tournament settings (src/stoner/tournament/).
 
@@ -186,6 +205,7 @@ class StonerConfig(BaseModel):
     temperature: float | None = None
     extra: dict[str, Any] = Field(default_factory=dict)
     voice: VoiceConfig = Field(default_factory=VoiceConfig)
+    cast: CastConfig = Field(default_factory=CastConfig)
     tournament: TournamentConfig = Field(default_factory=TournamentConfig)
     pacing: PacingConfig = Field(default_factory=PacingConfig)
     room: RoomConfig = Field(default_factory=RoomConfig)
