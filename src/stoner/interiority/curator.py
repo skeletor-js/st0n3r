@@ -228,7 +228,13 @@ def apply_cast_update(
                     sheet.wants.stated = new_stated or sheet.wants.stated
                     sheet.wants.real = new_real or sheet.wants.real
                     modified = True
-                    result.applied.append({"slug": slug, "kind": "want_shift"})
+                    if new_stated and new_real and _norm(new_stated) != _norm(new_real):
+                        want_text = f"{new_stated} / {new_real}"
+                    else:
+                        want_text = new_stated or new_real
+                    result.applied.append(
+                        {"slug": slug, "kind": "want_shift", "want": want_text}
+                    )
 
         # -- new lies ------------------------------------------------------
         for nl in raw.get("new_lies") or []:

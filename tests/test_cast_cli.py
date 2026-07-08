@@ -140,6 +140,30 @@ def test_cast_update_auto_and_dry_run(project_dir: Path, monkeypatch):
     assert calls == [True, False]  # --auto then dry-run default
 
 
+def test_cast_update_want_shift_renders_want_text(project_dir: Path, monkeypatch):
+    def fake_update(project, chapter, model=None, provider=None, auto=False):
+        return CastApplyResult(
+            chapter=chapter,
+            dry_run=not auto,
+            applied=[
+                {
+                    "slug": "ruth-vann",
+                    "kind": "want_shift",
+                    "want": "to be forgiven / to be seen",
+                }
+            ],
+            conflicts=[],
+        )
+
+    monkeypatch.setattr(interiority, "run_cast_update", fake_update)
+
+    result = runner.invoke(app, ["cast", "update", "3", "--auto"])
+    assert result.exit_code == 0, result.output
+    assert "to be forgiven / to be seen" in result.output
+    # the field name must not echo as the value
+    assert "want_shift: want_shift" not in result.output
+
+
 def test_cast_check_prints_findings(project_dir: Path, monkeypatch):
     from stoner.types import Finding, Severity
 
