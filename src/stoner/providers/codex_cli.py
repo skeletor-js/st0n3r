@@ -59,12 +59,13 @@ class CodexCLIProvider(Provider):
 
     def __init__(self, pc: ProviderConfig):
         self.pc = pc
-        self.binary = shutil.which("codex")
-        if not self.binary:
+        binary = shutil.which("codex")
+        if not binary:
             raise ProviderError(
                 "The `codex` CLI was not found on PATH. Install OpenAI Codex CLI "
                 "and authenticate with `codex login`, then retry."
             )
+        self.binary: str = binary
         self.timeout = pc.extra.get("timeout", _DEFAULT_TIMEOUT)
 
     # -- feature detection -------------------------------------------------

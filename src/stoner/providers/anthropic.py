@@ -7,7 +7,7 @@ back into a `CompletionResponse`.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from ..config import ProviderConfig, resolve_api_key
 from ..types import (
@@ -193,6 +193,16 @@ class AnthropicProvider(Provider):
 
     # -- response parsing ---------------------------------------------------
     @staticmethod
+    def _map_stop_reason(
+        reason: str | None,
+    ) -> Literal["end", "tool_use", "max_tokens", "error"]:
+        if reason == "tool_use":
+            return "tool_use"
+        if reason == "max_tokens":
+            return "max_tokens"
+        return "end"
+
+    @staticmethod
     def _parse_response(resp: Any) -> CompletionResponse:
         text_parts: list[str] = []
         tool_calls: list[ToolCall] = []
@@ -204,11 +214,7 @@ class AnthropicProvider(Provider):
                 tool_calls.append(
                     ToolCall(id=block.id, name=block.name, arguments=dict(block.input or {}))
                 )
-        stop_reason = "end"
-        if resp.stop_reason == "tool_use":
-            stop_reason = "tool_use"
-        elif resp.stop_reason == "max_tokens":
-            stop_reason = "max_tokens"
+        stop_reason = AnthropicProvider._map_stop_reason(resp.stop_reason)
         usage = Usage(
             input_tokens=getattr(resp.usage, "input_tokens", 0) or 0,
             output_tokens=getattr(resp.usage, "output_tokens", 0) or 0,

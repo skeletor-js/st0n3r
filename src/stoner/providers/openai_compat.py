@@ -8,7 +8,7 @@ Together, Groq, Ollama, vLLM, LM Studio, etc.
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, Literal
 
 from ..config import ProviderConfig, resolve_api_key
 from ..types import CompletionRequest, CompletionResponse, Message, ToolCall, Usage
@@ -106,7 +106,7 @@ class OpenAICompatProvider(Provider):
 
     # -- response parsing -------------------------------------------------
     @staticmethod
-    def _parse_tool_calls(raw_calls: list) -> list[ToolCall]:
+    def _parse_tool_calls(raw_calls: list | None) -> list[ToolCall]:
         calls: list[ToolCall] = []
         for rc in raw_calls or []:
             fn = rc.function
@@ -120,19 +120,21 @@ class OpenAICompatProvider(Provider):
             calls.append(ToolCall(id=rc.id, name=fn.name, arguments=args))
         return calls
 
+    @staticmethod
+    def _map_finish_reason(
+        finish: str | None,
+    ) -> Literal["end", "tool_use", "max_tokens", "error"]:
+        if finish == "tool_calls":
+            return "tool_use"
+        if finish == "length":
+            return "max_tokens"
+        return "end"
+
     def _parse_response(self, resp: Any) -> CompletionResponse:
         choice = resp.choices[0]
         msg = choice.message
         tool_calls = self._parse_tool_calls(getattr(msg, "tool_calls", None))
-        finish = choice.finish_reason
-        if finish == "tool_calls":
-            stop_reason = "tool_use"
-        elif finish == "length":
-            stop_reason = "max_tokens"
-        elif finish in ("stop", None):
-            stop_reason = "end"
-        else:
-            stop_reason = "end"
+        stop_reason = self._map_finish_reason(choice.finish_reason)
         usage = Usage()
         if getattr(resp, "usage", None) is not None:
             usage = Usage(
