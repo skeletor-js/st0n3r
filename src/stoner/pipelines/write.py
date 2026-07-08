@@ -62,7 +62,8 @@ def draft_chapter(
 ) -> Usage:
     """Run the writer agent to draft one chapter (writes the chapter file)."""
     ctx = chapter_context(project, number)
-    fm, existing = ({}, "")
+    fm: dict[str, Any] = {}
+    existing = ""
     try:
         fm, existing = project.read_chapter(number)
     except Exception:

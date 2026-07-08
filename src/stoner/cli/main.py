@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from typing import NoReturn
 
 import typer
 from rich.console import Console
@@ -40,7 +41,7 @@ def _project() -> WritingProject:
         raise typer.Exit(1) from None
 
 
-def _fail(msg: str) -> None:
+def _fail(msg: str) -> NoReturn:
     err_console.print(msg)
     raise typer.Exit(1)
 
@@ -475,8 +476,8 @@ def archive(
         console.print(
             f"[yellow]conflict[/yellow] {c.entity}.{c.field}: canon={c.canon_value!r} new={c.new_value!r} — resolve by hand"
         )
-    for e in res.new_entities:
-        console.print(f"[cyan]new entity[/cyan] {e.get('kind')}: {e.get('entity') or e.get('name')}")
+    for ent in res.new_entities:
+        console.print(f"[cyan]new entity[/cyan] {ent.get('kind')}: {ent.get('entity') or ent.get('name')}")
 
 
 # ---------------------------------------------------------------------------
