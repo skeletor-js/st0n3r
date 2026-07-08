@@ -13,7 +13,7 @@ The dashboard is built on the Hearth design system: a warm paper light theme and
 
 ## Panels
 
-The sidebar rail has five views.
+The sidebar rail has nine views: **Manuscript**, **Canon**, **Reviews**, **Pacing**, **Tournaments**, **Writers' Room**, **Readers**, **Book**, and **Ledger**. Each instrument that produces something worth reading gets one panel; the panels share the same fetch-and-render helpers, so the dashboard stays a single no-build file.
 
 ### Manuscript
 
@@ -26,15 +26,33 @@ This is also where the **slop heatmap** lives. Hit **Run slop** and the chapter 
 
 A page that reads mostly clean with two red streaks tells you where to spend the next hour; a page that's amber all over says the problem is systemic, not local. Findings are listed under the text with line numbers and issues. What the categories mean is covered in [The slop detector](slop.md).
 
+The same panel surfaces the deterministic [voice](voice.md) check when a fingerprint has been learned — the chapter's drift against your measured voice, alongside the slop score.
+
 ### Canon
 
 Browse the story bible: premise, style, characters, world entries, timeline, threads. Selecting an entry shows its frontmatter (the hard facts the archivist diffs) above the rendered body. Editing still happens in your editor — the UI is for reading and cross-checking, e.g. eyeballing a character sheet against the chapter that just contradicted it.
 
 ### Reviews
 
-Every saved report from `.stoner/reviews/` — both `stoner review` reports and slop reports saved with `--save` — newest first, tagged by chapter and kind.
+Every saved report from `.stoner/reviews/`, newest first, tagged by chapter and **kind**. Each report carries a `kind` discriminator — `review`, `slop`, `book`, `voice`, `pacing`, `cast`, or `readers` — and the panel routes each to the right shape: findings tables for the report kinds, book-level views for the manuscript passes. A legacy report with no kind is treated as `review`, so old projects keep working. So the [verisimilitude sweep](facts.md), [cast](cast.md) boundedness checks, and [reader](readers.md) trouble segments all land here alongside plain reviews.
 
 Open a review report and you get the **findings triage table**: severity, category, quote, issue, and status for each finding, with **Accept** and **Dismiss** buttons. Statuses are written back into the report file itself, which is exactly what `stoner revise` reads — accept the findings you agree with here, then run `stoner revise N` in the terminal. The full flow is in [Review & revise](review.md#the-revise-flow).
+
+### Pacing
+
+The [pacing report](pacing.md) as a timeline: the tension curve across chapters and the flagged runs — flatlines, ending echoes, POV whiplash, scene-vs-summary dips. Reads from the latest saved pacing report; advisory, nothing to triage.
+
+### Tournaments
+
+The [draft tournaments](tournaments.md) in the project — standings, steals, and budget per run. This is also where **blind A/B voting** happens: read two takes with their angles hidden, pick one, then see the verdict. Votes train the project's taste model; applying a winner stays a terminal step (`stoner tournament apply`).
+
+### Writers' Room
+
+Each editor's [notebook](room.md) — running opinion and open items — plus a chapter's margin comments. Comments can be resolved or dismissed here; the session runs themselves are a terminal command.
+
+### Readers
+
+A [reader run](readers.md)'s **attention heatmap** and trouble segments: where the roster's attention held and where it collectively dropped. High-agreement negative segments also appear in the Reviews panel as `kind: readers` findings.
 
 ### Book
 

@@ -71,6 +71,12 @@ Every `--review-every` chapters (default 4), and once more at the end, it runs *
 
 The command exits nonzero if critical findings remain, so it can gate a script.
 
+At the end of a run, `book` counts the open promise-kind rows still unpaid — the unfired guns — and reports them (a `promises.open` completion line, mirrored to the ledger). This is **reporting only**, never a blocker: abandoning a thread is the writer's call, so book mode surfaces the count loudly and leaves the decision to you. The strict gate lives in [`stoner promises check`](motifs.md) and [`stoner ship check`](ship.md) when you want it.
+
+### Tournament slots
+
+`stoner book --tournaments` drafts the opening and ending slot chapters via a per-slot [draft tournament](tournaments.md) — several angled takes judged blind, winner applied — while middle chapters draft once. Sizes come from `config.tournament.slot_takes` (default 5 takes each). It spends the extra budget on the two chapters a reader remembers most; it's opt-in and off unless you pass the flag.
+
 ### Resumable by design
 
 State lives in `.stoner/book-state.json`: chapters planned, chapters done (words, slop score, revision cycles), the current phase, and every book-review outcome. It is saved **before every model call**, so Ctrl-C, a crash, or a rate-limit death always leaves a resumable state:

@@ -2,7 +2,28 @@
 
 ### Does st0n3r send my writing anywhere?
 
-Only when you run a command that calls a model — `write`, `review`, `revise`, `archive`, `review-book`, `facts sweep`, and the autonomous trio `brainstorm`/`foundation`/`book` — and then only to the provider you configured, carrying the chapter plus the canon/memory context for that call (`review-book` sends the manuscript itself). One command also reaches the open web: `facts research` is opt-in (it refuses unless you set `facts.enabled: true`) and, when enabled, performs web searches or URL fetches to build the fact locker — every network action is written to the ledger under `facts.*`. See [the fact locker](facts.md). Two ship commands also touch the network: `ship blurbs` calls the writer model to draft the synopsis/query/cover, and `ship audio --assist` calls the archivist model to resolve ambiguous dialogue lines — both ledgered under `ship.*`. A network TTS backend (`ship audio --backend openai`) is explicit opt-in only, never a silent fallback, and every run records the backend used in the ledger; the default `say` backend is local. Everything else (`slop`, `chapter`, `canon`, `beats`, `threads`, `status`, `ledger`, `facts add`/`list`/`show`, `ship check`/`epub`/`pdf`/`docx`/`voices` and local-backend `ship audio`, the UI) works entirely on local files and makes no network requests. For a fully offline pipeline, point the model roles at [Ollama or another local server](providers.md#ollama-and-other-local-servers).
+Only when you run a command that calls a model, and then only to the provider you configured — carrying that call's chapter plus the canon/memory context, nothing more. Two commands can also reach the open web, both opt-in; everything else is local files only.
+
+**Commands that call your configured model:**
+
+- **Core pipeline** — `write` (draft, slop-gate revisions, archivist), `review`, `revise`, `archive`, and the autonomous trio `brainstorm` / `foundation` / `book`. `review-book` sends the whole manuscript as its prompt.
+- **Voice** — none. `voice learn`, `voice show`, and `voice check` are fully deterministic; the optional `voice.gate` in the write pipeline scores drafts with math, not a model.
+- **Pacing** — `pacing report` calls the reviewer model for its per-chapter LLM instruments; `pacing report --no-llm` (or `pacing.llm_instruments: false`) makes it fully offline.
+- **Tournaments** — `tournament run` drafts N takes and judges them (writer + reviewer roles); `tournament apply` calls the model only when `--graft` folds losing takes' steals into the winner (the default — `--no-graft` is deterministic). `tournament list` / `status` / `vote` are offline.
+- **Writers' Room** — `room session` (one call per editor per pass, plus cross-exam and at most one re-locate and one comment follow-up). `room comment` / `comments` / `notebook` / `status` are offline.
+- **Cast** — `cast update`, `cast check`, and `cast scene` call a model; `cast init` / `list` / `show` do not.
+- **Facts** — `facts sweep` runs the verisimilitude pass against the reviewer model. `facts research` reaches the open web (see below). `facts add` / `list` / `show` are offline.
+- **Motifs & promises** — `motifs candidates` and `motifs rhyme` call the model for their advisory triage/verdict; `--no-judge` makes each offline. `motifs list` / `add` / `scan` and every `promises` command are deterministic and offline.
+- **Readers** — `readers run` (persona reactions) and `readers bench` (pairwise judging against a comp) call the reader model. `readers personas` / `heatmap` / `comps` are offline.
+- **Drafts** — `drafts refactor move-reveal` and `drafts refactor flip-pov` call the writer model, then run advisory model verification unless `--no-verify` (or `archaeology.verify_after_refactor: false`). `drafts verify` with chapter arguments also runs model verification. `drafts refactor merge` / `split` and every other `drafts` command (`blame`, `restore`, `diff`, `snapshot`, `prune`, `list`, `show`) are deterministic.
+- **Ship** — `ship blurbs` calls the writer model to draft the synopsis/query/cover, and `ship audio --assist` calls the model to resolve ambiguous dialogue lines. `ship check` / `epub` / `pdf` / `docx` / `voices` / `all` are deterministic and local.
+
+**Commands that reach the open web (opt-in, ledgered):**
+
+- **`facts research`** refuses unless you set `facts.enabled: true`, and even then it performs web searches or URL fetches only to build the fact locker; every network action lands in the ledger under `facts.*`. See [the fact locker](facts.md).
+- **A network TTS backend** for `ship audio` (`--backend openai`, or `ship.audio.backend: openai`) synthesizes speech through a vendor API. It is never a silent fallback — the default `say` backend is local — and every run records the backend used in the ledger.
+
+Everything else — `slop`, `chapter`, `canon`, `beats`, `threads`, `status`, `ledger`, and the UI — works entirely on local files and makes no network requests. For a fully offline pipeline, point the model roles at [Ollama or another local server](providers.md#ollama-and-other-local-servers) and leave `facts.enabled` off with a local `ship audio` backend.
 
 ### What if I already have a manuscript?
 
