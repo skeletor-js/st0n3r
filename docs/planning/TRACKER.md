@@ -229,13 +229,21 @@ errors (frozen as baseline; new code must not add errors).
   light: reviews kind chips incl. BOOK REVIEW on legacy files, pacing empty state
   and populated timeline) — closes the U5 follow-up. Suite at 852 passed / 1
   skipped.
-- **PENDING LIVE-KEY PROOF STEPS (need a real provider API key; none configured
-  in this environment):** room session on one chapter; small tournament run (+
-  vote/apply — the only way to ledger tournament.*); cast update + cast check;
-  facts research (also needs facts.enabled: true); motifs candidates / rhyme
-  with judge; readers run (small roster) + heatmap + bench; drafts refactor
-  move-reveal/flip-pov + post-refactor model verification; ship blurbs; pacing
-  report with LLM instruments; ship audio --assist. Everything else is proven.
+- **Run 3 (cont): live proof unblocked WITHOUT an API key** — owner correction:
+  st0n3r's own claude_code/codex_cli providers are the proof vehicle (the v2
+  build did exactly this). Proof copy reconfigured: writer/reviewer/researcher
+  = claude/opus (Claude Code CLI, Opus 4.8), archivist/reader = claude/haiku;
+  facts.enabled true (max_searches 3). Smoke `motifs rhyme` with a live opus
+  judge succeeded (~35s/call). Live proof sequence delegated to an Opus
+  subagent: room session, tournament run/vote/apply (covers the missing
+  tournament.* namespace), cast update/check, facts research (the one
+  web-touching step), motifs candidates, readers run/heatmap/bench, one
+  model-assisted refactor + verification, ship blurbs, ship audio --assist,
+  pacing with LLM judge + cache-hit re-run. Also queued per owner: Opus README
+  overhaul (hero banner at docs/assets/hero.jpg, badges, feature breakdowns
+  with fresh screenshots, roadmap) — runs AFTER the docs-reconciliation agent
+  merges; screenshots captured after the live proof so panels have real data
+  (chromium installed in scratchpad for playwright capture).
 
 ## Run journal (run 1 — v1/v2)
 
