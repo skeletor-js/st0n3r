@@ -21,7 +21,7 @@ errors (frozen as baseline; new code must not add errors).
 | W2 | 003 draft tournaments (U1-U7; write --tournament + book slots deferred to wiring) | done | merged, +62 tests (554 green) |
 | W3 | 002 character interiority (U1-U7; run_write cast hook deferred to wiring) | done | merged, +50 tests (604 green) |
 | W3 | 006 verisimilitude engine (U1-U6) | done | c1d1960, +62 tests (666 green) |
-| W4 | 007 promise & motif ledger (U1-U6, incl. book.py promises event) | wip | Opus subagent worktree, run 3 |
+| W4 | 007 promise & motif ledger (U1-U6, incl. book.py promises event) | done | d2961c5, +51 tests (717 green) |
 | W4 | 008 reader simulation (U1-U7) | wip | Opus subagent worktree, run 3 |
 | W5 | 010 production line (all units) | todo | |
 | Wx | 009 U3-U8 (provenance/CLI/refactors) | done | 5e4c4ff, +41 tests (284 green) |
@@ -178,6 +178,10 @@ errors (frozen as baseline; new code must not add errors).
   (motifs config/register after facts before archaeology/drafts; readers likewise —
   merge order resolved by orchestrator; motif reports kind "motifs", readers
   mirror reports kind "readers"; 007 owns the book.py promises event in-plan).
+- **Run 3 (cont):** Promise & motif ledger (007) landed and merged clean (d2961c5):
+  +51 tests -> 717 passed / 1 skipped, ruff clean, mypy baseline. Zero plan
+  deviations; canon/promises.md deliberately unused per KTD 1. Readers (008)
+  still building.
 
 ## Run journal (run 1 — v1/v2)
 
