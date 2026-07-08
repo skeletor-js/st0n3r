@@ -19,7 +19,7 @@ errors (frozen as baseline; new code must not add errors).
 | W1 | 004 pacing instrumentation (U1-U7) | done | 781de54, +73 tests (357 green) |
 | W2 | 005 writers' room (U1-U7) | done | ad1a147, +77 tests (492 green) |
 | W2 | 003 draft tournaments (U1-U7; write --tournament + book slots deferred to wiring) | done | merged, +62 tests (554 green) |
-| W3 | 002 character interiority (U1-U7; run_write cast hook deferred to wiring) | wip | Opus subagent worktree, run 3 |
+| W3 | 002 character interiority (U1-U7; run_write cast hook deferred to wiring) | done | merged, +50 tests (604 green) |
 | W3 | 006 verisimilitude engine (U1-U6) | wip | Opus subagent worktree, run 3 |
 | W4 | 007 promise & motif ledger (all units) | todo | |
 | W4 | 008 reader simulation (all units) | todo | |
@@ -160,6 +160,13 @@ errors (frozen as baseline; new code must not add errors).
   worktrees (cast config/register between voice and tournament; facts between
   room and archaeology/drafts; cast reports kind "cast"; 006 owns the only
   pre-reconciliation faq.md edit).
+- **Run 3 (cont):** Interiority (002) landed and merged clean: +50 tests -> 604
+  passed / 1 skipped, ruff clean, mypy baseline. Privacy sentinel regression in
+  place; boundedness core pure; curator mirrors archivist; scene sim isolates
+  sheets per captured-request assertions. Deviations: sheet digests are module
+  functions in store.py; run_write cast hook deferred to wiring (run_cast_update
+  already no-ops without sheets — wiring only adds the auto_update gate +
+  degrade-note wrapper). Verisimilitude (006) still building.
 
 ## Run journal (run 1 — v1/v2)
 
