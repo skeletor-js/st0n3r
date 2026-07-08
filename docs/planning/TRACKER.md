@@ -20,9 +20,9 @@ errors (frozen as baseline; new code must not add errors).
 | W2 | 005 writers' room (U1-U7) | done | ad1a147, +77 tests (492 green) |
 | W2 | 003 draft tournaments (U1-U7; write --tournament + book slots deferred to wiring) | done | merged, +62 tests (554 green) |
 | W3 | 002 character interiority (U1-U7; run_write cast hook deferred to wiring) | done | merged, +50 tests (604 green) |
-| W3 | 006 verisimilitude engine (U1-U6) | wip | Opus subagent worktree, run 3 |
-| W4 | 007 promise & motif ledger (all units) | todo | |
-| W4 | 008 reader simulation (all units) | todo | |
+| W3 | 006 verisimilitude engine (U1-U6) | done | c1d1960, +62 tests (666 green) |
+| W4 | 007 promise & motif ledger (U1-U6, incl. book.py promises event) | wip | Opus subagent worktree, run 3 |
+| W4 | 008 reader simulation (U1-U7) | wip | Opus subagent worktree, run 3 |
 | W5 | 010 production line (all units) | todo | |
 | Wx | 009 U3-U8 (provenance/CLI/refactors) | done | 5e4c4ff, +41 tests (284 green) |
 | tail | 011 U4 cross-feature wiring | todo | |
@@ -167,6 +167,17 @@ errors (frozen as baseline; new code must not add errors).
   functions in store.py; run_write cast hook deferred to wiring (run_cast_update
   already no-ops without sheets — wiring only adds the auto_update gate +
   degrade-note wrapper). Verisimilitude (006) still building.
+- **Run 3 (cont):** Verisimilitude (006) landed and merged clean (c1d1960): +62
+  tests -> 666 passed / 1 skipped, ruff clean, mypy baseline. WebSearchSpec seam
+  in types/providers (anthropic native, claude_code tool-allowlist, others refuse);
+  canon/facts locker + context_pack Facts section; ledgered web_fetch; opt-in
+  research pipeline with book-context refusal; verisimilitude pass registered
+  bottom-of-module; faq.md amended (the one sanctioned pre-reconciliation edit).
+  Deviations: MockTransport test seams; FactsDisabledError. WAVE 3 COMPLETE.
+  Wave 4 launched: 007 motifs/promises + 008 readers, Opus subagents in worktrees
+  (motifs config/register after facts before archaeology/drafts; readers likewise —
+  merge order resolved by orchestrator; motif reports kind "motifs", readers
+  mirror reports kind "readers"; 007 owns the book.py promises event in-plan).
 
 ## Run journal (run 1 — v1/v2)
 
