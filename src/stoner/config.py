@@ -262,9 +262,12 @@ class ShipConfig(BaseModel):
     Metadata resolves config > `canon/premise.md` > `project_name` (an empty
     field falls back). `trim` is the PDF trade-paperback size as `WxH` inches
     (default US digest 5.5x8.5). `underline_italics` emits classic Courier-era
-    underlines in the Shunn DOCX instead of real italics. Everything under
-    `audio` tunes the table read. This is the one config block the whole ship
-    line reads from (per shared-seam etiquette).
+    underlines in the Shunn DOCX instead of real italics. `epubcheck` opts the
+    EPUB into external spec validation (default off; needs the Java `epubcheck`
+    tool installed), and `epubcheck_path` names it explicitly when it is not on
+    PATH -- a missing tool is skipped, never an error. Everything under `audio`
+    tunes the table read. This is the one config block the whole ship line
+    reads from (per shared-seam etiquette).
     """
 
     title: str = ""  # empty -> canon/premise.md title heuristic -> project_name
@@ -275,6 +278,8 @@ class ShipConfig(BaseModel):
     dedication: str = ""
     trim: str = "5.5x8.5"
     underline_italics: bool = False
+    epubcheck: bool = False  # opt-in: validate the EPUB against the spec with epubcheck
+    epubcheck_path: str = ""  # explicit epubcheck executable (empty -> PATH lookup)
     audio: ShipAudioConfig = Field(default_factory=ShipAudioConfig)
 
 

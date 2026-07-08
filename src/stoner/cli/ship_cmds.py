@@ -10,12 +10,17 @@ ledgering is done inside the ship modules that own each artifact).
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import typer
 from rich.console import Console
 from rich.table import Table
 
 from ..project import ProjectError, WritingProject
 from ..providers.base import ProviderError
+
+if TYPE_CHECKING:
+    from ..ship.epubcheck import EpubcheckResult
 
 console = Console()
 err_console = Console(stderr=True, style="bold red")
@@ -32,6 +37,28 @@ def _project() -> WritingProject:
 def _fail(msg: str) -> None:
     err_console.print(msg)
     raise typer.Exit(1)
+
+
+def _report_epubcheck(result: EpubcheckResult) -> bool:
+    """Print an epubcheck outcome; return True if validation *failed*.
+
+    A missing tool prints an informational skip and never fails. Warnings are
+    surfaced but do not fail; only spec errors do (deterministic check).
+    """
+    if not result.available:
+        console.print(f"[dim]{result.message}[/dim]")
+        return False
+    for w in result.warnings:
+        console.print(f"[yellow]epubcheck warning[/yellow] {w}")
+    if result.ok:
+        console.print(
+            f"[green]epubcheck[/green] valid — no errors, {len(result.warnings)} warning(s)."
+        )
+        return False
+    for e in result.errors:
+        err_console.print(f"epubcheck error {e}")
+    err_console.print(f"epubcheck reported {len(result.errors)} error(s).")
+    return True
 
 
 def register(app: typer.Typer) -> None:
@@ -89,9 +116,15 @@ def register(app: typer.Typer) -> None:
         allow_incomplete: bool = typer.Option(
             False, "--allow-incomplete", help="Ship despite readiness blockers (recorded in the ledger)."
         ),
+        validate: bool = typer.Option(
+            None, "--validate/--no-validate",
+            help="Validate the EPUB against the spec with epubcheck if installed "
+                 "(default: ship.epubcheck; a missing tool is skipped, not an error).",
+        ),
     ) -> None:
         """Write a dependency-free, byte-reproducible EPUB3 to export/<slug>.epub."""
         from ..ship.epub import write_epub
+        from ..ship.epubcheck import validate_epub
         from ..ship.manifest import ShipError
 
         project = _project()
@@ -100,6 +133,10 @@ def register(app: typer.Typer) -> None:
         except ShipError as e:
             _fail(str(e))
         console.print(f"[green]wrote[/green] {path.relative_to(project.root)} ({chapters} chapters)")
+
+        do_validate = project.config.ship.epubcheck if validate is None else validate
+        if do_validate and _report_epubcheck(validate_epub(project, path)):
+            raise typer.Exit(1)
 
     @ship_app.command("pdf")
     def ship_pdf(
@@ -244,15 +281,26 @@ def register(app: typer.Typer) -> None:
         table.add_column("format")
         table.add_column("result", overflow="fold")
         any_failed = False
+        epub_path = None
         for label, writer in (("epub", write_epub), ("pdf", write_pdf), ("docx", write_docx)):
             try:
                 path, _chapters = writer(project, manifest=manifest)
+                if label == "epub":
+                    epub_path = path
                 table.add_row(label, f"[green]{path.relative_to(project.root)}[/green]")
             except ShipError as e:
                 any_failed = True
                 first_line = str(e).splitlines()[0]
                 table.add_row(label, f"[red]failed[/red] — {first_line}")
         console.print(table)
+
+        # Optional EPUB spec validation (opt-in via ship.epubcheck; a missing
+        # tool is skipped, a spec failure fails the run).
+        if project.config.ship.epubcheck and epub_path is not None:
+            from ..ship.epubcheck import validate_epub
+
+            if _report_epubcheck(validate_epub(project, epub_path)):
+                any_failed = True
         console.print(
             "[dim]hints: `stoner ship blurbs` drafts synopsis/query/cover; "
             "`stoner ship audio` renders the table read.[/dim]"

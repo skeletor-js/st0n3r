@@ -34,6 +34,12 @@ The promise consume is guarded: on a project without the promise ledger, every o
 
 Book metadata resolves config → `canon/premise.md` → project name, so an empty `ship.title` falls back to the premise's title heuristic.
 
+## Validating the EPUB
+
+`ship epub` is byte-reproducible but not, on its own, checked against the EPUB spec. Pass `--validate` (or set `ship.epubcheck: true`, which `ship all` also honors) to run the generated `.epub` through the W3C [`epubcheck`](https://github.com/w3c/epubcheck) tool after it's written.
+
+epubcheck is a Java tool, so it stays strictly optional: if it isn't installed, validation is skipped with an informational note and the command still succeeds. When it *is* found (on PATH, or at an explicit `ship.epubcheck_path`) and validation was asked for, a spec error fails the command with a nonzero exit; warnings are surfaced but don't fail. Every run records a `ship.epubcheck` ledger entry.
+
 ## Table-read audio
 
 `stoner ship audio [chapter]` renders a stitched table-read WAV per chapter into `export/audio/`, casting speakers from `export/audio/voices.yaml` (build it first with `stoner ship voices`, which ranks speakers by dialogue-line count). Flags: `--dialogue-only`, `--announce` (speak each speaker's name on change), `--assist` (resolve UNKNOWN speaker lines via the model — advisory), `--force`.
@@ -55,6 +61,8 @@ ship:
   dedication: ""
   trim: "5.5x8.5"    # PDF trade-paperback size, WxH inches
   underline_italics: false   # Courier-era underlines in the Shunn DOCX
+  epubcheck: false           # opt-in EPUB spec validation (needs the epubcheck tool)
+  epubcheck_path: ""         # explicit epubcheck executable (empty -> PATH lookup)
   audio:
     backend: say             # say (local) | openai (network, opt-in)
     narrator_voice: ""       # empty -> backend's first voice
