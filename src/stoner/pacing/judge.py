@@ -14,9 +14,11 @@ Hard invariants honored here:
 - Tension labels are forced-relative (opens/rises/holds/sags), never numeric.
 - The judge never sees more than one chapter body per call: context for
   "what came before" is the previous chapter's rolling memory summary only.
-- A failing or unparseable call degrades that chapter to `unjudged` plus one
-  info finding (the runner degradation pattern) -- never aborts the run,
-  and unjudged results are not cached so a re-run retries them.
+- An unparseable response gets ONE bounded format-correction retry (the
+  `engine/textproto.py` / interiority scene-sim posture) before degrading;
+  a failing or still-unparseable call degrades that chapter to `unjudged`
+  plus one info finding (the runner degradation pattern) -- never aborts the
+  run, and unjudged results are not cached so a re-run retries them.
 """
 
 from __future__ import annotations
@@ -44,6 +46,19 @@ TENSION_LABELS = ("opens", "rises", "holds", "sags")
 _BEAT_VERDICTS = ("landed", "drifted", "missed")
 _MAX_BEATS = 25
 _MAX_CHANGES = 25
+
+#: Terse re-ask sent once when a judge response fails to parse, restating the
+#: exact STRICT JSON shape and the allowed tension labels (mirrors the
+#: FORMAT_CORRECTION posture in engine/textproto.py and interiority/scene.py).
+_FORMAT_CORRECTION = (
+    "Your last reply was not valid JSON in the required shape, so it could not "
+    "be used. Reply with STRICT JSON only (no other prose) matching exactly "
+    'this shape: {"tension": "rises|holds|sags", "tension_why": "<one line>", '
+    '"changes_hands": ["<concrete change>"], "beats": [{"beat": "<promised '
+    'beat>", "verdict": "landed|drifted|missed", "note": "<one line>"}]}. The '
+    '"tension" value must be exactly one of: rises, holds, sags (or opens for '
+    "the first chapter)."
+)
 
 
 # ---------------------------------------------------------------------------
@@ -227,6 +242,7 @@ def judge_chapters(
         judgment: ChapterJudgment | None = None
         error = ""
         spent = Usage()
+        retried = False
         try:
             text, spent = call_model(
                 project, "reviewer", system=system, user=user, model=model, provider=provider
@@ -234,7 +250,24 @@ def judge_chapters(
             usage = usage + spent
             judgment = parse_judgment(text, ch.number, first=(i == 0))
             if judgment is None:
-                error = "judge response did not contain a valid judgment"
+                # One bounded format-correction retry before degrading: save
+                # intent before the second call, then re-ask with the exact
+                # JSON shape restated (the textproto / scene-sim posture).
+                retried = True
+                save_state(project, state)
+                text, spent_retry = call_model(
+                    project,
+                    "reviewer",
+                    system=system,
+                    user=user + "\n\n" + _FORMAT_CORRECTION,
+                    model=model,
+                    provider=provider,
+                )
+                usage = usage + spent_retry
+                spent = spent + spent_retry
+                judgment = parse_judgment(text, ch.number, first=(i == 0))
+                if judgment is None:
+                    error = "judge response did not contain a valid judgment"
         except ProviderError as e:
             error = str(e)
 
@@ -262,6 +295,7 @@ def judge_chapters(
             cached=False,
             model=model_str,
             tension=judgment.tension,
+            retried=retried,
             input_tokens=spent.input_tokens,
             output_tokens=spent.output_tokens,
         )
