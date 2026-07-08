@@ -9,3 +9,6 @@ dist/
 
 # generated example project: keep canon/manuscript/reviews, skip bulky transcripts
 examples/*/.stoner/sessions/
+
+# Claude Code session artifacts (launch configs, worktrees, scheduler locks)
+.claude/
