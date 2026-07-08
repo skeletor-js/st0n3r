@@ -17,7 +17,9 @@ import yaml
 
 from ..project import WritingProject, join_frontmatter, split_frontmatter
 
-CanonKind = Literal["premise", "style", "character", "world", "timeline", "threads", "other"]
+CanonKind = Literal[
+    "premise", "style", "character", "world", "timeline", "threads", "fact", "other"
+]
 
 _TEMPLATE_STEM = "_template"
 
@@ -190,6 +192,8 @@ class CanonStore:
             return "character"
         if rel_path.startswith("canon/world/"):
             return "world"
+        if rel_path.startswith("canon/facts/"):
+            return "fact"
         return "other"
 
     def get(self, rel_path: str) -> CanonEntry | None:
@@ -223,6 +227,9 @@ class CanonStore:
 
     def get_world(self, slug: str) -> CanonEntry | None:
         return self.get(f"canon/world/{slug}.md")
+
+    def get_fact(self, slug: str) -> CanonEntry | None:
+        return self.get(f"canon/facts/{slug}.md")
 
     def find_character_by_name(self, name: str) -> CanonEntry | None:
         return self._find_by_name("character", name)
@@ -285,6 +292,30 @@ class CanonStore:
             frontmatter_updates,
             body,
             defaults={"name": slug.replace("-", " ").title(), "type": "place"},
+        )
+
+    def upsert_fact(
+        self, slug: str, frontmatter_updates: dict[str, Any] | None = None, body: str | None = None
+    ) -> CanonEntry:
+        """Write (create or merge) a `canon/facts/<slug>.md` locker entry.
+
+        Frontmatter is merged the same diff-friendly way as characters/world;
+        the body (verbatim quotes and human notes) is only replaced when a
+        non-None `body` is passed, so a hand-edited body survives a re-apply
+        of the same slug's unchanged claim.
+        """
+        return self._upsert(
+            "facts",
+            "fact",
+            slug,
+            frontmatter_updates,
+            body,
+            defaults={
+                "name": slug.replace("-", " ").title(),
+                "claim": "",
+                "confidence": "medium",
+                "status": "unverified",
+            },
         )
 
     def _upsert(
@@ -507,6 +538,19 @@ class CanonStore:
                     break
             if kept:
                 add("World", "\n\n".join(kept))
+
+        # Facts (sourced fact locker) -- between World and Recent Timeline.
+        # Sourced facts are whole-or-nothing: a fact chopped mid-line loses
+        # the very specificity it exists to carry, so the section drops
+        # entirely rather than truncating (unlike the prose sections above).
+        from ..facts.locker import facts_digest
+
+        facts_text = facts_digest(self)
+        if facts_text:
+            facts_block = f"## Facts\n\n{facts_text}\n"
+            if len(facts_block) <= remaining:
+                parts.append(facts_block)
+                remaining -= len(facts_block)
 
         timeline = self.timeline_rows()[-10:]
         timeline_text = "\n".join(f"- {r.when}: {r.event} ({r.chapters})" for r in timeline)

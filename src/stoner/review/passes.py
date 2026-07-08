@@ -26,6 +26,7 @@ from typing import Any
 
 from ..canon.memory import Memory
 from ..canon.store import CanonStore
+from ..facts.locker import facts_digest as _facts_digest
 from ..project import ProjectError, WritingProject
 from ..types import Finding, Severity, Span
 from ..voice.drift import voice_context_digest
@@ -52,6 +53,7 @@ class PassContext:
     prior_tail: str
     frontmatter: dict[str, Any] = field(default_factory=dict)
     voice_digest: str = ""  # measured fingerprint digest; "" when none learned
+    facts_digest: str = ""  # sourced fact-locker digest; "" when locker empty
 
 
 def build_context(project: WritingProject, chapter: int) -> PassContext:
@@ -63,6 +65,7 @@ def build_context(project: WritingProject, chapter: int) -> PassContext:
     fm, body = project.read_chapter(chapter)
     store = CanonStore(project)
     canon_digest = store.context_pack(max_chars=_CANON_DIGEST_CHARS)
+    facts_digest = _facts_digest(store)  # "" when the locker is empty
     memory_context = Memory(project).context_for_chapter(chapter)
     style_excerpt = store.style_body_without_banned()
     prior_tail = ""
@@ -83,6 +86,7 @@ def build_context(project: WritingProject, chapter: int) -> PassContext:
         frontmatter=fm,
         # "" when no fingerprint has been learned -- passes behave as before.
         voice_digest=voice_context_digest(project, body),
+        facts_digest=facts_digest,
     )
 
 
@@ -604,3 +608,13 @@ PASSES: dict[str, ReviewPass] = {
         parse=_parse_grade,
     ),
 }
+
+
+# The verisimilitude sweep (facts feature) registers additively here, at the
+# bottom of the module so the shared helpers above are all defined first.
+# `facts/sweep.py` imports those helpers lazily, keeping the round-trip
+# import-cycle-safe in both import orders. Deliberately NOT added to the
+# default `review_passes` list: it is only meaningful with a populated locker.
+from ..facts.sweep import build_verisimilitude_pass  # noqa: E402
+
+PASSES["verisimilitude"] = build_verisimilitude_pass()

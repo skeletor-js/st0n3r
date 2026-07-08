@@ -10,10 +10,22 @@ from __future__ import annotations
 from typing import Any
 
 from ..config import ProviderConfig, resolve_api_key
-from ..types import CompletionRequest, CompletionResponse, Message, ToolCall, Usage
+from ..types import (
+    CompletionRequest,
+    CompletionResponse,
+    Message,
+    ToolCall,
+    Usage,
+    WebSearchSpec,
+)
 from .base import Provider, ProviderError
 
 _DEFAULT_MAX_TOKENS = 8192
+
+# When the server-side web-search tool runs, the API may return
+# `stop_reason: "pause_turn"` mid-search; we resend the paused assistant turn
+# to let it finish, bounded so a stuck server loop can never hang the harness.
+_MAX_PAUSE_TURNS = 4
 
 
 class AnthropicProvider(Provider):
@@ -21,6 +33,7 @@ class AnthropicProvider(Provider):
 
     name = "anthropic"
     supports_tools = True
+    supports_web_search = True
 
     def __init__(self, pc: ProviderConfig):
         self.pc = pc
@@ -108,6 +121,76 @@ class AnthropicProvider(Provider):
             out.append({"role": "user", "content": m.content})
         return out
 
+    @staticmethod
+    def _web_search_tool_dict(spec: WebSearchSpec) -> dict[str, Any]:
+        """The verified `web_search_20250305` server-tool payload shape."""
+        tool: dict[str, Any] = {
+            "type": "web_search_20250305",
+            "name": "web_search",
+            "max_uses": spec.max_uses,
+        }
+        if spec.allowed_domains:
+            tool["allowed_domains"] = list(spec.allowed_domains)
+        return tool
+
+    @staticmethod
+    def _content_to_input(content: Any) -> list[dict[str, Any]]:
+        """Reconstruct content blocks as input dicts for a pause_turn resend.
+
+        Server tool blocks (`server_tool_use`, `web_search_tool_result`)
+        carry `encrypted_content` that must be passed back verbatim; pydantic
+        SDK blocks expose `model_dump()`. Blocks we can't reconstruct are
+        dropped -- harmless, since the resend only needs the searchable state.
+        """
+        out: list[dict[str, Any]] = []
+        for block in content or []:
+            if hasattr(block, "model_dump"):
+                out.append(block.model_dump())
+                continue
+            btype = getattr(block, "type", None)
+            if btype == "text":
+                out.append({"type": "text", "text": block.text})
+            elif btype == "tool_use":
+                out.append(
+                    {
+                        "type": "tool_use",
+                        "id": block.id,
+                        "name": block.name,
+                        "input": dict(block.input or {}),
+                    }
+                )
+        return out
+
+    @staticmethod
+    def _extract_web(resp: Any) -> tuple[int, list[str], list[str]]:
+        """Pull (search count, queries, cited URLs) from a response.
+
+        Count comes from `usage.server_tool_use.web_search_requests`; queries
+        from `server_tool_use` input blocks; URLs from `web_search_tool_result`
+        result items. All best-effort -- used for the ledger trail only.
+        """
+        web = 0
+        usage = getattr(resp, "usage", None)
+        stu = getattr(usage, "server_tool_use", None)
+        if stu is not None:
+            web = getattr(stu, "web_search_requests", 0) or 0
+        queries: list[str] = []
+        urls: list[str] = []
+        for block in getattr(resp, "content", []) or []:
+            btype = getattr(block, "type", None)
+            if btype == "server_tool_use":
+                inp = getattr(block, "input", None)
+                if isinstance(inp, dict) and inp.get("query"):
+                    queries.append(str(inp["query"]))
+            elif btype == "web_search_tool_result":
+                for item in getattr(block, "content", []) or []:
+                    url = getattr(item, "url", None)
+                    if url is None and isinstance(item, dict):
+                        url = item.get("url")
+                    if url:
+                        urls.append(str(url))
+        return web, queries, urls
+
     # -- response parsing ---------------------------------------------------
     @staticmethod
     def _parse_response(resp: Any) -> CompletionResponse:
@@ -138,22 +221,10 @@ class AnthropicProvider(Provider):
             raw=resp.model_dump() if hasattr(resp, "model_dump") else None,
         )
 
-    # -- public API -----------------------------------------------------
-    def complete(self, req: CompletionRequest) -> CompletionResponse:
-        kwargs: dict[str, Any] = {
-            "model": req.model,
-            "max_tokens": req.max_tokens or _DEFAULT_MAX_TOKENS,
-            "messages": self._messages_to_anthropic(req.messages),
-        }
-        if req.system:
-            kwargs["system"] = req.system
-        if req.temperature is not None:
-            kwargs["temperature"] = req.temperature
-        if req.tools:
-            kwargs["tools"] = self._tool_specs_to_anthropic(req.tools)
-
+    def _create(self, kwargs: dict[str, Any]) -> Any:
+        """One `messages.create` call with vendor errors wrapped."""
         try:
-            resp = self.client.messages.create(**kwargs)
+            return self.client.messages.create(**kwargs)
         except self._anthropic.AuthenticationError as e:
             raise ProviderError(
                 "Anthropic rejected the API key (authentication error). Check "
@@ -170,4 +241,47 @@ class AnthropicProvider(Provider):
         except self._anthropic.APIStatusError as e:
             raise ProviderError(f"Anthropic API error ({e.status_code}): {e.message}") from e
 
-        return self._parse_response(resp)
+    # -- public API -----------------------------------------------------
+    def complete(self, req: CompletionRequest) -> CompletionResponse:
+        kwargs: dict[str, Any] = {
+            "model": req.model,
+            "max_tokens": req.max_tokens or _DEFAULT_MAX_TOKENS,
+            "messages": self._messages_to_anthropic(req.messages),
+        }
+        if req.system:
+            kwargs["system"] = req.system
+        if req.temperature is not None:
+            kwargs["temperature"] = req.temperature
+        tools = self._tool_specs_to_anthropic(req.tools) if req.tools else []
+        if req.web_search is not None:
+            tools.append(self._web_search_tool_dict(req.web_search))
+        if tools:
+            kwargs["tools"] = tools
+
+        # Server-side web search may pause and resume mid-turn; loop over
+        # `pause_turn` up to a bound, resending the paused assistant content.
+        messages = list(kwargs["messages"])
+        total_web = 0
+        all_queries: list[str] = []
+        all_urls: list[str] = []
+        resp: Any = None
+        for _ in range(_MAX_PAUSE_TURNS + 1):
+            resp = self._create(kwargs)
+            web, queries, urls = self._extract_web(resp)
+            total_web += web
+            all_queries.extend(queries)
+            all_urls.extend(urls)
+            if getattr(resp, "stop_reason", None) == "pause_turn":
+                messages = messages + [
+                    {"role": "assistant", "content": self._content_to_input(resp.content)}
+                ]
+                kwargs["messages"] = messages
+                continue
+            break
+
+        parsed = self._parse_response(resp)
+        parsed.usage.web_searches = total_web
+        if req.web_search is not None and parsed.raw is not None:
+            parsed.raw["web_search_queries"] = all_queries
+            parsed.raw["web_search_urls"] = all_urls
+        return parsed

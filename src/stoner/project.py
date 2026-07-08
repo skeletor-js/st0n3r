@@ -22,6 +22,7 @@ DIRS = [
     "canon",
     "canon/characters",
     "canon/world",
+    "canon/facts",
     "outline",
     "outline/beats",
     "manuscript",

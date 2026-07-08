@@ -149,6 +149,13 @@ class OpenAICompatProvider(Provider):
 
     # -- public API -----------------------------------------------------
     def complete(self, req: CompletionRequest) -> CompletionResponse:
+        if req.web_search is not None:
+            raise ProviderError(
+                f"{self.name}: web search is not supported on the chat-completions "
+                "path. Portable web search needs dedicated search models; use an "
+                "Anthropic API researcher role or the `claude` provider for "
+                "`facts research`."
+            )
         kwargs: dict[str, Any] = {
             "model": req.model,
             "messages": self._messages_to_openai(req.system, req.messages),
