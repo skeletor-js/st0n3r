@@ -3,7 +3,12 @@
 State file for cross-run continuity. Update after every meaningful step.
 Statuses: `todo` | `wip` | `done` | `blocked`.
 
-_Last updated: 2026-07-07 (run 2) — next-ten build IN PROGRESS_
+_Last updated: 2026-07-07 (run 3) — NEXT-TEN BUILD COMPLETE. All eleven plans
+landed: ten features, wiring, UI consolidation, docs reconciliation, offline +
+live proof runs (via claude CLI provider, no API key), plus the owner-requested
+README showcase. 853 passed / 1 skipped (baseline was 227), ruff clean, mypy at
+its frozen 33-error baseline. Three live-run bugs found and fixed with
+regression tests. Repo not pushed._
 
 ## Next-ten phase status (plans 2026-07-07-001..011)
 
@@ -28,7 +33,7 @@ errors (frozen as baseline; new code must not add errors).
 | tail | 011 U4 cross-feature wiring | done | e7a4f80, +19 tests (850 green) |
 | tail | 011 U5 UI panel consolidation | done | be50743 (+1 test, 831 green); manual light/dark screenshot check outstanding |
 | tail | 011 U6 docs reconciliation | done | aefc275; command sweep verified by orchestrator (agent was stopped mid-run; work intact) |
-| tail | README showcase overhaul (owner request) | wip | Opus subagent worktree; hero.jpg + 7 fresh UI screenshots staged |
+| tail | README showcase overhaul (owner request) | done | 57678d6 + e69b580 (stale-flag doc fixes); all commands/images/links verified |
 | tail | 011 U7 full-suite + novella proof run | done | offline + live halves complete; 3 live-run bugs found+fixed (5f511e9, f7459f9, b9fe4ab); all feature namespaces ledgered |
 
 ## Phase status
