@@ -27,7 +27,8 @@ errors (frozen as baseline; new code must not add errors).
 | Wx | 009 U3-U8 (provenance/CLI/refactors) | done | 5e4c4ff, +41 tests (284 green) |
 | tail | 011 U4 cross-feature wiring | done | e7a4f80, +19 tests (850 green) |
 | tail | 011 U5 UI panel consolidation | done | be50743 (+1 test, 831 green); manual light/dark screenshot check outstanding |
-| tail | 011 U6 docs reconciliation | wip | Opus subagent worktree, run 3 |
+| tail | 011 U6 docs reconciliation | done | aefc275; command sweep verified by orchestrator (agent was stopped mid-run; work intact) |
+| tail | README showcase overhaul (owner request) | wip | Opus subagent worktree; hero.jpg + 7 fresh UI screenshots staged |
 | tail | 011 U7 full-suite + novella proof run | done | offline + live halves complete; 3 live-run bugs found+fixed (5f511e9, f7459f9, b9fe4ab); all feature namespaces ledgered |
 
 ## Phase status
