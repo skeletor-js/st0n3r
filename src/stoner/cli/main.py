@@ -540,6 +540,7 @@ def ui(
 
 from . import (  # noqa: E402
     book_cmds,
+    cast_cmds,
     drafts_cmds,
     foundation_cmds,
     pacing_cmds,
@@ -554,6 +555,7 @@ from . import (  # noqa: E402
 book_cmds.register(app)
 foundation_cmds.register(app)
 voice_cmds.register(app)
+cast_cmds.register(app)
 tournament_cmds.register(app)
 pacing_cmds.register(app)
 room_cmds.register(app)
