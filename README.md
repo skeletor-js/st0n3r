@@ -12,6 +12,7 @@
   <img src="https://img.shields.io/badge/license-MIT-2E7D32?style=flat" alt="MIT license">
   <img src="https://img.shields.io/badge/tests-853%20passing-2EA44F?style=flat" alt="853 tests passing">
   <img src="https://img.shields.io/badge/ruff-clean-4B8BBE?style=flat" alt="ruff clean">
+  <img src="https://img.shields.io/badge/mypy-clean-2A6DB2?style=flat" alt="mypy clean">
   <img src="https://img.shields.io/badge/built%20with-pydantic%20v2%20%C2%B7%20typer%20%C2%B7%20rich-6A4C93?style=flat" alt="pydantic v2, typer, rich">
 </p>
 

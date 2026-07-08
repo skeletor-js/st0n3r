@@ -6,9 +6,11 @@ Statuses: `todo` | `wip` | `done` | `blocked`.
 _Last updated: 2026-07-07 (run 3) — NEXT-TEN BUILD COMPLETE. All eleven plans
 landed: ten features, wiring, UI consolidation, docs reconciliation, offline +
 live proof runs (via claude CLI provider, no API key), plus the owner-requested
-README showcase. 853 passed / 1 skipped (baseline was 227), ruff clean, mypy at
-its frozen 33-error baseline. Three live-run bugs found and fixed with
-regression tests. Repo not pushed._
+README showcase. 853 passed / 1 skipped (baseline was 227), ruff clean, and —
+post-build, owner-requested — mypy fully clean (all 33 legacy errors fixed by
+sonnet/opus subagents with no behavior change, no casts, no ignores; README
+gained the mypy badge). Three live-run bugs found and fixed with regression
+tests. Repo not pushed._
 
 ## Next-ten phase status (plans 2026-07-07-001..011)
 
