@@ -26,7 +26,7 @@ errors (frozen as baseline; new code must not add errors).
 | W5 | 010 production line (U1-U8) | done | 4103937, +57 tests (830 green) |
 | Wx | 009 U3-U8 (provenance/CLI/refactors) | done | 5e4c4ff, +41 tests (284 green) |
 | tail | 011 U4 cross-feature wiring | wip | Opus subagent worktree, run 3 |
-| tail | 011 U5 UI panel consolidation | wip | Opus subagent worktree, run 3 |
+| tail | 011 U5 UI panel consolidation | done | be50743 (+1 test, 831 green); manual light/dark screenshot check outstanding |
 | tail | 011 U6 docs reconciliation | todo | |
 | tail | 011 U7 full-suite + novella proof run | todo | live steps need API key |
 
@@ -202,6 +202,13 @@ errors (frozen as baseline; new code must not add errors).
   worktree agents (disjoint: pipelines/CLI vs ui/). U4 notes: write --tournament
   = human consent to apply; book slots behind --tournaments flag (default off);
   voice gate + cast hook per plan scenarios.
+- **Run 3 (cont):** UI consolidation (011 U5) landed and merged (be50743): rail/pane
+  order fixed (pacing into the feature region), helpers deduped (sevSort,
+  findingRowHtml, reviewFindingsSection), undefined --line token fixed, reviews
+  triage routes all seven kinds with a mixed-kinds test; 831 passed / 1 skipped.
+  Outstanding follow-up: manual stoner ui screenshot check in both themes on
+  examples/novella (no browser automation in worktrees). Wiring (011 U4) still
+  building.
 
 ## Run journal (run 1 — v1/v2)
 
