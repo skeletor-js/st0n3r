@@ -13,6 +13,7 @@ show up on the next refresh.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -24,6 +25,11 @@ from ..canon.store import CanonStore
 from ..ledger import Ledger
 from ..project import ProjectError, WritingProject, count_words, split_frontmatter
 from ..slop import run_slop
+from ..tournament.state import TournamentState
+from ..tournament.state import list_states as _list_tournaments
+from ..tournament.state import load_state as _load_tournament_state
+from ..tournament.state import state_path as _tournament_state_path
+from ..tournament.state import tournaments_dir as _tournaments_dir
 from ..voice.drift import run_voice
 from ..voice.fingerprint import FingerprintError, load_fingerprint
 
@@ -59,6 +65,15 @@ class _CommentStatusUpdate(BaseModel):
     """PATCH body for /api/room/comments/{chapter}/{comment_id}."""
 
     status: Literal["open", "answered", "resolved", "dismissed"]
+
+
+class _TournamentVote(BaseModel):
+    """POST body for /api/tournaments/{id}/votes (mirrors the finding PATCH:
+    pydantic body, path-jailed id). `token` is the server-generated pair
+    token from the tournament detail payload; `pick` is the blind choice."""
+
+    token: str
+    pick: Literal["a", "b"]
 
 
 # ---------------------------------------------------------------------------
@@ -216,6 +231,132 @@ def _review_kind(data: dict[str, Any]) -> str:
 def _chapter_from_path(path: str) -> int | None:
     m = _CHAPTER_NUM_RE.search(path or "")
     return int(m.group(1)) if m else None
+
+
+# ---------------------------------------------------------------------------
+# Tournaments: path-jailed state loading and blinded pair payloads
+# ---------------------------------------------------------------------------
+
+_TOURNAMENT_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+# Statuses in which the UI keeps voting open -- angle names and per-pair
+# judge verdicts are withheld from payloads while one of these holds.
+_VOTABLE_STATUSES = ("judging", "proposed")
+
+
+def _safe_tournament_state(project: WritingProject, tournament_id: str) -> TournamentState:
+    """Jail a tournament id to `.stoner/tournaments/`, no traversal."""
+    if not _TOURNAMENT_ID_RE.match(tournament_id) or Path(tournament_id).name != tournament_id:
+        raise _BadPath(f"invalid tournament id: {tournament_id}")
+    path = _tournament_state_path(project, tournament_id)
+    base = _tournaments_dir(project).resolve()
+    if not path.resolve().is_relative_to(base):
+        raise _BadPath(f"invalid tournament id: {tournament_id}")
+    if not path.exists():
+        raise _NotFound(f"tournament not found: {tournament_id}")
+    return _load_tournament_state(project, tournament_id)
+
+
+def _pair_token(state: TournamentState, ia: int, ib: int) -> str:
+    """Deterministic opaque token for one votable pair of one tournament."""
+    seed = f"{state.id}|{state.created_at}|{min(ia, ib)}|{max(ia, ib)}"
+    return hashlib.sha256(seed.encode("utf-8")).hexdigest()[:16]
+
+
+def _pair_order(state: TournamentState, ia: int, ib: int) -> tuple[int, int]:
+    """Randomized-but-deterministic presentation order for a pair: which take
+    is shown as `a`. Derived from a hash so repeated requests agree (the vote
+    POST recomputes the same mapping) without storing per-request state."""
+    lo, hi = min(ia, ib), max(ia, ib)
+    seed = f"order|{state.id}|{state.created_at}|{lo}|{hi}"
+    flip = hashlib.sha256(seed.encode("utf-8")).digest()[0] % 2
+    return (lo, hi) if flip == 0 else (hi, lo)
+
+
+def _votable_pairs(state: TournamentState) -> list[tuple[int, int]]:
+    """Judged pairs first (deduped), then any remaining combinations."""
+    pairs: list[tuple[int, int]] = []
+    seen: set[frozenset[int]] = set()
+    for c in state.comparisons:
+        key = frozenset((c.a, c.b))
+        if key not in seen:
+            seen.add(key)
+            pairs.append((c.a, c.b))
+    for i, a in enumerate(state.takes):
+        for b in state.takes[i + 1 :]:
+            key = frozenset((a.index, b.index))
+            if key not in seen:
+                seen.add(key)
+                pairs.append((a.index, b.index))
+    return pairs
+
+
+def _tournament_summary(state: TournamentState) -> dict[str, Any]:
+    return {
+        "id": state.id,
+        "chapter": state.chapter,
+        "status": state.status,
+        "takes": len(state.takes),
+        "proposed_winner": state.proposed_winner,
+        "created_at": state.created_at,
+    }
+
+
+def _tournament_detail(project: WritingProject, state: TournamentState) -> dict[str, Any]:
+    """Detail payload; blind while votable (no angles, no per-pair verdicts,
+    anonymized pair bodies under randomized a/b keys)."""
+    from ..tournament.takes import read_take_body
+
+    votable = state.status in _VOTABLE_STATUSES
+    takes = []
+    for t in state.takes:
+        row: dict[str, Any] = {
+            "index": t.index,
+            "words": t.words,
+            "slop": t.slop,
+            "rating": state.ratings.get(t.index),
+            "steals": len(t.steals),
+        }
+        if not votable:
+            row["angle"] = t.angle
+        takes.append(row)
+
+    pairs = []
+    if votable:
+        voted = {frozenset((v.get("take_a"), v.get("take_b"))) for v in state.votes}
+        for ia, ib in _votable_pairs(state):
+            if frozenset((ia, ib)) in voted:
+                continue
+            first, second = _pair_order(state, ia, ib)
+            rec_first, rec_second = state.take(first), state.take(second)
+            if rec_first is None or rec_second is None:
+                continue
+            try:
+                pairs.append(
+                    {
+                        "token": _pair_token(state, ia, ib),
+                        "a": read_take_body(project, rec_first),
+                        "b": read_take_body(project, rec_second),
+                    }
+                )
+            except ProjectError:
+                continue
+
+    detail: dict[str, Any] = {
+        **_tournament_summary(state),
+        "votable": votable,
+        "standings": sorted(
+            takes, key=lambda r: -(r["rating"] if r["rating"] is not None else 0)
+        ),
+        "pairs": pairs,
+        "votes": len(state.votes),
+        "notes": state.notes,
+    }
+    if not votable:
+        detail["comparisons"] = [
+            {"a": c.a, "b": c.b, "verdict": c.verdict} for c in state.comparisons
+        ]
+    return detail
 
 
 def _list_reviews(project: WritingProject) -> list[dict[str, Any]]:
@@ -487,6 +628,59 @@ def create_app(project: WritingProject) -> FastAPI:
             if isinstance(data, dict):
                 return data
         return {}
+
+    # -- tournaments (blind A/B voting; apply stays CLI-only) ------------------
+
+    @app.get("/api/tournaments")
+    def api_tournaments() -> list[dict[str, Any]]:
+        return [_tournament_summary(s) for s in _list_tournaments(project)]
+
+    @app.get("/api/tournaments/{tournament_id}")
+    def api_tournament_detail(tournament_id: str) -> dict[str, Any]:
+        try:
+            state = _safe_tournament_state(project, tournament_id)
+        except _BadPath as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except _NotFound as exc:
+            raise _http404(str(exc)) from exc
+        return _tournament_detail(project, state)
+
+    @app.post("/api/tournaments/{tournament_id}/votes")
+    def api_tournament_vote(tournament_id: str, vote: _TournamentVote) -> dict[str, Any]:
+        """Record one blind vote. Writes `.stoner/taste.json` and the
+        tournament state's vote list; never touches manuscript files."""
+        from ..tournament.taste import record_vote
+
+        try:
+            state = _safe_tournament_state(project, tournament_id)
+        except _BadPath as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except _NotFound as exc:
+            raise _http404(str(exc)) from exc
+        if state.status not in _VOTABLE_STATUSES:
+            raise HTTPException(
+                status_code=409, detail=f"tournament is {state.status}; voting is closed"
+            )
+
+        for ia, ib in _votable_pairs(state):
+            if _pair_token(state, ia, ib) != vote.token:
+                continue
+            first, second = _pair_order(state, ia, ib)
+            picked = first if vote.pick == "a" else second
+            try:
+                recorded = record_vote(project, state, (ia, ib), picked)
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+            # The reveal: angles and the judge's verdict come back only
+            # after the vote is recorded.
+            judge_pick = recorded.judge_pick
+            return {
+                "picked": picked,
+                "take_a": {"index": recorded.take_a, "angle": recorded.angle_a},
+                "take_b": {"index": recorded.take_b, "angle": recorded.angle_b},
+                "judge_pick": judge_pick,
+            }
+        raise _http404(f"no votable pair matches token {vote.token!r}")
 
     # -- writers' room ----------------------------------------------------------
 

@@ -439,6 +439,11 @@
       </button>
       <!-- FEATURE RAIL ITEMS: one rail-item per feature panel, inserted above
            in wave order (voice, tournaments, pacing, room, readers). -->
+      <button class="rail-item" data-view="tournaments" type="button">
+        <span class="ic" id="icon-tournaments"></span>
+        <span class="ri-label">Tournaments</span>
+        <span class="ri-end" data-count="tournaments"></span>
+      </button>
       <button class="rail-item" data-view="room" type="button">
         <span class="ic" id="icon-room"></span>
         <span class="ri-label">Writers' Room</span>
@@ -495,6 +500,11 @@
       <!-- BEGIN FEATURE PANELS: one self-contained view-pane per feature,
            inserted in wave order (voice, tournaments, pacing, room, readers).
            No shared JS state beyond the existing fetch helpers. -->
+      <!-- Tournaments -->
+      <div class="view-pane" id="view-tournaments">
+        <div class="split-list" id="tournaments-list"></div>
+        <div class="split-detail" id="tournaments-detail"></div>
+      </div>
 
       <!-- Writers' Room -->
       <div class="view-pane" id="view-room">
@@ -1339,6 +1349,146 @@
       "</div>";
   }
 
+  // -- tournaments (blind A/B voting; apply stays CLI-only) ------------------
+
+  ICONS.tournament = svg('<path d="M5.2 2.2h5.6v3.1a2.8 2.8 0 0 1-5.6 0V2.2Z"/><path d="M5.2 3.2H3.4a1.9 1.9 0 0 0 2 1.9M10.8 3.2h1.8a1.9 1.9 0 0 1-2 1.9M8 8.1v2.1M5.8 13.6h4.4M6.6 10.2h2.8l.5 3.4H6.1l.5-3.4Z"/>');
+  document.getElementById("icon-tournaments").innerHTML = ICONS.tournament;
+  VIEW_TITLES.tournaments = "Tournaments";
+  loaders.tournaments = loadTournaments;
+
+  var selectedTournament = null;
+
+  async function loadTournaments() {
+    var items = await guarded(function () { return api("/api/tournaments"); });
+    var list = document.getElementById("tournaments-list");
+    var detail = document.getElementById("tournaments-detail");
+    if (!items) return;
+    setNavCount("tournaments", items.length || "");
+    if (!items.length) {
+      list.innerHTML = "";
+      detail.innerHTML = emptyState(
+        ICONS.tournament,
+        "No tournaments yet",
+        'Run one from the CLI: <code>stoner tournament run &lt;chapter&gt;</code>.'
+      );
+      return;
+    }
+    list.innerHTML = items
+      .map(function (t) {
+        return (
+          '<button class="row-item' + (t.id === selectedTournament ? " is-selected" : "") + '" data-tid="' + escapeHtml(t.id) + '" type="button">' +
+          '<div class="row-title">' + escapeHtml(t.id) + "</div>" +
+          '<div class="row-meta"><span>' + escapeHtml(t.status) + "</span><span>ch " + String(t.chapter).padStart(2, "0") + "</span><span>" + t.takes + " takes</span></div>" +
+          "</button>"
+        );
+      })
+      .join("");
+    list.querySelectorAll("[data-tid]").forEach(function (row) {
+      row.addEventListener("click", function () { selectTournament(row.dataset.tid); });
+    });
+    if (!selectedTournament && items.length) selectTournament(items[0].id);
+    else if (selectedTournament) selectTournament(selectedTournament);
+  }
+
+  function tournamentPairCard(t, pair, idx) {
+    var col = 'flex:1;min-width:0;max-height:52vh;overflow-y:auto;border:1px solid var(--line);border-radius:8px;padding:12px';
+    return (
+      '<div class="sec" data-pair="' + escapeHtml(pair.token) + '">' +
+      '<div class="sec-label">Blind pair ' + (idx + 1) + "</div>" +
+      '<div style="display:flex;gap:12px;align-items:stretch">' +
+      '<div style="' + col + '"><div class="sec-label">Take A</div><div class="md-preview">' + renderMarkdown(pair.a) + "</div></div>" +
+      '<div style="' + col + '"><div class="sec-label">Take B</div><div class="md-preview">' + renderMarkdown(pair.b) + "</div></div>" +
+      "</div>" +
+      '<div style="display:flex;gap:8px;margin-top:8px">' +
+      '<button class="btn" type="button" data-vote="a" data-token="' + escapeHtml(pair.token) + '">A is stronger</button>' +
+      '<button class="btn" type="button" data-vote="b" data-token="' + escapeHtml(pair.token) + '">B is stronger</button>' +
+      "</div>" +
+      '<div class="list-meta" data-reveal="' + escapeHtml(pair.token) + '" style="margin-top:6px"></div>' +
+      "</div>"
+    );
+  }
+
+  async function selectTournament(tid) {
+    selectedTournament = tid;
+    document.querySelectorAll("#tournaments-list [data-tid]").forEach(function (r) {
+      r.classList.toggle("is-selected", r.dataset.tid === tid);
+    });
+    var t = await guarded(function () { return api("/api/tournaments/" + encodeURIComponent(tid)); });
+    var pane = document.getElementById("tournaments-detail");
+    if (!t) return;
+
+    // Standings: angle names arrive only once voting is closed (blindness).
+    var standings = (t.standings || [])
+      .map(function (r) {
+        return (
+          '<div class="list-row"><div class="list-main">' +
+          '<div class="list-title">take ' + String(r.index).padStart(2, "0") +
+          (t.proposed_winner === r.index ? ' <span class="chip tone-accent">proposed</span>' : "") + "</div>" +
+          '<div class="list-meta">' + (r.angle ? escapeHtml(r.angle) + " · " : "") +
+          (r.words || 0).toLocaleString() + " words · slop " + (typeof r.slop === "number" ? r.slop.toFixed(1) : "—") +
+          " · " + r.steals + " steal" + (r.steals === 1 ? "" : "s") + "</div></div>" +
+          '<div class="list-trailing"><span style="font-size:var(--t-12);color:var(--faint)">elo ' +
+          (typeof r.rating === "number" ? Math.round(r.rating) : "—") + "</span></div>" +
+          "</div>"
+        );
+      })
+      .join("");
+
+    var banner = "";
+    if (t.status === "proposed" && t.proposed_winner !== null) {
+      banner =
+        '<div class="sec"><div class="list-row"><div class="list-main">' +
+        '<div class="list-title">Proposed winner: take ' + String(t.proposed_winner).padStart(2, "0") + "</div>" +
+        '<div class="list-meta">The proposal is advisory — apply from the CLI: <code>stoner tournament apply ' + escapeHtml(t.id) + "</code>. The UI never writes the manuscript.</div>" +
+        "</div></div></div>";
+    }
+
+    var pairCards = (t.pairs || []).map(function (p, i) { return tournamentPairCard(t, p, i); }).join("");
+
+    pane.innerHTML =
+      '<div class="screen-inner wide">' +
+      '<div class="screen-head">' + ICONS.tournament + '<h1 class="screen-title">' + escapeHtml(t.id) + "</h1>" +
+      '<span class="chip tone-' + (t.status === "proposed" ? "accent" : "faint") + '">' + escapeHtml(t.status) + "</span></div>" +
+      '<div class="screen-sub">chapter ' + String(t.chapter).padStart(2, "0") + " · " + t.takes + " takes · " + t.votes + " blind vote" + (t.votes === 1 ? "" : "s") + "</div>" +
+      banner +
+      '<div class="sec"><div class="sec-label">Standings</div><div class="list">' + (standings || '<p style="color:var(--faint);font-size:var(--t-12)">No takes captured yet.</p>') + "</div></div>" +
+      (t.votable
+        ? '<div class="sec"><div class="sec-label">Blind voting<span class="count">(' + (t.pairs || []).length + " pair" + ((t.pairs || []).length === 1 ? "" : "s") + ")</span></div>" +
+          (pairCards || '<p style="color:var(--faint);font-size:var(--t-12)">All pairs voted — thank you. Standings above stay judge-only.</p>') + "</div>"
+        : "") +
+      "</div>";
+
+    pane.querySelectorAll("[data-vote]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        castTournamentVote(t.id, btn.dataset.token, btn.dataset.vote);
+      });
+    });
+  }
+
+  async function castTournamentVote(tid, token, pick) {
+    var res = await guarded(function () {
+      return api("/api/tournaments/" + encodeURIComponent(tid) + "/votes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: token, pick: pick }),
+      });
+    });
+    if (!res) return;
+    // Post-vote reveal: angles and the judge's pick appear only now.
+    var reveal = document.querySelector('[data-reveal="' + token + '"]');
+    var card = document.querySelector('[data-pair="' + token + '"]');
+    if (card) card.querySelectorAll("[data-vote]").forEach(function (b) { b.disabled = true; });
+    if (reveal) {
+      var judge = res.judge_pick === null ? "draw / not judged" : "take " + String(res.judge_pick).padStart(2, "0");
+      reveal.innerHTML =
+        "You picked take " + String(res.picked).padStart(2, "0") +
+        " — A was take " + String(res.take_a.index).padStart(2, "0") + " (" + escapeHtml(res.take_a.angle || "?") + ")" +
+        ", B was take " + String(res.take_b.index).padStart(2, "0") + " (" + escapeHtml(res.take_b.angle || "?") + ")" +
+        " · judge: " + judge;
+    }
+    toast("vote recorded");
+  }
+
   // -- writers' room ---------------------------------------------------------
 
   function roomSevSort(findings) {
@@ -1559,7 +1709,6 @@
       loadRoomComments(chapter);
     });
   }
-
   // -- boot ---------------------------------------------------------------
 
   loadStatus();

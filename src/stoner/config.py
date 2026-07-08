@@ -51,6 +51,25 @@ class VoiceConfig(BaseModel):
     weights: dict[str, float] = Field(default_factory=_default_voice_weights)
 
 
+class TournamentConfig(BaseModel):
+    """Draft-tournament settings (src/stoner/tournament/).
+
+    `takes` is the default field size; `slot_takes` overrides it for the
+    opening (ch-01) and ending (last planned chapter). `angles` lets a
+    project define extra drafting angles (each a `{name, instruction}`
+    mapping) on top of the built-in presets. `max_comparisons` and
+    `max_tokens_budget` bound a run's judge cost; `graft` toggles the
+    steal-folding step at apply time.
+    """
+
+    takes: int = 3
+    slot_takes: dict[str, int] = Field(default_factory=lambda: {"opening": 5, "ending": 5})
+    angles: list[dict[str, str]] = Field(default_factory=list)
+    max_comparisons: int = 24
+    max_tokens_budget: int = 500_000
+    graft: bool = True
+
+
 class PacingConfig(BaseModel):
     """Thresholds for the advisory pacing instrument layer (never gating)."""
 
@@ -167,6 +186,7 @@ class StonerConfig(BaseModel):
     temperature: float | None = None
     extra: dict[str, Any] = Field(default_factory=dict)
     voice: VoiceConfig = Field(default_factory=VoiceConfig)
+    tournament: TournamentConfig = Field(default_factory=TournamentConfig)
     pacing: PacingConfig = Field(default_factory=PacingConfig)
     room: RoomConfig = Field(default_factory=RoomConfig)
     archaeology: ArchaeologyConfig = Field(default_factory=ArchaeologyConfig)
