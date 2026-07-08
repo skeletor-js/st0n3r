@@ -337,8 +337,10 @@ def _write_characters(store: CanonStore, items: list[dict[str, Any]]) -> list[st
         body = _fill_section(body, "Wants / Fears", "\n\n".join(wf_lines))
         body = _fill_section(body, "Arc", str(item.get("arc", "")))
 
-        appearance = item.get("appearance") if isinstance(item.get("appearance"), dict) else {}
-        relationships = item.get("relationships") if isinstance(item.get("relationships"), dict) else {}
+        appearance_raw = item.get("appearance")
+        appearance = appearance_raw if isinstance(appearance_raw, dict) else {}
+        relationships_raw = item.get("relationships")
+        relationships = relationships_raw if isinstance(relationships_raw, dict) else {}
         fm_updates = {
             "name": name,
             "role": str(item.get("role", "")),
@@ -461,7 +463,8 @@ def _generate_outline(
 
 
 def _write_outline(project: WritingProject, data: dict[str, Any]) -> list[int]:
-    acts = data.get("acts") if isinstance(data.get("acts"), dict) else {}
+    acts_raw = data.get("acts")
+    acts = acts_raw if isinstance(acts_raw, dict) else {}
     text = _read_canon_template("outline.md")
     text = _fill_section(text, "Act I — Setup", str(acts.get("act1", "")))
     text = _fill_section(text, "Act II — Confrontation", str(acts.get("act2", "")))
@@ -485,7 +488,8 @@ def _write_outline(project: WritingProject, data: dict[str, Any]) -> list[int]:
         number = _int_or(c.get("number"), 0)
         if number <= 0:
             continue
-        beats = c.get("beats") if isinstance(c.get("beats"), dict) else {}
+        beats_raw = c.get("beats")
+        beats = beats_raw if isinstance(beats_raw, dict) else {}
         stub = new_beats_stub(number)
         fm, body = split_frontmatter(stub)
         fm["pov"] = str(c.get("pov", ""))
