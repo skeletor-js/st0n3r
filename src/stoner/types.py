@@ -53,12 +53,29 @@ class Message(BaseModel):
 class Usage(BaseModel):
     input_tokens: int = 0
     output_tokens: int = 0
+    web_searches: int = 0  # server/native web-search requests (Anthropic tool)
 
     def __add__(self, other: Usage) -> Usage:
         return Usage(
             input_tokens=self.input_tokens + other.input_tokens,
             output_tokens=self.output_tokens + other.output_tokens,
+            web_searches=self.web_searches + other.web_searches,
         )
+
+
+class WebSearchSpec(BaseModel):
+    """Provider-neutral request for native/server-side web search.
+
+    Only the subset both native paths can honor lives here: a soft cap on
+    searches (`max_uses`) and an optional domain allowlist. Providers map it
+    to their own wire format inside `providers/` -- the vendor shape never
+    crosses this seam. The `claude` CLI cannot enforce `allowed_domains`; it
+    records that limitation in the response `raw` rather than failing, so the
+    ledger trail stays honest instead of falsely precise.
+    """
+
+    max_uses: int = 5
+    allowed_domains: list[str] = Field(default_factory=list)
 
 
 class CompletionRequest(BaseModel):
@@ -68,6 +85,10 @@ class CompletionRequest(BaseModel):
     tools: list[ToolSpec] = Field(default_factory=list)
     max_tokens: int = 8192
     temperature: float | None = None
+    # Opt-in native web search. None (the default) keeps every request
+    # byte-identical to a pre-web-search harness; only the research pipeline
+    # ever sets it, and only for a provider that advertises support.
+    web_search: WebSearchSpec | None = None
 
 
 class CompletionResponse(BaseModel):

@@ -2,7 +2,7 @@
 
 ### Does st0n3r send my writing anywhere?
 
-Only when you run a command that calls a model — `write`, `review`, `revise`, `archive`, `review-book`, and the autonomous trio `brainstorm`/`foundation`/`book` — and then only to the provider you configured, carrying the chapter plus the canon/memory context for that call (`review-book` sends the manuscript itself). Everything else (`slop`, `chapter`, `canon`, `beats`, `threads`, `status`, `ledger`, the UI) works entirely on local files and makes no network requests. For a fully offline pipeline, point the model roles at [Ollama or another local server](providers.md#ollama-and-other-local-servers).
+Only when you run a command that calls a model — `write`, `review`, `revise`, `archive`, `review-book`, `facts sweep`, and the autonomous trio `brainstorm`/`foundation`/`book` — and then only to the provider you configured, carrying the chapter plus the canon/memory context for that call (`review-book` sends the manuscript itself). One command also reaches the open web: `facts research` is opt-in (it refuses unless you set `facts.enabled: true`) and, when enabled, performs web searches or URL fetches to build the fact locker — every network action is written to the ledger under `facts.*`. See [the fact locker](facts.md). Everything else (`slop`, `chapter`, `canon`, `beats`, `threads`, `status`, `ledger`, `facts add`/`list`/`show`, the UI) works entirely on local files and makes no network requests. For a fully offline pipeline, point the model roles at [Ollama or another local server](providers.md#ollama-and-other-local-servers).
 
 ### What if I already have a manuscript?
 

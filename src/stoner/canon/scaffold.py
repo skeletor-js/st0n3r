@@ -22,6 +22,7 @@ _RENDERED_FILES: dict[str, str] = {
     "canon/threads.md": "threads.md",
     "canon/characters/_template.md": "characters/_template.md",
     "canon/world/_template.md": "world/_template.md",
+    "canon/facts/_template.md": "facts/_template.md",
     "outline/outline.md": "outline.md",
     "outline/beats/ch-01.md": "beats/ch-01.md",
 }

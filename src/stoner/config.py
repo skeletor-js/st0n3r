@@ -176,6 +176,23 @@ class RoomConfig(BaseModel):
     llm_relocate: bool = True
 
 
+class FactsConfig(BaseModel):
+    """The Verisimilitude Engine: sourced fact locker + web research.
+
+    Web access is explicit opt-in: `enabled` defaults False, and even when
+    True the research pipeline refuses in autonomous book-mode context (book
+    mode consumes the locker, it never builds it). `max_searches` caps a
+    single research run's native-search budget (the per-search ledger trail
+    is the cost audit); `allowed_domains`, when set, restricts both native
+    search (where the provider honors it) and harness-side `web_fetch`.
+    """
+
+    enabled: bool = False
+    max_searches: int = 8
+    allowed_domains: list[str] = Field(default_factory=list)
+    max_facts_per_run: int = 20
+
+
 class ArchaeologyConfig(BaseModel):
     """Draft snapshot store (`.stoner/drafts/`) behavior."""
 
@@ -191,6 +208,7 @@ class ModelRoles(BaseModel):
     writer: str = "anthropic/claude-sonnet-5"
     reviewer: str = "anthropic/claude-sonnet-5"
     archivist: str = "anthropic/claude-haiku-4-5-20251001"
+    researcher: str = ""  # empty resolves against the writer role
 
 
 class StonerConfig(BaseModel):
@@ -209,6 +227,7 @@ class StonerConfig(BaseModel):
     tournament: TournamentConfig = Field(default_factory=TournamentConfig)
     pacing: PacingConfig = Field(default_factory=PacingConfig)
     room: RoomConfig = Field(default_factory=RoomConfig)
+    facts: FactsConfig = Field(default_factory=FactsConfig)
     archaeology: ArchaeologyConfig = Field(default_factory=ArchaeologyConfig)
 
     # ------------------------------------------------------------------

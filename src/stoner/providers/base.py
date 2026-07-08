@@ -20,6 +20,11 @@ class Provider(ABC):
 
     name: str = "base"
     supports_tools: bool = True
+    # Whether this provider can honor a `CompletionRequest.web_search` spec
+    # (native/server-side web search). Providers that leave this False MUST
+    # raise `ProviderError` when handed a spec rather than silently ignoring
+    # it -- pretending to source facts is worse than failing loudly.
+    supports_web_search: bool = False
 
     @abstractmethod
     def complete(self, req: CompletionRequest) -> CompletionResponse:

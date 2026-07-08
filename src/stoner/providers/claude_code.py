@@ -32,6 +32,11 @@ class ClaudeCodeProvider(Provider):
 
     name = "claude_code"
     supports_tools = False
+    # The `claude` CLI ships its own WebSearch/WebFetch tools; research calls
+    # re-enable exactly those (feature-detected) while the filesystem jail
+    # (scratch cwd, no other tools) stays intact. It cannot enforce a domain
+    # allowlist and does not report a per-search count.
+    supports_web_search = True
 
     def __init__(self, pc: ProviderConfig):
         self.pc = pc
@@ -104,7 +109,17 @@ class ClaudeCodeProvider(Provider):
             cmd += ["--model", req.model]
         if use_json:
             cmd += ["--output-format", "json"]
-        if supports_tools_flag:
+        if req.web_search is not None:
+            # Research call: re-enable exactly the web tools. Everything else
+            # (filesystem, bash) stays off and the scratch cwd is unchanged.
+            if not supports_tools_flag:
+                raise ProviderError(
+                    "This `claude` CLI build does not expose the `--tools` flag, so "
+                    "web search cannot be enabled for it. Upgrade Claude Code, or use "
+                    "an Anthropic API researcher role for `facts research`."
+                )
+            cmd += ["--tools", "WebSearch,WebFetch"]
+        elif supports_tools_flag:
             # Disable every built-in tool: this is a text-only backend and
             # must never let the CLI touch the filesystem or run commands.
             cmd += ["--tools", ""]
@@ -141,10 +156,18 @@ class ClaudeCodeProvider(Provider):
         if text is None:
             text = result.stdout.strip()
 
+        raw: dict[str, object] = {"stdout": result.stdout, "stderr": result.stderr}
+        if req.web_search is not None:
+            # The CLI does not surface a per-search count or honor a domain
+            # allowlist; record that so the ledger trail stays honest.
+            raw["web_search_note"] = (
+                "claude CLI WebSearch/WebFetch enabled; per-search count "
+                "unavailable and domain allowlist not enforced"
+            )
         return CompletionResponse(
             text=text,
             tool_calls=[],
             stop_reason="end",
             usage=usage,
-            raw={"stdout": result.stdout, "stderr": result.stderr},
+            raw=raw,
         )

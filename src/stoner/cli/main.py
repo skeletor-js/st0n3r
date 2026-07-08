@@ -542,6 +542,7 @@ from . import (  # noqa: E402
     book_cmds,
     cast_cmds,
     drafts_cmds,
+    facts_cmds,
     foundation_cmds,
     pacing_cmds,
     room_cmds,
@@ -559,6 +560,7 @@ cast_cmds.register(app)
 tournament_cmds.register(app)
 pacing_cmds.register(app)
 room_cmds.register(app)
+facts_cmds.register(app)
 drafts_cmds.register(app)
 
 

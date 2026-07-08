@@ -122,6 +122,12 @@ class CodexCLIProvider(Provider):
 
     # -- public API -----------------------------------------------------
     def complete(self, req: CompletionRequest) -> CompletionResponse:
+        if req.web_search is not None:
+            raise ProviderError(
+                "The codex CLI provider does not support web search. Use an "
+                "Anthropic API researcher role or the `claude` provider for "
+                "`facts research`."
+            )
         prompt = self._build_prompt(req)
         help_text = self._help_text()
         use_json = "--json" in help_text
