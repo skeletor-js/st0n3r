@@ -674,3 +674,22 @@ def test_context_pack_drops_motifs_section_whole_under_tight_budget(store: Canon
     pack = store.context_pack(max_chars=200)
     # too tight for anything past premise-truncation; motifs never appear mangled
     assert "the river" not in pack
+
+
+def test_add_motif_bootstraps_registry_on_legacy_project(tmp_path):
+    """A project scaffolded before the motif registry existed has no
+    canon/motifs.md; the first `add_motif` must create it from the template
+    instead of failing (live-run bug found in the plan-011 proof run)."""
+    from stoner.canon.store import CanonStore
+    from stoner.project import WritingProject
+
+    project = WritingProject.create(tmp_path / "legacy", "Legacy")
+    store = CanonStore(project)
+    assert not (project.root / "canon" / "motifs.md").exists()
+
+    row = store.add_motif("m1", "the river", anchors="river; current")
+
+    assert row.id == "m1"
+    text = (project.root / "canon" / "motifs.md").read_text(encoding="utf-8")
+    assert "| m1 |" in text and "# Motifs" in text
+    assert [m.id for m in store.motifs()] == ["m1"]

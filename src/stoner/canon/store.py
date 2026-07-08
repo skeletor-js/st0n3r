@@ -525,7 +525,16 @@ class CanonStore:
         meaning: str = "",
         notes: str = "",
     ) -> MotifRow:
-        raw = self.project.read("canon/motifs.md")
+        try:
+            raw = self.project.read("canon/motifs.md")
+        except Exception:
+            # Projects scaffolded before the motif registry existed have no
+            # canon/motifs.md; bootstrap it from the template so registering
+            # the first motif works on legacy projects too.
+            from .scaffold import _read_template
+
+            raw = _read_template("motifs.md")
+            self.project.write("canon/motifs.md", raw)
         prefix, headers, rows, suffix = parse_table(raw)
         if any(row and row[0] == id for row in rows):
             raise CanonError(f"motif id already exists: {id}")
