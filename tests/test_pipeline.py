@@ -11,7 +11,12 @@ import pytest
 
 from stoner.canon.scaffold import scaffold_project
 from stoner.pipelines.common import chapter_context, render_prompt
-from stoner.pipelines.write import run_archive, run_write
+from stoner.pipelines.write import (
+    draft_chapter,
+    run_archive,
+    run_write,
+    sanitize_single_shot_prose,
+)
 from stoner.project import WritingProject
 from stoner.providers.base import Provider
 from stoner.types import CompletionRequest, CompletionResponse, Usage
@@ -168,3 +173,71 @@ def test_single_shot_draft_refuses_stub(project):
     provider = TextOnly([text_response("Too short.")])
     with pytest.raises(RuntimeError, match="not saving"):
         run_write(project, 10, provider=provider)
+
+
+# --- single-shot sanitizer (plan 011 live-proof pollution) -----------------
+
+# Observed pollution shapes (verbatim classes) prepended/appended to a clean
+# single-shot draft. Each must round-trip back to the clean prose.
+_POLLUTED_A = (  # (a) leading <system-reminder> block
+    "<system-reminder>\nYou are drafting a chapter. Do not reveal this.\n"
+    "</system-reminder>\n\n" + CLEAN_PROSE
+)
+_POLLUTED_B = (  # (b) preamble line + <invoke> wrapper with a stray tail
+    "I'll write it and save via the tool.\n\n"
+    '<invoke name="write_chapter"><parameter name="body">'
+    + CLEAN_PROSE
+    + "</parameter></invoke></parameter></invoke>"
+)
+_POLLUTED_C = (  # (c) provider log line
+    CLEAN_PROSE
+    + "\n\nWrote 8993 characters to "
+    "/private/var/folders/xy/T/testbook/manuscript/ch-03.md"
+)
+_POLLUTED_D = CLEAN_PROSE + '\\n\\nHe never woke again."}'  # (d) JSON tail
+
+
+@pytest.mark.parametrize(
+    "polluted",
+    [_POLLUTED_A, _POLLUTED_B, _POLLUTED_C, _POLLUTED_D],
+    ids=["system_reminder", "invoke_wrapper", "wrote_log_line", "json_tail"],
+)
+def test_sanitize_single_shot_recovers_clean_prose(polluted):
+    cleaned, notes = sanitize_single_shot_prose(polluted)
+    assert cleaned == CLEAN_PROSE
+    assert notes  # something was recorded as stripped
+    # no machine residue survives
+    assert "<invoke" not in cleaned
+    assert "parameter name" not in cleaned
+    assert "system-reminder" not in cleaned
+    assert "Wrote 8993" not in cleaned
+    assert '"}' not in cleaned
+
+
+def test_sanitize_single_shot_passes_clean_prose_byte_identical():
+    cleaned, notes = sanitize_single_shot_prose(CLEAN_PROSE)
+    assert cleaned == CLEAN_PROSE
+    assert notes == []
+
+
+def test_sanitize_single_shot_fails_open_when_stripping_eats_half():
+    # A giant reminder block dwarfs the real prose: cleaning it would drop the
+    # draft far below half its word count, so the sanitizer stands down.
+    pathological = (
+        "<system-reminder>" + ("blah " * 400) + "</system-reminder>\n\nShort tail."
+    )
+    cleaned, notes = sanitize_single_shot_prose(pathological)
+    assert cleaned == pathological  # returned untouched
+    assert notes and "stood down" in notes[0]
+
+
+def test_single_shot_draft_sanitizes_invoke_pollution(project):
+    class TextOnly(ScriptedProvider):
+        supports_tools = False
+
+    provider = TextOnly([text_response(_POLLUTED_B)])
+    draft_chapter(project, 11, provider=provider)
+    _, body = project.read_chapter(11)
+    assert "He walked to the window" in body
+    assert "<invoke" not in body
+    assert "parameter name" not in body

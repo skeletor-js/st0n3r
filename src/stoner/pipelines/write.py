@@ -2,11 +2,20 @@
 
 Each stage is also reachable standalone through the CLI; this module wires
 them into the opinionated flow described in ARCHITECTURE.md.
+
+The single-shot draft path (text-only CLI providers, the ``not
+supports_tools`` branch of :func:`draft_chapter`) runs one deterministic
+sanitation pass, :func:`sanitize_single_shot_prose`, before saving: those
+providers occasionally echo tool-call scaffolding verbatim into the
+completion (plan 011 live-proof pollution), and the sanitizer strips only the
+unambiguous machine artifacts while failing open so the 200-word refusal
+guard stays the real gate.
 """
 
 from __future__ import annotations
 
 import inspect
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -51,6 +60,112 @@ def _slop_gate_fails(project: WritingProject, score: float, severities: set[str]
     if score > gates.slop_max_score:
         return True
     return bool(severities & set(gates.slop_block_severities))
+
+
+# --- single-shot sanitation ------------------------------------------------
+# Each pattern matches ONE unambiguous machine artifact a text-only CLI
+# provider can echo verbatim into a draft (plan 011 live-proof pollution).
+# They are deliberately tight: prose that merely *mentions* an angle bracket
+# or the word "Wrote" must survive untouched, and anything past these shapes
+# is left for the word-count guard rather than guessed at.
+_SYSTEM_REMINDER_RE = re.compile(r"<system-reminder>.*?</system-reminder>", re.DOTALL)
+# A conversational preamble line ("I'll write it and save via the tool.") but
+# ONLY when a tool-call tag directly follows it. The line carries no '<', so a
+# bare first line of prose (never followed by <invoke>) can never match.
+_PREAMBLE_RE = re.compile(
+    r"\A\s*[^\n<]{1,200}?\s*\n\s*\n?\s*(?=<(?:\w+:)?(?:invoke|parameter)\b)"
+)
+# An <invoke> wrapper carrying the prose in a body/content parameter. The
+# closing </invoke> is optional so a stray "</parameter></invoke>" tail (or a
+# truncated call) still unwraps; the '.*?' after the open tolerates a leading
+# stray token or sibling parameter (e.g. name="number").
+_INVOKE_BODY_RE = re.compile(
+    r'<(?:\w+:)?invoke\b[^>]*>.*?'
+    r'<(?:\w+:)?parameter\s+name="(?:body|content)"[^>]*>'
+    r"(?P<body>.*?)"
+    r"</(?:\w+:)?parameter>"
+    r"\s*(?:</(?:\w+:)?invoke>)?",
+    re.DOTALL,
+)
+# Residual tool-call tags (the no-body wrapper case, or a dangling tail left
+# after unwrapping): drop the tag markup, keep any surrounding prose.
+_TOOL_TAG_RE = re.compile(r"</?(?:\w+:)?(?:invoke|parameter)\b[^>]*>", re.DOTALL)
+# A provider log line: "Wrote 8993 characters to /abs/path". Anchored to a
+# whole line and an absolute path so a sentence starting "Wrote" is safe.
+_WROTE_LINE_RE = re.compile(r"^Wrote \d+ characters to /.*$", re.MULTILINE)
+# A trailing JSON-envelope fragment: literal '\n' escapes running into a
+# closing '"}' at end of text. Real prose has real newlines, not backslash-n
+# followed by a JSON close, so this only fires on serialized tool-call tails.
+_JSON_TAIL_RE = re.compile(r'\s*(?:\\n)+[^\n]*"\}\s*\Z')
+
+
+def sanitize_single_shot_prose(text: str) -> tuple[str, list[str]]:
+    r"""Strip verbatim machine scaffolding from a single-shot draft.
+
+    Text-only CLI providers (codex/claude) occasionally echo tool-call
+    scaffolding into the completion instead of returning bare prose (plan 011
+    live-proof pollution). This removes only UNAMBIGUOUS artifacts and fails
+    open: if cleaning would drop the draft below half its original word count,
+    the original text is returned untouched and the 200-word refusal guard in
+    :func:`draft_chapter` stays the real gate.
+
+    Returns ``(cleaned_text, notes)`` where ``notes`` names what was stripped
+    (empty when the text was already clean; clean input is returned
+    byte-identical). Handled shapes:
+
+    - a complete ``<system-reminder>...</system-reminder>`` block;
+    - an ``<invoke>`` tool-call wrapper: the ``<parameter name="body">`` /
+      ``name="content"`` prose is unwrapped and the surrounding XML dropped
+      (a no-body wrapper or stray ``</parameter></invoke>`` tail just has its
+      tags removed);
+    - a leading conversational preamble line, but ONLY when it directly
+      precedes such a wrapper (a bare first line of prose is never touched);
+    - standalone ``Wrote N characters to /abs/path`` provider log lines;
+    - a trailing JSON-envelope fragment (``...\n\n..."}`` with literal ``\n``).
+    """
+    notes: list[str] = []
+    original = text
+    cleaned = text
+
+    cleaned, n = _SYSTEM_REMINDER_RE.subn("", cleaned)
+    if n:
+        notes.append(f"stripped {n} <system-reminder> block(s)")
+
+    # Judge the preamble before the wrapper is removed: the "immediately
+    # followed by an XML wrapper" relationship only exists while the tags are
+    # still present.
+    cleaned, n = _PREAMBLE_RE.subn("", cleaned, count=1)
+    if n:
+        notes.append("stripped leading tool-call preamble line")
+
+    cleaned, n = _INVOKE_BODY_RE.subn(lambda m: m.group("body"), cleaned)
+    if n:
+        notes.append(f"unwrapped {n} tool-call body wrapper(s)")
+
+    cleaned, n = _TOOL_TAG_RE.subn("", cleaned)
+    if n:
+        notes.append(f"removed {n} stray tool-call XML tag(s)")
+
+    cleaned, n = _JSON_TAIL_RE.subn("", cleaned)
+    if n:
+        notes.append("removed trailing JSON envelope fragment")
+
+    cleaned, n = _WROTE_LINE_RE.subn("", cleaned)
+    if n:
+        notes.append(f"removed {n} provider log line(s)")
+
+    if not notes:
+        return original, []
+
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).strip()
+
+    if count_words(cleaned) < count_words(original) / 2:
+        return original, [
+            "single-shot sanitizer stood down: cleaning would have removed "
+            "more than half the words; left the draft untouched"
+        ]
+
+    return cleaned, notes
 
 
 def draft_chapter(
@@ -103,6 +218,9 @@ def draft_chapter(
             )
         )
         body = resp.text.strip()
+        # Defensive: strip any tool-call scaffolding the text-only CLI echoed
+        # into the completion before the word-count guard weighs the prose.
+        body, sanitize_notes = sanitize_single_shot_prose(body)
         if fm.get("status") in (None, "", "outline"):
             fm["status"] = "draft"
         if count_words(body) <= 200:
@@ -111,7 +229,14 @@ def draft_chapter(
                 f"{count_words(body)} words; not saving. Raise max_tokens or retry."
             )
         snapshot_write_chapter(project, number, fm, body, reason="draft")
-        ledger.append("write.single_shot", target=project.chapter_rel(number))
+        if sanitize_notes:
+            ledger.append(
+                "write.single_shot",
+                target=project.chapter_rel(number),
+                sanitized=sanitize_notes,
+            )
+        else:
+            ledger.append("write.single_shot", target=project.chapter_rel(number))
         return resp.usage
     agent = Agent(
         provider=provider,
