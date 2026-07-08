@@ -422,23 +422,13 @@
         <span class="ri-label">Reviews</span>
         <span class="ri-end" data-count="reviews"></span>
       </button>
-      <button class="rail-item" data-view="book" type="button">
-        <span class="ic" id="icon-book"></span>
-        <span class="ri-label">Book</span>
-        <span class="ri-end" data-count="book"></span>
-      </button>
+      <!-- FEATURE RAIL ITEMS: one rail-item per feature panel, in reading
+           order (pacing, tournaments, room, readers). Book + Ledger follow. -->
       <button class="rail-item" data-view="pacing" type="button">
         <span class="ic" id="icon-pacing"></span>
         <span class="ri-label">Pacing</span>
         <span class="ri-end" data-count="pacing"></span>
       </button>
-      <button class="rail-item" data-view="ledger" type="button">
-        <span class="ic" id="icon-ledger"></span>
-        <span class="ri-label">Ledger</span>
-        <span class="ri-end" data-count="ledger"></span>
-      </button>
-      <!-- FEATURE RAIL ITEMS: one rail-item per feature panel, inserted above
-           in wave order (voice, tournaments, pacing, room, readers). -->
       <button class="rail-item" data-view="tournaments" type="button">
         <span class="ic" id="icon-tournaments"></span>
         <span class="ri-label">Tournaments</span>
@@ -453,6 +443,17 @@
         <span class="ic" id="icon-readers"></span>
         <span class="ri-label">Readers</span>
         <span class="ri-end" data-count="readers"></span>
+      </button>
+      <!-- END FEATURE RAIL ITEMS -->
+      <button class="rail-item" data-view="book" type="button">
+        <span class="ic" id="icon-book"></span>
+        <span class="ri-label">Book</span>
+        <span class="ri-end" data-count="book"></span>
+      </button>
+      <button class="rail-item" data-view="ledger" type="button">
+        <span class="ic" id="icon-ledger"></span>
+        <span class="ri-label">Ledger</span>
+        <span class="ri-end" data-count="ledger"></span>
       </button>
     </nav>
     <div class="rail-foot">
@@ -487,24 +488,14 @@
         <div class="split-detail" id="reviews-detail"></div>
       </div>
 
-      <!-- Book -->
-      <div class="view-pane" id="view-book">
-        <div class="split-detail" id="book-detail" style="width: 100%;"></div>
-      </div>
-
+      <!-- BEGIN FEATURE PANELS: one self-contained view-pane per feature,
+           in reading order (pacing, tournaments, room, readers). No shared JS
+           state beyond the existing fetch helpers. Book + Ledger follow. -->
       <!-- Pacing -->
       <div class="view-pane" id="view-pacing">
         <div class="split-detail" id="pacing-detail" style="width: 100%;"></div>
       </div>
 
-      <!-- Ledger -->
-      <div class="view-pane" id="view-ledger">
-        <div class="split-detail" id="ledger-detail" style="width: 100%;"></div>
-      </div>
-
-      <!-- BEGIN FEATURE PANELS: one self-contained view-pane per feature,
-           inserted in wave order (voice, tournaments, pacing, room, readers).
-           No shared JS state beyond the existing fetch helpers. -->
       <!-- Tournaments -->
       <div class="view-pane" id="view-tournaments">
         <div class="split-list" id="tournaments-list"></div>
@@ -523,6 +514,16 @@
         <div class="split-detail" id="readers-detail"></div>
       </div>
       <!-- END FEATURE PANELS -->
+
+      <!-- Book -->
+      <div class="view-pane" id="view-book">
+        <div class="split-detail" id="book-detail" style="width: 100%;"></div>
+      </div>
+
+      <!-- Ledger -->
+      <div class="view-pane" id="view-ledger">
+        <div class="split-detail" id="ledger-detail" style="width: 100%;"></div>
+      </div>
     </div>
   </main>
 </div>
@@ -638,6 +639,31 @@
 
   function emptyState(icon, title, body) {
     return '<div class="wb-empty">' + icon + "<h3>" + escapeHtml(title) + "</h3><p>" + body + "</p></div>";
+  }
+
+  // Severity ordering shared by every findings list (critical first). The five
+  // feature panels each grew their own copy of this sort during the serial
+  // merges; this is the one they now share.
+  var SEVERITY_ORDER = { critical: 0, major: 1, minor: 2, info: 3 };
+  function sevSort(findings) {
+    return (findings || []).slice().sort(function (a, b) {
+      return (SEVERITY_ORDER[a.severity] || 4) - (SEVERITY_ORDER[b.severity] || 4);
+    });
+  }
+
+  // Read-only finding row (severity chip + a caller-chosen label + optional
+  // quote + issue/suggestion). Shared by the pacing and room panels, which had
+  // byte-identical copies. The interactive review-triage row (accept/dismiss +
+  // status chip) is a separate builder near the reviews panel.
+  function findingRowHtml(f, label) {
+    return (
+      '<div class="list-row"><div class="list-main">' +
+      '<div class="list-title"><span class="chip sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + "</span>" +
+      "<span>" + escapeHtml(label) + "</span></div>" +
+      (f.quote ? '<div class="list-meta quote">“' + escapeHtml(f.quote) + "”</div>" : "") +
+      '<div class="list-meta">' + escapeHtml(f.issue || "") + (f.suggestion ? " · " + escapeHtml(f.suggestion) : "") + "</div>" +
+      "</div></div>"
+    );
   }
 
   // -- minimal markdown, with optional char-offset highlighting --------
@@ -971,7 +997,19 @@
       "</div>";
   }
 
-  // -- reviews ---------------------------------------------------------------
+  // -- reviews (triage: route saved reports in .stoner/reviews/ by `kind`) ----
+
+  // Friendly labels for the report-kind discriminator every saved report
+  // carries (server-side `_review_kind`). Unknown kinds fall back to the raw
+  // string so a new report type still lists sensibly before it gets a label.
+  var REVIEW_KIND_LABELS = {
+    review: "Critic review", slop: "Slop check", voice: "Voice drift",
+    pacing: "Pacing", cast: "Cast boundedness", motifs: "Motifs",
+    readers: "Reader attention", book: "Book review",
+  };
+  function reviewKindLabel(kind) {
+    return REVIEW_KIND_LABELS[kind] || kind || "report";
+  }
 
   async function loadReviews() {
     var reviews = await guarded(function () { return api("/api/reviews"); });
@@ -989,7 +1027,7 @@
         return (
           '<button class="row-item" data-file="' + escapeHtml(r.file) + '" type="button">' +
           '<div class="row-title">' + escapeHtml(r.file) + "</div>" +
-          '<div class="row-meta"><span>' + escapeHtml(r.kind) + "</span>" + (r.chapter != null ? "<span>ch " + r.chapter + "</span>" : "") + "<span>" + fmtTime(r.created_at) + "</span></div>" +
+          '<div class="row-meta"><span class="chip tone-faint">' + escapeHtml(reviewKindLabel(r.kind)) + "</span>" + (r.chapter != null ? "<span>ch " + r.chapter + "</span>" : "") + "<span>" + fmtTime(r.created_at) + "</span></div>" +
           "</button>"
         );
       })
@@ -1014,34 +1052,37 @@
     renderReviewDetail(pane, file, report);
   }
 
-  function renderReviewDetail(pane, file, report) {
-    var findings = report.findings || [];
-    var rows = findings
-      .map(function (f) {
-        return (
-          '<div class="list-row" data-id="' + escapeHtml(f.id) + '">' +
-          '<div class="list-main">' +
-          '<div class="list-title"><span class="chip sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + "</span>" +
-          "<span>" + escapeHtml(f.category || f.source || "") + "</span>" +
-          '<span class="chip st-' + escapeHtml(f.status) + '">' + escapeHtml(f.status) + "</span></div>" +
-          (f.quote ? '<div class="list-meta quote">“' + escapeHtml(f.quote) + "”</div>" : "") +
-          '<div class="list-meta">' + escapeHtml(f.issue || "") + (f.suggestion ? " &middot; " + escapeHtml(f.suggestion) : "") + "</div>" +
-          "</div>" +
-          '<div class="list-trailing">' +
-          '<button class="btn btn-sm" data-action="accepted" type="button">Accept</button>' +
-          '<button class="btn btn-sm" data-action="dismissed" type="button">Dismiss</button>' +
-          "</div>" +
-          "</div>"
-        );
-      })
-      .join("");
-    pane.innerHTML =
-      '<div class="screen-inner">' +
-      '<div class="screen-head"><h1 class="screen-title">' + escapeHtml(file) + "</h1></div>" +
-      '<div class="screen-sub">' + escapeHtml(report.path || "") + " &middot; " + findings.length + " findings" + (report.summary ? "<br>" + escapeHtml(report.summary) : "") + "</div>" +
-      (rows ? '<div class="list">' + rows + "</div>" : '<p style="color:var(--faint);font-size:var(--t-12)">No findings.</p>') +
-      "</div>";
+  // Interactive finding row (status chip + accept/dismiss). Distinct from the
+  // read-only findingRowHtml: these rows carry a data-id the PATCH wiring keys
+  // on, so any kind whose findings are standard Finding objects stays triageable.
+  function reviewFindingRowHtml(f) {
+    return (
+      '<div class="list-row" data-id="' + escapeHtml(f.id) + '">' +
+      '<div class="list-main">' +
+      '<div class="list-title"><span class="chip sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + "</span>" +
+      "<span>" + escapeHtml(f.category || f.source || "") + "</span>" +
+      '<span class="chip st-' + escapeHtml(f.status) + '">' + escapeHtml(f.status) + "</span></div>" +
+      (f.quote ? '<div class="list-meta quote">“' + escapeHtml(f.quote) + "”</div>" : "") +
+      '<div class="list-meta">' + escapeHtml(f.issue || "") + (f.suggestion ? " &middot; " + escapeHtml(f.suggestion) : "") + "</div>" +
+      "</div>" +
+      '<div class="list-trailing">' +
+      '<button class="btn btn-sm" data-action="accepted" type="button">Accept</button>' +
+      '<button class="btn btn-sm" data-action="dismissed" type="button">Dismiss</button>' +
+      "</div>" +
+      "</div>"
+    );
+  }
 
+  function reviewFindingsSection(findings) {
+    var rows = sevSort(findings).map(reviewFindingRowHtml).join("");
+    return (
+      '<div class="sec"><div class="sec-label">Findings<span class="count">(' + findings.length + ")</span></div>" +
+      (rows ? '<div class="list">' + rows + "</div>" : '<p style="color:var(--faint);font-size:var(--t-12)">No findings.</p>') +
+      "</div>"
+    );
+  }
+
+  function wireReviewFindingPatch(pane, file) {
     pane.querySelectorAll(".list-row[data-id] button").forEach(function (btn) {
       btn.addEventListener("click", async function () {
         var row = btn.closest(".list-row");
@@ -1055,11 +1096,89 @@
           });
         });
         if (!updated) return;
-        row.querySelector(".chip.st-open, .chip.st-accepted, .chip.st-dismissed, .chip.st-fixed").outerHTML =
-          '<span class="chip st-' + updated.status + '">' + updated.status + "</span>";
+        var chip = row.querySelector(".chip.st-open, .chip.st-accepted, .chip.st-dismissed, .chip.st-fixed");
+        if (chip) chip.outerHTML = '<span class="chip st-' + updated.status + '">' + updated.status + "</span>";
         toast("Finding marked " + updated.status);
       });
     });
+  }
+
+  // Motif reports carry no standard findings -- they're one of three shapes
+  // (scan rows / candidate n-grams / opening-vs-closing rhyme). Render whichever
+  // is present so the triage detail doesn't collapse to a bare "No findings".
+  function renderMotifsReport(report) {
+    if (Array.isArray(report.rows) && report.rows.length) {
+      var rows = report.rows
+        .map(function (r) {
+          return (
+            '<div class="list-row"><div class="list-main">' +
+            '<div class="list-title"><span>' + escapeHtml(r.motif || r.motif_id || "") + "</span>" +
+            '<span class="chip tone-faint">' + (r.chapters_hit || 0) + " ch</span></div>" +
+            '<div class="list-meta">first ch ' + (r.first != null ? r.first : "—") + " · last ch " + (r.last != null ? r.last : "—") + "</div>" +
+            "</div></div>"
+          );
+        })
+        .join("");
+      return '<div class="sec"><div class="sec-label">Motifs<span class="count">(' + report.rows.length + ")</span></div><div class=\"list\">" + rows + "</div></div>";
+    }
+    if (Array.isArray(report.candidates) && report.candidates.length) {
+      var crows = report.candidates
+        .map(function (c) {
+          var chapters = Array.isArray(c.chapters) ? c.chapters.length : (c.chapters || 0);
+          return (
+            '<div class="list-row"><div class="list-main">' +
+            '<div class="list-title"><span class="quote">“' + escapeHtml(c.gram || "") + "”</span></div>" +
+            '<div class="list-meta">' + (c.total || 0) + " hits across " + chapters + " chapter" + (chapters === 1 ? "" : "s") + "</div>" +
+            "</div></div>"
+          );
+        })
+        .join("");
+      return '<div class="sec"><div class="sec-label">Candidate motifs<span class="count">(' + report.candidates.length + ")</span></div><div class=\"list\">" + crows + "</div></div>";
+    }
+    if (report.report === "rhyme" || report.jaccard != null) {
+      var both = (report.motifs_both || []).map(escapeHtml).join(", ");
+      return (
+        '<div class="sec"><div class="sec-label">Opening ↔ closing rhyme</div>' +
+        '<div class="list"><div class="list-row"><div class="list-main">' +
+        '<div class="list-title">Jaccard ' + (typeof report.jaccard === "number" ? report.jaccard.toFixed(2) : "—") + "</div>" +
+        '<div class="list-meta">shared motifs: ' + (both || "—") + "</div>" +
+        "</div></div></div></div>"
+      );
+    }
+    return '<p style="color:var(--faint);font-size:var(--t-12)">Nothing to display for this motif report.</p>';
+  }
+
+  function renderReviewDetail(pane, file, report) {
+    var kind = report.kind || "review";
+    var findings = report.findings || [];
+
+    var subParts = [];
+    if (report.path) subParts.push(escapeHtml(report.path));
+    if (report.verdict) subParts.push("verdict: " + escapeHtml(report.verdict));
+    if (kind !== "motifs") subParts.push(findings.length + " finding" + (findings.length === 1 ? "" : "s"));
+
+    var head =
+      '<div class="screen-head">' + ICONS.reviews + '<h1 class="screen-title">' + escapeHtml(file) + "</h1>" +
+      '<span class="chip tone-faint">' + escapeHtml(reviewKindLabel(kind)) + "</span></div>" +
+      '<div class="screen-sub">' + (subParts.join(" &middot; ") || "&nbsp;") + (report.summary ? "<br>" + escapeHtml(report.summary) : "") + "</div>";
+
+    var body;
+    if (kind === "motifs") {
+      body = renderMotifsReport(report);
+    } else if (kind === "pacing") {
+      var timeline = Array.isArray(report.series) && report.series.length
+        ? '<div class="sec"><div class="sec-label">Timeline</div>' + renderPacingTimeline(report) + "</div>"
+        : "";
+      body = timeline + reviewFindingsSection(findings);
+    } else {
+      // review / slop / voice / cast / readers / book all carry standard
+      // findings; slop+voice add a score card (the score+subscores shape).
+      var scored = typeof report.score === "number" && report.subscores && Object.keys(report.subscores).length;
+      body = (scored ? scoreCardHtml(report) : "") + reviewFindingsSection(findings);
+    }
+
+    pane.innerHTML = '<div class="screen-inner wide">' + head + body + "</div>";
+    wireReviewFindingPatch(pane, file);
   }
 
   // -- book (autonomous run) ---------------------------------------------------
@@ -1294,21 +1413,9 @@
       return;
     }
 
-    var findings = (report.findings || []).slice().sort(function (a, b) {
-      var order = { critical: 0, major: 1, minor: 2, info: 3 };
-      return (order[a.severity] || 4) - (order[b.severity] || 4);
-    });
+    var findings = sevSort(report.findings);
     var findingRows = findings
-      .map(function (f) {
-        return (
-          '<div class="list-row"><div class="list-main">' +
-          '<div class="list-title"><span class="chip sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + "</span>" +
-          "<span>" + escapeHtml(f.category || f.source || "") + "</span></div>" +
-          (f.quote ? '<div class="list-meta quote">“' + escapeHtml(f.quote) + "”</div>" : "") +
-          '<div class="list-meta">' + escapeHtml(f.issue || "") + (f.suggestion ? " · " + escapeHtml(f.suggestion) : "") + "</div>" +
-          "</div></div>"
-        );
-      })
+      .map(function (f) { return findingRowHtml(f, f.category || f.source || ""); })
       .join("");
 
     pane.innerHTML =
@@ -1402,7 +1509,7 @@
   }
 
   function tournamentPairCard(t, pair, idx) {
-    var col = 'flex:1;min-width:0;max-height:52vh;overflow-y:auto;border:1px solid var(--line);border-radius:8px;padding:12px';
+    var col = 'flex:1;min-width:0;max-height:52vh;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:12px';
     return (
       '<div class="sec" data-pair="' + escapeHtml(pair.token) + '">' +
       '<div class="sec-label">Blind pair ' + (idx + 1) + "</div>" +
@@ -1502,13 +1609,6 @@
 
   // -- writers' room ---------------------------------------------------------
 
-  function roomSevSort(findings) {
-    var order = { critical: 0, major: 1, minor: 2, info: 3 };
-    return (findings || []).slice().sort(function (a, b) {
-      return (order[a.severity] || 4) - (order[b.severity] || 4);
-    });
-  }
-
   function renderRoomFindings(record) {
     var byEditor = {};
     (record.findings || []).forEach(function (f) {
@@ -1523,17 +1623,8 @@
       html +=
         '<div class="sec"><div class="sec-label">' + escapeHtml(slug) +
         '<span class="count">(' + fs.length + ")</span></div><div class=\"list\">" +
-        roomSevSort(fs)
-          .map(function (f) {
-            return (
-              '<div class="list-row"><div class="list-main">' +
-              '<div class="list-title"><span class="chip sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + "</span>" +
-              "<span>" + escapeHtml(f.category || "") + "</span></div>" +
-              (f.quote ? '<div class="list-meta quote">“' + escapeHtml(f.quote) + "”</div>" : "") +
-              '<div class="list-meta">' + escapeHtml(f.issue || "") + (f.suggestion ? " · " + escapeHtml(f.suggestion) : "") + "</div>" +
-              "</div></div>"
-            );
-          })
+        sevSort(fs)
+          .map(function (f) { return findingRowHtml(f, f.category || ""); })
           .join("") +
         "</div></div>";
     });
@@ -1732,7 +1823,7 @@
   function attentionColor(a) {
     if (a > 0) return "var(--ok)";
     if (a < 0) return "var(--err)";
-    return "var(--line)";
+    return "var(--border-strong)";
   }
   function attentionOpacity(a) {
     return Math.min(1, 0.22 + Math.abs(a) * 0.9);

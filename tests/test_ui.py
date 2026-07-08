@@ -501,6 +501,45 @@ def test_reviews_listing_labels_pacing_kind_and_keeps_existing_kinds(client, pro
     assert listing["ch-01-review.json"]["kind"] == "review"  # regression
 
 
+def test_reviews_listing_routes_all_seven_kinds(client, project: WritingProject):
+    """Every report type that lands in .stoner/reviews/ is discriminated by its
+    `kind` so the triage panel can route each to the right detail rendering.
+    One file per kind, shaped like the real writers, listed all at once."""
+    reviews = project.root / ".stoner" / "reviews"
+    reviews.mkdir(parents=True, exist_ok=True)
+    finding = Finding(source="review:continuity", severity=Severity.major, issue="x").model_dump(mode="json")
+    payloads = {
+        # review + slop + voice reuse the existing shape helpers below
+        "pacing-9.json": {"kind": "pacing", "created_at": 9.0, "series": [{"chapter": 1}], "findings": []},
+        "cast-ch-01-9.json": {"kind": "cast", "path": "manuscript/ch-01.md", "chapter": 1, "created_at": 8.0, "findings": [finding]},
+        "motif-scan-9.json": {"kind": "motifs", "report": "scan", "created_at": 7.0, "rows": []},
+        "readers-run-1-9.json": {"kind": "readers", "run_id": "run-1", "path": "", "created_at": 6.0, "findings": [finding]},
+    }
+    for name, payload in payloads.items():
+        (reviews / name).write_text(json.dumps(payload), encoding="utf-8")
+    _write_slop_report(project, "ch-01-slop.json")
+    _write_review_report(project, "ch-01-review.json", [Finding(source="review:x", issue="y")])
+    (reviews / "ch-02-voice.json").write_text(
+        json.dumps({"kind": "voice", "path": "manuscript/ch-02.md", "created_at": 5.0, "findings": []}),
+        encoding="utf-8",
+    )
+
+    listing = {r["file"]: r for r in client.get("/api/reviews").json()}
+    got = {name: listing[name]["kind"] for name in listing}
+    assert got == {
+        "pacing-9.json": "pacing",
+        "cast-ch-01-9.json": "cast",
+        "motif-scan-9.json": "motifs",
+        "readers-run-1-9.json": "readers",
+        "ch-01-slop.json": "slop",
+        "ch-01-review.json": "review",
+        "ch-02-voice.json": "voice",
+    }
+    # every kind is fetchable as a detail payload without error
+    for name in got:
+        assert client.get(f"/api/reviews/{name}").status_code == 200
+
+
 # ---------------------------------------------------------------------------
 # tournaments (blind A/B voting; second write endpoint after the finding PATCH)
 # ---------------------------------------------------------------------------
