@@ -225,7 +225,11 @@ def _review_kind(data: dict[str, Any]) -> str:
     kind = data.get("kind")
     if isinstance(kind, str) and kind:
         return kind
-    return "review" if "passes" in data else "slop"
+    if "passes" in data:
+        return "review"
+    if "verdict" in data and "overall" in data:
+        return "book"  # legacy whole-book reports predate the kind field
+    return "slop"
 
 
 def _chapter_from_path(path: str) -> int | None:

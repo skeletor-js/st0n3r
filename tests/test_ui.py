@@ -683,3 +683,26 @@ def test_tournament_vote_invalid_pick_422(client, project: WritingProject):
     _seed_tournament(project)
     res = client.post("/api/tournaments/ch-01-1111/votes", json={"token": "x", "pick": "c"})
     assert res.status_code == 422
+
+
+def test_reviews_list_legacy_book_report_sniffs_as_book(client, project: WritingProject):
+    # Whole-book reports saved before the kind field existed have no `kind`
+    # and no `passes`; they must sniff as `book`, not `slop` (proof-run find).
+    reviews = project.root / ".stoner" / "reviews"
+    (reviews / "book-100.json").write_text(
+        json.dumps(
+            {
+                "created_at": 100.0,
+                "model": "anthropic/claude-sonnet-5",
+                "verdict": "needs-work",
+                "overall": "solid start",
+                "chapters_full": [1],
+                "chapters_summarized": [],
+                "usage": {"input_tokens": 0, "output_tokens": 0},
+                "findings": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    listing = {r["file"]: r for r in client.get("/api/reviews").json()}
+    assert listing["book-100.json"]["kind"] == "book"
