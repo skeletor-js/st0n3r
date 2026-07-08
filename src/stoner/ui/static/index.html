@@ -449,6 +449,11 @@
         <span class="ri-label">Writers' Room</span>
         <span class="ri-end" data-count="room"></span>
       </button>
+      <button class="rail-item" data-view="readers" type="button">
+        <span class="ic" id="icon-readers"></span>
+        <span class="ri-label">Readers</span>
+        <span class="ri-end" data-count="readers"></span>
+      </button>
     </nav>
     <div class="rail-foot">
       <div class="foot-note"><span class="dot"></span>127.0.0.1 &middot; local only</div>
@@ -510,6 +515,12 @@
       <div class="view-pane" id="view-room">
         <div class="split-list" id="room-list"></div>
         <div class="split-detail" id="room-detail"></div>
+      </div>
+
+      <!-- Readers (attention heatmap) -->
+      <div class="view-pane" id="view-readers">
+        <div class="split-list" id="readers-list"></div>
+        <div class="split-detail" id="readers-detail"></div>
       </div>
       <!-- END FEATURE PANELS -->
     </div>
@@ -1709,6 +1720,170 @@
       loadRoomComments(chapter);
     });
   }
+  // -- readers (attention heatmap over the manuscript timeline) -----------
+
+  ICONS.readers = svg('<path d="M2.5 3.5h11v9h-11z"/><path d="M2.5 6.5h11M5.5 3.5v9M8.5 3.5v9M11.5 3.5v9"/>');
+  document.getElementById("icon-readers").innerHTML = ICONS.readers;
+  VIEW_TITLES.readers = "Readers";
+  loaders.readers = loadReaders;
+
+  var selectedReaderRun = null;
+
+  function attentionColor(a) {
+    if (a > 0) return "var(--ok)";
+    if (a < 0) return "var(--err)";
+    return "var(--line)";
+  }
+  function attentionOpacity(a) {
+    return Math.min(1, 0.22 + Math.abs(a) * 0.9);
+  }
+
+  async function loadReaders() {
+    var runs = await guarded(function () { return api("/api/readers/runs"); });
+    var list = document.getElementById("readers-list");
+    var detail = document.getElementById("readers-detail");
+    if (!runs) return;
+    setNavCount("readers", runs.length || "");
+    if (!runs.length) {
+      list.innerHTML = "";
+      detail.innerHTML = emptyState(
+        ICONS.readers,
+        "No reader runs yet",
+        'Simulate a run from the CLI: <code>stoner readers run</code>.'
+      );
+      return;
+    }
+    list.innerHTML = runs
+      .map(function (r) {
+        var range = (r.chapter_range && r.chapter_range.length === 2)
+          ? "ch " + r.chapter_range[0] + "–" + r.chapter_range[1] : (r.chapters + " ch");
+        return (
+          '<button class="row-item' + (r.run_id === selectedReaderRun ? " is-selected" : "") + '" data-rid="' + escapeHtml(r.run_id) + '" type="button">' +
+          '<div class="row-title">' + escapeHtml(r.run_id) + "</div>" +
+          '<div class="row-meta"><span class="chip tone-faint">' + escapeHtml(r.kind) + "</span><span>" + range + "</span><span>" + r.roster_size + " readers</span></div>" +
+          "</button>"
+        );
+      })
+      .join("");
+    list.querySelectorAll("[data-rid]").forEach(function (row) {
+      row.addEventListener("click", function () { selectReaderRun(row.dataset.rid); });
+    });
+    var target = selectedReaderRun && runs.some(function (r) { return r.run_id === selectedReaderRun; })
+      ? selectedReaderRun : runs[0].run_id;
+    selectReaderRun(target);
+  }
+
+  async function selectReaderRun(rid) {
+    selectedReaderRun = rid;
+    document.querySelectorAll("#readers-list [data-rid]").forEach(function (r) {
+      r.classList.toggle("is-selected", r.dataset.rid === rid);
+    });
+    var run = await guarded(function () { return api("/api/readers/runs/" + encodeURIComponent(rid)); });
+    var pane = document.getElementById("readers-detail");
+    if (!run) return;
+    if (run.kind === "bench" || run.bench) {
+      pane.innerHTML = renderBench(run);
+    } else {
+      pane.innerHTML = renderHeatmap(run);
+    }
+  }
+
+  function heatmapCell(s) {
+    var tip =
+      "ch " + s.chapter + " · segment " + s.index + "\n" +
+      "attention " + (s.attention >= 0 ? "+" : "") + s.attention + " · agreement " + Math.round(s.agreement * 100) + "%\n" +
+      "hooked " + s.counts.hooked + " / bored " + s.counts.bored + " / confused " + s.counts.confused + " / reread " + s.counts.reread + "\n" +
+      s.quote;
+    var style =
+      "height:22px;border-radius:3px;margin:2px 0;background:" + attentionColor(s.attention) +
+      ";opacity:" + attentionOpacity(s.attention).toFixed(2);
+    return '<div title="' + escapeHtml(tip) + '" style="' + style + '"></div>';
+  }
+
+  function renderHeatmap(run) {
+    var hm = run.heatmap;
+    if (!hm || !hm.segments || !hm.segments.length) {
+      return emptyState(
+        ICONS.readers,
+        "No heatmap for this run",
+        'Aggregate it from the CLI: <code>stoner readers heatmap ' + escapeHtml(run.run_id) + "</code>."
+      );
+    }
+    var byChapter = {};
+    hm.segments.forEach(function (s) { (byChapter[s.chapter] = byChapter[s.chapter] || []).push(s); });
+    var chapters = Object.keys(byChapter).map(Number).sort(function (a, b) { return a - b; });
+    var columns = chapters
+      .map(function (ch) {
+        var cells = byChapter[ch].map(heatmapCell).join("");
+        return (
+          '<div style="flex:0 0 46px;display:flex;flex-direction:column">' +
+          '<div class="sec-label" style="text-align:center">' + String(ch).padStart(2, "0") + "</div>" +
+          cells +
+          "</div>"
+        );
+      })
+      .join("");
+    var grid =
+      '<div style="overflow-x:auto"><div style="display:flex;gap:6px;align-items:flex-start;padding-bottom:8px">' + columns + "</div></div>";
+
+    var findings = (hm.findings || [])
+      .map(function (f) {
+        return (
+          '<div class="list-row"><div class="list-main">' +
+          '<div class="list-title"><span class="chip sev-major">' + escapeHtml(f.category) + "</span></div>" +
+          '<div class="list-meta">' + escapeHtml(f.issue) + (f.quote ? ' · <span class="quote">“' + escapeHtml(f.quote) + "”</span>" : "") + "</div>" +
+          "</div></div>"
+        );
+      })
+      .join("");
+    var notes = (hm.notes || []).map(function (n) { return "<li>" + escapeHtml(n) + "</li>"; }).join("");
+
+    return (
+      '<div class="screen-inner wide">' +
+      '<div class="screen-head">' + ICONS.readers + '<h1 class="screen-title">' + escapeHtml(run.run_id) + "</h1>" +
+      '<span class="chip tone-faint">' + run.roster_size + " readers</span></div>" +
+      '<div class="screen-sub">' + hm.segments.length + " segments · " + (hm.findings || []).length + " trouble segment(s) · green = held attention, red = lost it</div>" +
+      '<div class="sec"><div class="sec-label">Attention by chapter</div>' + grid + "</div>" +
+      '<div class="sec"><div class="sec-label">Trouble segments<span class="count">(' + (hm.findings || []).length + ")</span></div>" +
+      (findings ? '<div class="list">' + findings + "</div>" : '<p style="color:var(--faint);font-size:var(--t-12)">No high-agreement trouble segments.</p>') + "</div>" +
+      (notes ? '<div class="sec"><div class="sec-label">Notes</div><ul style="font-size:var(--t-12);color:var(--faint);padding-left:18px">' + notes + "</ul></div>" : "") +
+      "</div>"
+    );
+  }
+
+  function benchBar(row) {
+    var m = row.manuscript, c = row.comp, total = Math.max(m + c, 1);
+    var mPct = (m / total) * 100, cPct = (c / total) * 100;
+    return (
+      '<div class="list-row"><div class="list-main" style="min-width:0">' +
+      '<div class="list-title">ch ' + String(row.chapter).padStart(2, "0") +
+      ' <span class="list-meta" style="display:inline">manuscript ' + Math.round(row.win_rate * 100) + "%</span></div>" +
+      '<div style="display:flex;height:14px;border-radius:4px;overflow:hidden;margin-top:4px">' +
+      '<div title="manuscript held ' + m + '" style="width:' + mPct + '%;background:var(--ok)"></div>' +
+      '<div title="comp held ' + c + '" style="width:' + cPct + '%;background:var(--err)"></div>' +
+      "</div></div></div>"
+    );
+  }
+
+  function renderBench(run) {
+    var b = run.bench;
+    if (!b || !b.per_chapter || !b.per_chapter.length) {
+      return emptyState(ICONS.readers, "No bench results for this run", "Re-run <code>stoner readers bench</code>.");
+    }
+    var bars = b.per_chapter.map(benchBar).join("");
+    var elo = b.ratings && b.ratings.manuscript != null
+      ? '<div class="screen-sub">elo — manuscript ' + b.ratings.manuscript + " / comp " + b.ratings.comp + "</div>" : "";
+    return (
+      '<div class="screen-inner wide">' +
+      '<div class="screen-head">' + ICONS.readers + '<h1 class="screen-title">' + escapeHtml(run.run_id) + "</h1>" +
+      '<span class="chip tone-accent">bench</span></div>' +
+      '<div class="screen-sub">vs ' + escapeHtml(b.comp || "comp") + " · manuscript win rate " + Math.round((b.manuscript_win_rate || 0) * 100) + "% (" + escapeHtml(b.aggregation || "win-rate") + ")</div>" +
+      elo +
+      '<div class="sec"><div class="sec-label">Hold / lose by chapter (green = manuscript held, red = comp held)</div><div class="list">' + bars + "</div></div>" +
+      "</div>"
+    );
+  }
+
   // -- boot ---------------------------------------------------------------
 
   loadStatus();
