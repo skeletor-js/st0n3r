@@ -107,6 +107,7 @@ class BookResult:
     review_rounds: int = 0
     remaining_major_findings: int = 0
     remaining_critical_findings: int = 0
+    remaining_open_promises: int = 0
     state_path: str = ""
     usage: Usage = field(default_factory=Usage)
 
@@ -336,6 +337,31 @@ def run_book(
         if report is not None:
             result.remaining_major_findings = report.major_count
             result.remaining_critical_findings = report.critical_count
+
+    # Count remaining open promises (unfired guns) at completion. This is
+    # reporting only -- surfaced loudly, never blocking: abandoning a thread
+    # is the writer's call, so book mode never gates on it.
+    from ..canon.store import CanonStore
+    from ..ledger import Ledger
+
+    open_promises = [
+        p for p in CanonStore(project).promises() if p.status == "open"
+    ]
+    result.remaining_open_promises = len(open_promises)
+    Ledger(project.root).append(
+        "motif.promise.check",
+        target="canon/threads.md",
+        open_promises=result.remaining_open_promises,
+        context="book",
+    )
+    _emit(
+        on_event,
+        {
+            "type": "promises.open",
+            "count": result.remaining_open_promises,
+            "ids": [p.id for p in open_promises],
+        },
+    )
 
     state.phase = "done"
     state.current = None

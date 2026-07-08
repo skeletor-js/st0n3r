@@ -53,6 +53,12 @@ def _progress_printer() -> Any:
             )
         elif etype == "budget.timeout":
             console.print(f"[yellow]time budget reached before ch-{event['n']:02d}[/yellow]")
+        elif etype == "promises.open":
+            if event["count"]:
+                console.print(
+                    f"[yellow]{event['count']} promise(s) still open — "
+                    "run `stoner promises check` before you call the book done.[/yellow]"
+                )
 
     return on_event
 
@@ -95,6 +101,7 @@ def register(app: typer.Typer) -> None:
         table.add_row("review rounds", str(res.review_rounds))
         table.add_row("remaining major findings", str(res.remaining_major_findings))
         table.add_row("remaining critical findings", str(res.remaining_critical_findings))
+        table.add_row("remaining open promises", str(res.remaining_open_promises))
         console.print(table)
         console.print(f"[dim]state: {res.state_path}[/dim]")
 

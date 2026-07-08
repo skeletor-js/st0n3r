@@ -21,7 +21,7 @@ from typing import Any
 
 from ..types import Severity
 from .memory import Memory
-from .store import CanonStore, slugify
+from .store import PROMISE_KINDS, CanonStore, slugify
 
 _FACT_KINDS = {"character", "world", "timeline", "thread"}
 _AGE_TOLERANCE = 1  # birthdays: off-by-one across a chapter isn't a conflict
@@ -56,6 +56,9 @@ JSON must match this shape exactly:
   ],
   "thread_updates": [
     {"id": "<existing thread id from threads.md>", "status": "open|resolved|abandoned", "note": "<why>"}
+  ],
+  "planted_threads": [
+    {"id": "<new thread id in the same style as existing ids>", "thread": "<what promise/question this chapter plants>", "kind": "mystery|threat|want|image", "quote": "<short verbatim quote where it is planted>"}
   ]
 }
 
@@ -63,7 +66,11 @@ Rules:
 - Only report facts that are stated or strongly implied by the chapter text.
 - "facts" is for durable, checkable attributes -- not plot summary.
 - Use "timeline" kind for events worth a timeline.md row (field="event").
-- Never invent a thread id; only update ids that already exist in canon.
+- Never invent a thread id in "thread_updates"; only update ids that already exist in canon.
+- "planted_threads" is ONLY for promises this chapter explicitly plants: a
+  mystery the reader now wants answered, a threat that must be discharged, a
+  want a character now visibly pursues, or an image/line clearly set up to
+  pay off later. Do NOT log every plot beat -- only deliberate promises.
 - If nothing applies to a list, return an empty list for it.
 """
 
@@ -122,6 +129,7 @@ def _normalize(parsed: dict[str, Any]) -> dict[str, Any]:
     parsed.setdefault("facts", [])
     parsed.setdefault("new_entities", [])
     parsed.setdefault("thread_updates", [])
+    parsed.setdefault("planted_threads", [])
     return parsed
 
 
@@ -257,7 +265,59 @@ class ApplyResult:
     conflicts: list[Conflict] = field(default_factory=list)
     new_entities: list[dict[str, Any]] = field(default_factory=list)
     thread_updates: list[dict[str, Any]] = field(default_factory=list)
+    planted_threads: list[dict[str, Any]] = field(default_factory=list)
     summary_saved: bool = False
+
+
+def _norm_desc(text: Any) -> str:
+    return " ".join(str(text or "").strip().lower().split())
+
+
+def _apply_plants(
+    store: CanonStore,
+    parsed: dict[str, Any],
+    when: str,
+    auto: bool,
+    result: ApplyResult,
+) -> None:
+    """Append newly planted promises as open, kind-typed thread rows.
+
+    Idempotent like timeline rows: a plant whose normalized description
+    already exists in threads.md is a no-op (surfaced, not re-applied), so
+    re-archiving a redraft never double-plants. A proposed id that collides
+    with a *different* existing thread, or an unrecognized kind, is surfaced
+    unapplied for a human -- never auto-overwritten (the Conflict discipline).
+    """
+    threads = store.threads()
+    existing_ids = {t.id for t in threads}
+    existing_descs = {_norm_desc(t.thread) for t in threads}
+    for plant in parsed.get("planted_threads", []):
+        pid = str(plant.get("id") or "").strip()
+        desc = str(plant.get("thread") or "").strip()
+        kind = str(plant.get("kind") or "").strip().lower()
+        if not pid or not desc:
+            continue
+        if kind not in PROMISE_KINDS:
+            result.planted_threads.append(
+                {**plant, "applied": False, "reason": f"invalid promise kind: {kind or '(empty)'}"}
+            )
+            continue
+        ndesc = _norm_desc(desc)
+        if ndesc in existing_descs:
+            result.planted_threads.append(
+                {**plant, "applied": False, "reason": "already planted"}
+            )
+            continue
+        if pid in existing_ids:
+            result.planted_threads.append(
+                {**plant, "applied": False, "reason": "id collides with an existing thread"}
+            )
+            continue
+        if auto:
+            store.plant_promise(pid, desc, kind, opened_in=when)
+        existing_ids.add(pid)
+        existing_descs.add(ndesc)
+        result.planted_threads.append({**plant, "applied": auto, "opened_in": when})
 
 
 def apply_updates(
@@ -324,23 +384,41 @@ def apply_updates(
         # kind == "thread" facts are ignored here; thread_updates below is
         # the authoritative channel for thread status changes.
 
-    existing_thread_ids = {t.id for t in store.threads()}
+    when = f"ch-{chapter_number:02d}"
+    by_id = {t.id: t for t in store.threads()}
     for update in parsed.get("thread_updates", []):
         thread_id = update.get("id")
         status = update.get("status")
         note = update.get("note", "")
-        if not thread_id or thread_id not in existing_thread_ids:
+        row = by_id.get(thread_id) if thread_id else None
+        if row is None:
             result.thread_updates.append({**update, "applied": False, "reason": "unknown thread id"})
             continue
-        if auto:
-            fields: dict[str, Any] = {}
-            if status:
-                fields["status"] = status
-            if note:
-                fields["notes"] = note
-            if fields:
-                store.update_thread(thread_id, **fields)
+        # A payoff never overwrites a row already resolved in a different
+        # chapter -- surface it for a human, mirroring the Conflict discipline.
+        if (
+            status == "resolved"
+            and row.status == "resolved"
+            and row.resolved_in
+            and row.resolved_in != when
+        ):
+            result.thread_updates.append(
+                {**update, "applied": False, "reason": f"already resolved in {row.resolved_in}"}
+            )
+            continue
+        fields: dict[str, Any] = {}
+        if status:
+            fields["status"] = status
+        if note:
+            fields["notes"] = note
+        # Stamp the payoff chapter only when resolving a row that lacks one.
+        if status == "resolved" and not row.resolved_in:
+            fields["resolved_in"] = when
+        if auto and fields:
+            store.update_thread(thread_id, **fields)
         result.thread_updates.append({**update, "applied": auto})
+
+    _apply_plants(store, parsed, when, auto, result)
 
     result.new_entities = list(parsed.get("new_entities", []))
 

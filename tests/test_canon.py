@@ -15,8 +15,19 @@ from stoner.canon.archivist import (
 )
 from stoner.canon.memory import Memory
 from stoner.canon.scaffold import scaffold_project
-from stoner.canon.store import CanonError, CanonStore, slugify
+from stoner.canon.store import PROMISE_KINDS, CanonError, CanonStore, MotifRow, slugify
 from stoner.project import WritingProject
+
+_LEGACY_THREADS = """# Threads
+
+> Some hand-edited preamble prose that must survive verbatim.
+
+| id | thread | opened_in | status | resolved_in | notes |
+|----|--------|-----------|--------|-------------|-------|
+| t1 | who killed the duke | ch-01 | open |  |  |
+
+Trailing prose after the table, also verbatim.
+"""
 
 
 @pytest.fixture()
@@ -436,3 +447,230 @@ def test_apply_updates_unknown_thread_id_not_applied(store: CanonStore, project:
     }
     result = apply_updates(store, mem, parsed, chapter_number=1, auto=True)
     assert result.thread_updates[0]["applied"] is False
+
+
+# ---------------------------------------------------------------------------
+# U1: promise-typed thread rows
+# ---------------------------------------------------------------------------
+
+
+def test_legacy_six_column_threads_read_with_empty_kind(store: CanonStore):
+    store.project.write("canon/threads.md", _LEGACY_THREADS)
+    rows = store.threads()
+    assert len(rows) == 1
+    assert rows[0].id == "t1"
+    assert rows[0].kind == ""  # padded, not dropped
+
+
+def test_plant_promise_migrates_header_and_preserves_prose(store: CanonStore):
+    store.project.write("canon/threads.md", _LEGACY_THREADS)
+    row = store.plant_promise("p1", "will the gun go off", "threat", opened_in="ch-02")
+    assert row.kind == "threat"
+
+    raw = store.project.read("canon/threads.md")
+    # hand-edited prefix/suffix prose round-trips verbatim
+    assert "hand-edited preamble prose that must survive verbatim" in raw
+    assert "Trailing prose after the table, also verbatim." in raw
+    # header migrated to include the kind column
+    header_line = next(line for line in raw.splitlines() if line.strip().startswith("| id"))
+    assert "kind" in header_line
+
+    rows = {r.id: r for r in store.threads()}
+    assert rows["t1"].thread == "who killed the duke"  # legacy row intact
+    assert rows["t1"].kind == ""
+    assert rows["p1"].kind == "threat"
+    assert rows["p1"].status == "open"
+
+
+def test_promises_view_filters_by_kind(store: CanonStore):
+    store.add_thread("plain", "a plain plot thread")
+    store.plant_promise("m1", "who is the ghost", "mystery", opened_in="ch-01")
+    promises = store.promises()
+    assert [p.id for p in promises] == ["m1"]
+
+
+def test_payoff_promise_sets_resolved(store: CanonStore):
+    store.plant_promise("m1", "who is the ghost", "mystery", opened_in="ch-01")
+    row = store.payoff_promise("m1", "ch-09", notes="it was the caretaker")
+    assert row.status == "resolved"
+    assert row.resolved_in == "ch-09"
+    assert store.promises()[0].notes == "it was the caretaker"
+
+
+def test_plant_promise_invalid_kind_raises(store: CanonStore):
+    with pytest.raises(CanonError):
+        store.plant_promise("x", "bad", "prophecy", opened_in="ch-01")
+
+
+def test_plant_promise_duplicate_id_raises(store: CanonStore):
+    store.plant_promise("m1", "who is the ghost", "mystery")
+    with pytest.raises(CanonError):
+        store.plant_promise("m1", "another", "want")
+
+
+def test_promise_kinds_are_the_four(store: CanonStore):
+    assert set(PROMISE_KINDS) == {"mystery", "threat", "want", "image"}
+
+
+def test_context_pack_open_threads_unchanged_by_kind(store: CanonStore):
+    store.add_thread("t1", "who killed the duke", opened_in="ch-01")
+    pack = store.context_pack(max_chars=12000)
+    assert "Open Threads" in pack
+    assert "(t1) who killed the duke -- opened ch-01" in pack
+
+
+# ---------------------------------------------------------------------------
+# U2: archivist plant/payoff extraction
+# ---------------------------------------------------------------------------
+
+
+def _parsed(**over):
+    base = {"summary": "", "facts": [], "new_entities": [], "thread_updates": [], "planted_threads": []}
+    base.update(over)
+    return base
+
+
+def test_apply_plant_appends_once_and_is_idempotent(store: CanonStore, project: WritingProject):
+    mem = Memory(project)
+    parsed = _parsed(
+        planted_threads=[{"id": "p1", "thread": "the locked box", "kind": "image", "quote": "q"}]
+    )
+    r1 = apply_updates(store, mem, parsed, chapter_number=3, auto=True)
+    assert r1.planted_threads[0]["applied"] is True
+    assert r1.planted_threads[0]["opened_in"] == "ch-03"
+    rows = store.promises()
+    assert len(rows) == 1
+    assert rows[0].kind == "image"
+    assert rows[0].opened_in == "ch-03"
+
+    # second apply of the same plant is a no-op (idempotent on redraft)
+    r2 = apply_updates(store, mem, parsed, chapter_number=3, auto=True)
+    assert r2.planted_threads[0]["applied"] is False
+    assert r2.planted_threads[0]["reason"] == "already planted"
+    assert len(store.promises()) == 1
+
+
+def test_apply_plant_id_collision_surfaced_unapplied(store: CanonStore, project: WritingProject):
+    store.add_thread("p1", "an existing thread", opened_in="ch-01")
+    mem = Memory(project)
+    parsed = _parsed(
+        planted_threads=[{"id": "p1", "thread": "a totally different promise", "kind": "want", "quote": "q"}]
+    )
+    result = apply_updates(store, mem, parsed, chapter_number=2, auto=True)
+    assert result.planted_threads[0]["applied"] is False
+    assert "collide" in result.planted_threads[0]["reason"]
+    # existing thread untouched
+    assert store.threads()[0].thread == "an existing thread"
+
+
+def test_apply_plant_invalid_kind_surfaced(store: CanonStore, project: WritingProject):
+    mem = Memory(project)
+    parsed = _parsed(
+        planted_threads=[{"id": "p1", "thread": "x", "kind": "prophecy", "quote": "q"}]
+    )
+    result = apply_updates(store, mem, parsed, chapter_number=1, auto=True)
+    assert result.planted_threads[0]["applied"] is False
+    assert store.promises() == []
+
+
+def test_apply_resolve_stamps_resolved_in(store: CanonStore, project: WritingProject):
+    store.plant_promise("m1", "who is the ghost", "mystery", opened_in="ch-01")
+    mem = Memory(project)
+    parsed = _parsed(thread_updates=[{"id": "m1", "status": "resolved", "note": "solved"}])
+    apply_updates(store, mem, parsed, chapter_number=9, auto=True)
+    row = store.promises()[0]
+    assert row.status == "resolved"
+    assert row.resolved_in == "ch-09"
+
+
+def test_apply_resolve_does_not_overwrite_prior_payoff(store: CanonStore, project: WritingProject):
+    store.plant_promise("m1", "who is the ghost", "mystery", opened_in="ch-01")
+    store.payoff_promise("m1", "ch-05")
+    mem = Memory(project)
+    parsed = _parsed(thread_updates=[{"id": "m1", "status": "resolved", "note": "again"}])
+    result = apply_updates(store, mem, parsed, chapter_number=9, auto=True)
+    assert result.thread_updates[0]["applied"] is False
+    assert "already resolved in ch-05" in result.thread_updates[0]["reason"]
+    assert store.promises()[0].resolved_in == "ch-05"  # not overwritten
+
+
+def test_legacy_archivist_json_without_planted_threads_applies(store: CanonStore, project: WritingProject):
+    mem = Memory(project)
+    parsed = parse_archivist_json(
+        '{"summary": "s", "facts": [], "new_entities": [], "thread_updates": []}'
+    )
+    result = apply_updates(store, mem, parsed, chapter_number=1, auto=True)
+    assert result.planted_threads == []
+
+
+def test_apply_plant_dry_run_touches_nothing(store: CanonStore, project: WritingProject):
+    mem = Memory(project)
+    parsed = _parsed(
+        planted_threads=[{"id": "p1", "thread": "the locked box", "kind": "image", "quote": "q"}]
+    )
+    result = apply_updates(store, mem, parsed, chapter_number=3, auto=False)
+    assert result.planted_threads[0]["applied"] is False
+    assert store.promises() == []  # nothing written
+
+
+# ---------------------------------------------------------------------------
+# U3: motif registry
+# ---------------------------------------------------------------------------
+
+
+def test_scaffold_writes_motifs_once(project: WritingProject):
+    assert (project.root / "canon/motifs.md").exists()
+    project.write("canon/motifs.md", "# hand-edited\n")
+    written = scaffold_project(project, "My Book")
+    assert "canon/motifs.md" not in written
+    assert project.read("canon/motifs.md") == "# hand-edited\n"
+
+
+def test_motif_round_trip_with_semicolon_anchors(store: CanonStore):
+    assert store.motifs() == []
+    store.add_motif("mo1", "the river", anchors="river; the current; downstream", meaning="time")
+    rows = store.motifs()
+    assert len(rows) == 1
+    assert rows[0].motif == "the river"
+    assert rows[0].anchor_list() == ["river", "the current", "downstream"]
+    assert rows[0].meaning == "time"
+
+    updated = store.update_motif("mo1", meaning="fate")
+    assert updated.meaning == "fate"
+    assert store.motifs()[0].meaning == "fate"
+
+    with pytest.raises(CanonError):
+        store.update_motif("nope", meaning="x")
+    with pytest.raises(CanonError):
+        store.add_motif("mo1", "dup")
+
+
+def test_motif_anchor_list_edge_cases():
+    assert MotifRow("i", "m", anchors="").anchor_list() == []
+    assert MotifRow("i", "m", anchors="solo").anchor_list() == ["solo"]
+    assert MotifRow("i", "m", anchors=" a ; ; b ").anchor_list() == ["a", "b"]
+
+
+def test_context_pack_includes_motifs_after_threads(store: CanonStore):
+    store.add_thread("t1", "who killed the duke", opened_in="ch-01")
+    store.add_motif("mo1", "the river", anchors="river; current", meaning="the passage of time")
+    pack = store.context_pack(max_chars=12000)
+    assert "Motifs" in pack
+    assert "the river: the passage of time" in pack
+    assert "anchors: river; current" in pack
+    assert pack.index("Open Threads") < pack.index("Motifs")
+
+
+def test_context_pack_omits_motifs_when_empty(store: CanonStore):
+    store.add_thread("t1", "a thread", opened_in="ch-01")
+    pack = store.context_pack(max_chars=12000)
+    assert "Motifs" not in pack
+
+
+def test_context_pack_drops_motifs_section_whole_under_tight_budget(store: CanonStore):
+    store.project.write("canon/premise.md", "# Premise\n\n" + ("x" * 4000) + "\n")
+    store.add_thread("t1", "a thread", opened_in="ch-01")
+    store.add_motif("mo1", "the river", anchors="river", meaning="time")
+    pack = store.context_pack(max_chars=200)
+    # too tight for anything past premise-truncation; motifs never appear mangled
+    assert "the river" not in pack

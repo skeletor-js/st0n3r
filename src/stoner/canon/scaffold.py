@@ -20,6 +20,7 @@ _RENDERED_FILES: dict[str, str] = {
     "canon/style.md": "style.md",
     "canon/timeline.md": "timeline.md",
     "canon/threads.md": "threads.md",
+    "canon/motifs.md": "motifs.md",
     "canon/characters/_template.md": "characters/_template.md",
     "canon/world/_template.md": "world/_template.md",
     "canon/facts/_template.md": "facts/_template.md",

@@ -193,6 +193,21 @@ class FactsConfig(BaseModel):
     max_facts_per_run: int = 20
 
 
+class MotifsConfig(BaseModel):
+    """The Promise & Motif Ledger's tunable thresholds (src/stoner/motifs/).
+
+    `candidate_min_chapters` is the distinct-chapter spread a mined n-gram must
+    clear to count as a motif candidate; `candidate_cap` bounds how many are
+    returned; `rhyme_window` is how many chapters at each end the ending-rhyme
+    scan compares. Promise/motif measurement is otherwise deterministic and
+    needs no config; the two model-calling commands resolve against `reviewer`.
+    """
+
+    candidate_min_chapters: int = 3
+    candidate_cap: int = 12
+    rhyme_window: int = 1
+
+
 class ArchaeologyConfig(BaseModel):
     """Draft snapshot store (`.stoner/drafts/`) behavior."""
 
@@ -228,6 +243,7 @@ class StonerConfig(BaseModel):
     pacing: PacingConfig = Field(default_factory=PacingConfig)
     room: RoomConfig = Field(default_factory=RoomConfig)
     facts: FactsConfig = Field(default_factory=FactsConfig)
+    motifs: MotifsConfig = Field(default_factory=MotifsConfig)
     archaeology: ArchaeologyConfig = Field(default_factory=ArchaeologyConfig)
 
     # ------------------------------------------------------------------
