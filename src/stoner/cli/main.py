@@ -299,10 +299,10 @@ def threads() -> None:
 
     rows = CanonStore(_project()).threads()
     table = Table(title="plot threads")
-    for col in ("id", "thread", "opened", "status", "resolved", "notes"):
+    for col in ("id", "thread", "opened", "status", "resolved", "notes", "kind"):
         table.add_column(col)
     for t in rows:
-        table.add_row(t.id, t.thread, t.opened_in, t.status, t.resolved_in, t.notes)
+        table.add_row(t.id, t.thread, t.opened_in, t.status, t.resolved_in, t.notes, t.kind)
     console.print(table)
 
 
@@ -544,6 +544,7 @@ from . import (  # noqa: E402
     drafts_cmds,
     facts_cmds,
     foundation_cmds,
+    motifs_cmds,
     pacing_cmds,
     room_cmds,
     tournament_cmds,
@@ -561,6 +562,7 @@ tournament_cmds.register(app)
 pacing_cmds.register(app)
 room_cmds.register(app)
 facts_cmds.register(app)
+motifs_cmds.register(app)
 drafts_cmds.register(app)
 
 

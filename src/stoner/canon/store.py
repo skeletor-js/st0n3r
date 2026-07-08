@@ -18,8 +18,15 @@ import yaml
 from ..project import WritingProject, join_frontmatter, split_frontmatter
 
 CanonKind = Literal[
-    "premise", "style", "character", "world", "timeline", "threads", "fact", "other"
+    "premise", "style", "character", "world", "timeline", "threads", "motifs",
+    "fact", "other",
 ]
+
+#: The four species of promise a thread row can carry in its `kind` cell. An
+#: empty `kind` marks a plain plot thread; a non-empty one marks a promise to
+#: the reader (a mystery to answer, a threat to discharge, a want to satisfy,
+#: or an image to pay off).
+PROMISE_KINDS = ("mystery", "threat", "want", "image")
 
 _TEMPLATE_STEM = "_template"
 
@@ -72,6 +79,7 @@ class ThreadRow:
     status: str = "open"
     resolved_in: str = ""
     notes: str = ""
+    kind: str = ""  # "" plain thread; else a PROMISE_KINDS value (a promise)
 
 
 @dataclass
@@ -80,6 +88,19 @@ class TimelineRow:
     event: str
     chapters: str = ""
     characters: str = ""
+
+
+@dataclass
+class MotifRow:
+    id: str
+    motif: str
+    anchors: str = ""  # semicolon-separated anchor phrases within the cell
+    meaning: str = ""
+    notes: str = ""
+
+    def anchor_list(self) -> list[str]:
+        """Split the anchors cell into stripped, non-empty anchor phrases."""
+        return [a.strip() for a in self.anchors.split(";") if a.strip()]
 
 
 # ---------------------------------------------------------------------------
@@ -188,6 +209,8 @@ class CanonStore:
             return "timeline"
         if rel_path == "canon/threads.md":
             return "threads"
+        if rel_path == "canon/motifs.md":
+            return "motifs"
         if rel_path.startswith("canon/characters/"):
             return "character"
         if rel_path.startswith("canon/world/"):
@@ -373,7 +396,25 @@ class CanonStore:
 
     # -- threads.md ---------------------------------------------------------
 
-    _THREAD_COLUMNS = ("id", "thread", "opened_in", "status", "resolved_in", "notes")
+    _THREAD_COLUMNS = ("id", "thread", "opened_in", "status", "resolved_in", "notes", "kind")
+    _THREAD_WIDTH = len(_THREAD_COLUMNS)
+
+    @staticmethod
+    def _thread_cells(row: ThreadRow) -> list[str]:
+        return [
+            row.id, row.thread, row.opened_in, row.status,
+            row.resolved_in, row.notes, row.kind,
+        ]
+
+    @staticmethod
+    def _with_kind_header(headers: list[str]) -> list[str]:
+        """Append a trailing `kind` header to a legacy six-column threads
+        table so `render_table` (which truncates rows to header width) keeps
+        the new cell. Reads never call this -- only writes migrate the header.
+        """
+        if any(h.strip().lower() == "kind" for h in headers):
+            return headers
+        return [*headers, "kind"]
 
     def threads(self) -> list[ThreadRow]:
         try:
@@ -384,7 +425,8 @@ class CanonStore:
             _, _headers, rows, _ = parse_table(raw)
         except CanonError:
             return []
-        return [ThreadRow(*(row + [""] * (6 - len(row)))[:6]) for row in rows]
+        w = self._THREAD_WIDTH
+        return [ThreadRow(*(row + [""] * (w - len(row)))[:w]) for row in rows]
 
     def add_thread(
         self,
@@ -394,38 +436,120 @@ class CanonStore:
         status: str = "open",
         resolved_in: str = "",
         notes: str = "",
+        kind: str = "",
     ) -> ThreadRow:
         raw = self.project.read("canon/threads.md")
         prefix, headers, rows, suffix = parse_table(raw)
         if any(row and row[0] == id for row in rows):
             raise CanonError(f"thread id already exists: {id}")
-        row = ThreadRow(id, thread, opened_in, status, resolved_in, notes)
-        rows.append([row.id, row.thread, row.opened_in, row.status, row.resolved_in, row.notes])
+        row = ThreadRow(id, thread, opened_in, status, resolved_in, notes, kind)
+        rows.append(self._thread_cells(row))
+        headers = self._with_kind_header(headers)
         self.project.write("canon/threads.md", render_table(prefix, headers, rows, suffix))
         return row
 
     def update_thread(self, id: str, **fields: Any) -> ThreadRow:
         raw = self.project.read("canon/threads.md")
         prefix, headers, rows, suffix = parse_table(raw)
+        w = self._THREAD_WIDTH
         for i, row in enumerate(rows):
-            padded = (row + [""] * (6 - len(row)))[:6]
+            padded = (row + [""] * (w - len(row)))[:w]
             if padded[0] == id:
                 current = ThreadRow(*padded)
                 for key, value in fields.items():
                     if key not in self._THREAD_COLUMNS:
                         raise CanonError(f"unknown thread field: {key}")
                     setattr(current, key, value)
-                rows[i] = [
-                    current.id,
-                    current.thread,
-                    current.opened_in,
-                    current.status,
-                    current.resolved_in,
-                    current.notes,
-                ]
+                rows[i] = self._thread_cells(current)
+                headers = self._with_kind_header(headers)
                 self.project.write("canon/threads.md", render_table(prefix, headers, rows, suffix))
                 return current
         raise CanonError(f"no thread with id: {id}")
+
+    # -- promises (typed threads) -------------------------------------------
+
+    def promises(self) -> list[ThreadRow]:
+        """Threads carrying a non-empty `kind` -- i.e. planted promises."""
+        return [t for t in self.threads() if t.kind]
+
+    def plant_promise(
+        self,
+        id: str,
+        thread: str,
+        kind: str,
+        opened_in: str = "",
+        notes: str = "",
+    ) -> ThreadRow:
+        """Plant a promise: an open thread row typed with a promise `kind`."""
+        if kind not in PROMISE_KINDS:
+            raise CanonError(
+                f"invalid promise kind: {kind!r} (expected one of {', '.join(PROMISE_KINDS)})"
+            )
+        return self.add_thread(
+            id, thread, opened_in=opened_in, status="open", notes=notes, kind=kind
+        )
+
+    def payoff_promise(self, id: str, resolved_in: str, notes: str = "") -> ThreadRow:
+        """Pay off a promise: stamp `status=resolved` and `resolved_in`."""
+        fields: dict[str, Any] = {"status": "resolved", "resolved_in": resolved_in}
+        if notes:
+            fields["notes"] = notes
+        return self.update_thread(id, **fields)
+
+    # -- motifs.md ----------------------------------------------------------
+
+    _MOTIF_COLUMNS = ("id", "motif", "anchors", "meaning", "notes")
+    _MOTIF_WIDTH = len(_MOTIF_COLUMNS)
+
+    @staticmethod
+    def _motif_cells(row: MotifRow) -> list[str]:
+        return [row.id, row.motif, row.anchors, row.meaning, row.notes]
+
+    def motifs(self) -> list[MotifRow]:
+        try:
+            raw = self.project.read("canon/motifs.md")
+        except Exception:
+            return []
+        try:
+            _, _headers, rows, _ = parse_table(raw)
+        except CanonError:
+            return []
+        w = self._MOTIF_WIDTH
+        return [MotifRow(*(row + [""] * (w - len(row)))[:w]) for row in rows]
+
+    def add_motif(
+        self,
+        id: str,
+        motif: str,
+        anchors: str = "",
+        meaning: str = "",
+        notes: str = "",
+    ) -> MotifRow:
+        raw = self.project.read("canon/motifs.md")
+        prefix, headers, rows, suffix = parse_table(raw)
+        if any(row and row[0] == id for row in rows):
+            raise CanonError(f"motif id already exists: {id}")
+        row = MotifRow(id, motif, anchors, meaning, notes)
+        rows.append(self._motif_cells(row))
+        self.project.write("canon/motifs.md", render_table(prefix, headers, rows, suffix))
+        return row
+
+    def update_motif(self, id: str, **fields: Any) -> MotifRow:
+        raw = self.project.read("canon/motifs.md")
+        prefix, headers, rows, suffix = parse_table(raw)
+        w = self._MOTIF_WIDTH
+        for i, row in enumerate(rows):
+            padded = (row + [""] * (w - len(row)))[:w]
+            if padded[0] == id:
+                current = MotifRow(*padded)
+                for key, value in fields.items():
+                    if key not in self._MOTIF_COLUMNS:
+                        raise CanonError(f"unknown motif field: {key}")
+                    setattr(current, key, value)
+                rows[i] = self._motif_cells(current)
+                self.project.write("canon/motifs.md", render_table(prefix, headers, rows, suffix))
+                return current
+        raise CanonError(f"no motif with id: {id}")
 
     # -- timeline.md ----------------------------------------------------------
 
@@ -490,6 +614,15 @@ class CanonStore:
         open_threads = [t for t in self.threads() if t.status == "open"]
         thread_text = "\n".join(f"- ({t.id}) {t.thread} -- opened {t.opened_in}" for t in open_threads)
         if not add("Open Threads", thread_text):
+            return "".join(parts)
+
+        motif_rows = self.motifs()
+        motif_lines = []
+        for m in motif_rows:
+            anchors = "; ".join(m.anchor_list())
+            suffix_a = f" (anchors: {anchors})" if anchors else ""
+            motif_lines.append(f"- {m.motif}: {m.meaning}{suffix_a}".rstrip())
+        if not add("Motifs", "\n".join(motif_lines)):
             return "".join(parts)
 
         characters = self.list_entries(kind="character")

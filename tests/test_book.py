@@ -469,3 +469,53 @@ def test_cli_review_book_smoke(project, monkeypatch, cli_app):
     assert result.exit_code == 0, result.output
     assert "verdict" in result.output
     assert "chapter 2" in result.output.lower()
+
+
+# ---------------------------------------------------------------------------
+# Promise ledger seam (plan 007 U6): open-promise reporting at completion
+# ---------------------------------------------------------------------------
+
+
+def test_run_book_reports_open_promises_without_blocking(project, monkeypatch):
+    _add_beats(project, 2)
+
+    def fake_revise(project_, chapter, findings, model=None, provider=None):
+        @dataclass
+        class R:
+            usage: Usage = field(default_factory=Usage)
+
+        return R()
+
+    monkeypatch.setattr("stoner.review.revise.revise_chapter", fake_revise)
+
+    from stoner.canon.store import CanonStore
+
+    CanonStore(project).plant_promise("m1", "who is the ghost", "mystery", opened_in="ch-01")
+
+    events: list[dict] = []
+    res = run_book(project, provider=RoutingProvider(), review_every=4,
+                   max_review_rounds=2, on_event=events.append)
+
+    assert res.remaining_open_promises == 1
+    open_events = [e for e in events if e["type"] == "promises.open"]
+    assert len(open_events) == 1
+    assert open_events[0]["count"] == 1
+    assert open_events[0]["ids"] == ["m1"]
+
+    # completion is never blocked by an open promise
+    assert load_state(project).phase == "done"
+
+
+def test_run_book_zero_open_promises_when_none_planted(project, monkeypatch):
+    _add_beats(project, 2)
+
+    def fake_revise(project_, chapter, findings, model=None, provider=None):
+        @dataclass
+        class R:
+            usage: Usage = field(default_factory=Usage)
+
+        return R()
+
+    monkeypatch.setattr("stoner.review.revise.revise_chapter", fake_revise)
+    res = run_book(project, provider=RoutingProvider(), review_every=4, on_event=lambda e: None)
+    assert res.remaining_open_promises == 0
