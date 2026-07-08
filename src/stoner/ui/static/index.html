@@ -287,6 +287,8 @@
   .chip.st-accepted  { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); border-color: transparent; }
   .chip.st-dismissed { color: var(--faint); text-decoration: line-through; }
   .chip.st-fixed     { background: var(--accent-soft); color: var(--accent-text); border-color: transparent; }
+  .chip.st-answered  { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); border-color: transparent; }
+  .chip.st-resolved  { background: var(--accent-soft); color: var(--accent-text); border-color: transparent; }
   /* chapter status */
   .chip.status-outline { color: var(--faint); }
   .chip.status-draft   { background: var(--accent-soft); color: var(--accent-text); border-color: transparent; }
@@ -437,6 +439,11 @@
       </button>
       <!-- FEATURE RAIL ITEMS: one rail-item per feature panel, inserted above
            in wave order (voice, tournaments, pacing, room, readers). -->
+      <button class="rail-item" data-view="room" type="button">
+        <span class="ic" id="icon-room"></span>
+        <span class="ri-label">Writers' Room</span>
+        <span class="ri-end" data-count="room"></span>
+      </button>
     </nav>
     <div class="rail-foot">
       <div class="foot-note"><span class="dot"></span>127.0.0.1 &middot; local only</div>
@@ -488,6 +495,12 @@
       <!-- BEGIN FEATURE PANELS: one self-contained view-pane per feature,
            inserted in wave order (voice, tournaments, pacing, room, readers).
            No shared JS state beyond the existing fetch helpers. -->
+
+      <!-- Writers' Room -->
+      <div class="view-pane" id="view-room">
+        <div class="split-list" id="room-list"></div>
+        <div class="split-detail" id="room-detail"></div>
+      </div>
       <!-- END FEATURE PANELS -->
     </div>
   </main>
@@ -516,6 +529,7 @@
     ledger: svg('<path d="M3 2.5h10v11H3z"/><path d="M5.3 5.3h5.4M5.3 8h5.4M5.3 10.7h3.4"/>'),
     voice: svg('<path d="M2 8h1.2M12.8 8H14M4.8 5.8v4.4M8 3.2v9.6M11.2 5.8v4.4"/>'),
     pacing: svg('<path d="M1.5 8.5h2.6l1.6-4.5 2.6 8 1.6-4.5 1-1h3.6"/>'),
+    room: svg('<path d="M2.5 3.5h11v7h-6l-2.5 2.5v-2.5h-2.5z"/><path d="M5.3 6h5.4M5.3 8.3h3.4"/>'),
     sun: svg('<circle cx="8" cy="8" r="2.9"/><path d="M8 1.6v1.5M8 12.9v1.5M2.6 8H1.1M14.9 8h-1.5M4 4l1 1M12 12l1 1M12 4l-1 1M4 12l-1 1"/>', 14),
     moon: svg('<path d="M13 9.6A5.6 5.6 0 0 1 6.4 3 5.7 5.7 0 1 0 13 9.6Z"/>', 14),
     empty: svg('<path d="M8 1.3c.5 1.8-.4 2.6-1.2 3.5C5.8 5.9 5 7 5 8.6a3 3 0 0 0 6 0c0-.9-.3-1.5-.7-2.1.9.6 1.7 1.7 1.7 3.2a4 4 0 1 1-8 0c0-3.4 2.6-4.2 4-8.4Z"/>', 30),
@@ -529,6 +543,7 @@
   document.getElementById("icon-book").innerHTML = ICONS.book;
   document.getElementById("icon-ledger").innerHTML = ICONS.ledger;
   document.getElementById("icon-pacing").innerHTML = ICONS.pacing;
+  document.getElementById("icon-room").innerHTML = ICONS.room;
 
   // -- theme (system default, toggle persisted in localStorage) -----------
 
@@ -673,7 +688,7 @@
 
   // -- nav ---------------------------------------------------------------
 
-  var VIEW_TITLES = { manuscript: "Manuscript", canon: "Canon", reviews: "Reviews", book: "Book", pacing: "Pacing", ledger: "Ledger" };
+  var VIEW_TITLES = { manuscript: "Manuscript", canon: "Canon", reviews: "Reviews", book: "Book", pacing: "Pacing", ledger: "Ledger", room: "Writers' Room" };
   var loaders = {
     manuscript: loadManuscript,
     canon: loadCanon,
@@ -681,6 +696,7 @@
     book: loadBook,
     pacing: loadPacing,
     ledger: loadLedger,
+    room: loadRoom,
   };
 
   document.querySelectorAll(".rail-item").forEach(function (item) {
@@ -1321,6 +1337,227 @@
       '<div class="screen-sub">Most recent actions first.</div>' +
       '<div class="list">' + rows + "</div>" +
       "</div>";
+  }
+
+  // -- writers' room ---------------------------------------------------------
+
+  function roomSevSort(findings) {
+    var order = { critical: 0, major: 1, minor: 2, info: 3 };
+    return (findings || []).slice().sort(function (a, b) {
+      return (order[a.severity] || 4) - (order[b.severity] || 4);
+    });
+  }
+
+  function renderRoomFindings(record) {
+    var byEditor = {};
+    (record.findings || []).forEach(function (f) {
+      var parts = String(f.source || "").split(":");
+      var slug = parts.length > 1 ? parts[1] : f.source;
+      (byEditor[slug] = byEditor[slug] || []).push(f);
+    });
+    var html = "";
+    (record.editors || Object.keys(byEditor)).forEach(function (slug) {
+      var fs = byEditor[slug];
+      if (!fs || !fs.length) return;
+      html +=
+        '<div class="sec"><div class="sec-label">' + escapeHtml(slug) +
+        '<span class="count">(' + fs.length + ")</span></div><div class=\"list\">" +
+        roomSevSort(fs)
+          .map(function (f) {
+            return (
+              '<div class="list-row"><div class="list-main">' +
+              '<div class="list-title"><span class="chip sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + "</span>" +
+              "<span>" + escapeHtml(f.category || "") + "</span></div>" +
+              (f.quote ? '<div class="list-meta quote">“' + escapeHtml(f.quote) + "”</div>" : "") +
+              '<div class="list-meta">' + escapeHtml(f.issue || "") + (f.suggestion ? " · " + escapeHtml(f.suggestion) : "") + "</div>" +
+              "</div></div>"
+            );
+          })
+          .join("") +
+        "</div></div>";
+    });
+    return html || '<p style="color:var(--faint);font-size:var(--t-12)">No findings.</p>';
+  }
+
+  function renderRoomTranscript(record) {
+    var lines = [];
+    (record.cross_exam || []).forEach(function (xe) {
+      (xe.agreements || []).forEach(function (a) {
+        lines.push("<div class=\"list-row\"><div class=\"list-main\"><div class=\"list-title\">" +
+          '<span class="chip tone-accent">agrees</span><span>' + escapeHtml(xe.editor) + " on <code class=\"mono\">" + escapeHtml(a.finding_id) + "</code></span></div>" +
+          '<div class="list-meta">' + escapeHtml(a.note || "") + "</div></div></div>");
+      });
+      (xe.disagreements || []).forEach(function (d) {
+        lines.push("<div class=\"list-row\"><div class=\"list-main\"><div class=\"list-title\">" +
+          '<span class="chip sev-major">disagrees</span><span>' + escapeHtml(xe.editor) + " on <code class=\"mono\">" + escapeHtml(d.finding_id) + "</code></span></div>" +
+          '<div class="list-meta">' + escapeHtml(d.note || "") + "</div></div></div>");
+      });
+    });
+    if (!lines.length) return '<p style="color:var(--faint);font-size:var(--t-12)">No agreements or disagreements filed.</p>';
+    return '<div class="list">' + lines.join("") + "</div>";
+  }
+
+  async function openRoomSession(file) {
+    var record = await guarded(function () { return api("/api/room/sessions/" + encodeURIComponent(file)); });
+    var pane = document.getElementById("room-detail");
+    if (!record) return;
+    pane.dataset.filled = "1";
+    var unmet = record.obligations_unmet || [];
+    pane.innerHTML =
+      '<div class="screen-inner">' +
+      '<div class="screen-head"><h1 class="screen-title">' + escapeHtml(record.id || file) + "</h1>" +
+      '<span class="chip tone-faint">' + escapeHtml(record.scope || "chapter") + "</span></div>" +
+      '<div class="screen-sub">' + (record.editors || []).map(escapeHtml).join(", ") +
+      (record.created_at ? " · " + fmtTime(record.created_at) : "") + "</div>" +
+      (unmet.length
+        ? '<div class="sec"><div class="sec-label">Unmet obligations</div><p style="color:var(--faint);font-size:var(--t-12)">' +
+          unmet.map(escapeHtml).join(", ") + " still unanswered</p></div>"
+        : "") +
+      renderRoomFindings(record) +
+      '<div class="sec"><div class="sec-label">Cross-examination</div>' + renderRoomTranscript(record) + "</div>" +
+      "</div>";
+  }
+
+  function renderRoomComments(chapter, comments) {
+    if (!comments.length) return '<p style="color:var(--faint);font-size:var(--t-12)">No comments on this chapter.</p>';
+    return '<div class="list">' + comments
+      .map(function (c) {
+        var responses = (c.responses || [])
+          .map(function (r) {
+            return '<div class="list-meta">' + escapeHtml(r.editor) + ": " + escapeHtml(r.text) + "</div>";
+          })
+          .join("");
+        var actions = (c.status === "open" || c.status === "answered")
+          ? '<div class="list-trailing">' +
+            '<button class="btn btn-sm" data-comment="' + escapeHtml(c.id) + '" data-status="resolved" type="button">Resolve</button>' +
+            '<button class="btn btn-sm btn-quiet" data-comment="' + escapeHtml(c.id) + '" data-status="dismissed" type="button">Dismiss</button>' +
+            "</div>"
+          : "";
+        return (
+          '<div class="list-row"><div class="list-main">' +
+          '<div class="list-title"><span class="chip st-' + escapeHtml(c.status) + '">' + escapeHtml(c.status) + "</span>" +
+          "<span>" + escapeHtml(c.text) + "</span></div>" +
+          (c.quote ? '<div class="list-meta quote">“' + escapeHtml(c.quote) + "”</div>" : "") +
+          responses + "</div>" + actions + "</div>"
+        );
+      })
+      .join("") + "</div>";
+  }
+
+  async function loadRoomComments(chapter) {
+    var box = document.getElementById("room-comments-list");
+    if (!box) return;
+    var comments = await guarded(function () { return api("/api/room/comments/" + chapter); });
+    if (!comments) return;
+    box.innerHTML = renderRoomComments(chapter, comments);
+    box.querySelectorAll("button[data-comment]").forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        var updated = await guarded(function () {
+          return api("/api/room/comments/" + chapter + "/" + encodeURIComponent(btn.dataset.comment), {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: btn.dataset.status }),
+          });
+        });
+        if (!updated) return;
+        toast("Comment " + updated.status);
+        loadRoomComments(chapter);
+      });
+    });
+  }
+
+  function renderRoomHome(notebooks) {
+    var nbHtml = notebooks.length
+      ? '<div class="list">' + notebooks
+          .map(function (nb) {
+            var open = (nb.items || []).filter(function (it) {
+              return it.status === "open" || it.status === "persisting" || it.status === "unlocatable";
+            });
+            var persisting = open.filter(function (it) { return it.status === "persisting"; });
+            return (
+              '<div class="list-row"><div class="list-main">' +
+              '<div class="list-title"><span>' + escapeHtml(nb.editor) + "</span>" +
+              '<span class="chip tone-faint">' + open.length + " open</span>" +
+              (persisting.length ? '<span class="chip sev-major">' + persisting.length + " persisting</span>" : "") +
+              "</div>" +
+              (nb.opinion ? '<div class="list-meta">' + escapeHtml(nb.opinion) + "</div>" : "") +
+              "</div></div>"
+            );
+          })
+          .join("") + "</div>"
+      : '<p style="color:var(--faint);font-size:var(--t-12)">No notebooks yet — run <code>stoner room session &lt;chapter&gt;</code>.</p>';
+    return (
+      '<div class="screen-inner">' +
+      '<div class="screen-head">' + ICONS.room + '<h1 class="screen-title">Writers’ Room</h1></div>' +
+      '<div class="screen-sub">Persistent editors with notebooks, cross-examination on the record, and margin comments. Advisory only.</div>' +
+      '<div class="sec"><div class="sec-label">Notebooks</div>' + nbHtml + "</div>" +
+      '<div class="sec"><div class="sec-label">Margin comments</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">' +
+      '<input class="field" id="room-comment-chapter" type="number" min="1" placeholder="Ch" style="width:70px">' +
+      '<input class="field" id="room-comment-quote" type="text" placeholder="Verbatim quote (optional anchor)" style="flex:1;min-width:160px">' +
+      "</div>" +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+      '<input class="field" id="room-comment-text" type="text" placeholder="Your comment for the room" style="flex:1;min-width:200px">' +
+      '<button class="btn btn-primary" id="room-comment-add" type="button">Add comment</button>' +
+      '<button class="btn" id="room-comment-load" type="button">Show comments</button>' +
+      "</div>" +
+      '<div id="room-comments-list" style="margin-top:12px"></div>' +
+      "</div></div>"
+    );
+  }
+
+  async function loadRoom() {
+    var sessions = await guarded(function () { return api("/api/room/sessions"); });
+    var notebooks = await guarded(function () { return api("/api/room/notebooks"); });
+    var list = document.getElementById("room-list");
+    var detail = document.getElementById("room-detail");
+    if (sessions === null) return;
+    setNavCount("room", sessions.length || "");
+    list.innerHTML = sessions.length
+      ? sessions
+          .map(function (s) {
+            return (
+              '<button class="row-item" data-file="' + escapeHtml(s.file) + '" type="button">' +
+              '<div class="row-title">' + escapeHtml(s.id || s.file) + "</div>" +
+              '<div class="row-meta"><span class="chip tone-faint">' + escapeHtml(s.scope || "chapter") + "</span>" +
+              "<span>" + s.findings + " findings</span>" +
+              (s.obligations_unmet ? '<span class="chip sev-major">' + s.obligations_unmet + " unmet</span>" : "") +
+              "</div></button>"
+            );
+          })
+          .join("")
+      : "";
+    list.querySelectorAll(".row-item").forEach(function (row) {
+      row.addEventListener("click", function () {
+        list.querySelectorAll(".row-item").forEach(function (r) { r.classList.remove("is-selected"); });
+        row.classList.add("is-selected");
+        openRoomSession(row.dataset.file);
+      });
+    });
+
+    detail.innerHTML = renderRoomHome(notebooks || []);
+    document.getElementById("room-comment-add").addEventListener("click", async function () {
+      var chapter = Number(document.getElementById("room-comment-chapter").value);
+      var quote = document.getElementById("room-comment-quote").value;
+      var text = document.getElementById("room-comment-text").value.trim();
+      if (!chapter || !text) { toast("Chapter number and comment text are required"); return; }
+      var created = await guarded(function () {
+        return api("/api/room/comments/" + chapter, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quote: quote, text: text }),
+        });
+      });
+      if (!created) return;
+      toast(created.note ? "Comment added (unanchored: quote not found)" : "Comment added");
+      document.getElementById("room-comment-text").value = "";
+      loadRoomComments(chapter);
+    });
+    document.getElementById("room-comment-load").addEventListener("click", function () {
+      var chapter = Number(document.getElementById("room-comment-chapter").value);
+      if (!chapter) { toast("Give a chapter number first"); return; }
+      loadRoomComments(chapter);
+    });
   }
 
   // -- boot ---------------------------------------------------------------

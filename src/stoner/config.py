@@ -61,6 +61,83 @@ class PacingConfig(BaseModel):
     llm_instruments: bool = True
 
 
+class EditorSpec(BaseModel):
+    """One named editor in the Writers' Room roster (src/stoner/room/).
+
+    An editor is a persona (prepended to the wrapped pass system prompt) plus
+    a set of existing review-pass names it runs. Unknown pass names are soft:
+    they warn and are skipped at session time, mirroring the runner's
+    unknown-pass degradation -- so a roster stays loadable even if a pass was
+    renamed or belongs to a not-yet-installed feature.
+    """
+
+    name: str
+    persona: str = ""
+    passes: list[str] = Field(default_factory=list)
+
+
+def _default_editors() -> list[EditorSpec]:
+    # Defined as a factory (not a module constant) so each RoomConfig gets its
+    # own EditorSpec instances -- pydantic would otherwise share mutable list
+    # fields across configs.
+    return [
+        EditorSpec(
+            name="Developmental Editor",
+            persona=(
+                "You are the developmental editor: you care about structure, "
+                "momentum, and whether scenes earn their place. You think in "
+                "chapters and arcs, not sentences."
+            ),
+            passes=["pacing", "logic"],
+        ),
+        EditorSpec(
+            name="Line Editor",
+            persona=(
+                "You are the line editor: you hunt prose-level tells sentence "
+                "by sentence and you are ruthless about cutting what does not "
+                "need to exist. Praise is worthless; find what can go."
+            ),
+            passes=["line", "adversarial"],
+        ),
+        EditorSpec(
+            name="Continuity Pedant",
+            persona=(
+                "You are the continuity pedant: you cross-check every chapter "
+                "against canon and the story so far, and nothing escapes you -- "
+                "eye colors, timelines, who knew what when."
+            ),
+            passes=["continuity"],
+        ),
+        EditorSpec(
+            name="First Reader",
+            persona=(
+                "You are the first reader: you judge the chapter as a reader "
+                "encountering it fresh, paragraph by paragraph, with no stake "
+                "in defending any of it."
+            ),
+            passes=["grade"],
+        ),
+    ]
+
+
+class RoomConfig(BaseModel):
+    """The Writers' Room: a persistent roster of editors (src/stoner/room/).
+
+    The roster is the cost knob (R17): a chapter session costs one call per
+    editor per assigned pass, one cross-examination per editor, plus at most
+    one re-locate fallback and one comment follow-up. `model` empty resolves
+    against the reviewer role; set it to run the room on a cheaper model.
+    """
+
+    editors: list[EditorSpec] = Field(default_factory=_default_editors)
+    model: str = ""  # empty resolves against models.reviewer
+    opinion_cap_chars: int = 2000
+    digest_chars: int = 3000
+    max_open_items: int = 50
+    max_resolved_items: int = 20
+    llm_relocate: bool = True
+
+
 class ArchaeologyConfig(BaseModel):
     """Draft snapshot store (`.stoner/drafts/`) behavior."""
 
@@ -91,6 +168,7 @@ class StonerConfig(BaseModel):
     extra: dict[str, Any] = Field(default_factory=dict)
     voice: VoiceConfig = Field(default_factory=VoiceConfig)
     pacing: PacingConfig = Field(default_factory=PacingConfig)
+    room: RoomConfig = Field(default_factory=RoomConfig)
     archaeology: ArchaeologyConfig = Field(default_factory=ArchaeologyConfig)
 
     # ------------------------------------------------------------------

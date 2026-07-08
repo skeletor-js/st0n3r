@@ -48,6 +48,19 @@ class _FindingStatusUpdate(BaseModel):
     status: Literal["open", "accepted", "dismissed", "fixed"]
 
 
+class _CommentCreate(BaseModel):
+    """POST body for /api/room/comments/{chapter}."""
+
+    quote: str = ""
+    text: str
+
+
+class _CommentStatusUpdate(BaseModel):
+    """PATCH body for /api/room/comments/{chapter}/{comment_id}."""
+
+    status: Literal["open", "answered", "resolved", "dismissed"]
+
+
 # ---------------------------------------------------------------------------
 # Path-jail helpers (plain python, no fastapi dependency so they stay
 # importable/testable even without the extra installed)
@@ -104,6 +117,87 @@ def _load_review(project: WritingProject, file: str) -> dict[str, Any]:
 def _save_review(project: WritingProject, file: str, data: dict[str, Any]) -> None:
     path = _safe_review_path(project, file)
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def _room_sessions_dir(project: WritingProject) -> Path:
+    return project.root / ".stoner" / "room" / "sessions"
+
+
+def _safe_room_session_path(project: WritingProject, file: str) -> Path:
+    """Jail a session record filename to `.stoner/room/sessions/`, no traversal
+    (same shape as `_safe_review_path`)."""
+    if not file or Path(file).name != file:
+        raise _BadPath(f"invalid session filename: {file}")
+    base = _room_sessions_dir(project)
+    resolved = (base / file).resolve()
+    if not resolved.is_relative_to(base.resolve()):
+        raise _BadPath(f"invalid session filename: {file}")
+    return resolved
+
+
+def _load_room_session(project: WritingProject, file: str) -> dict[str, Any]:
+    path = _safe_room_session_path(project, file)
+    if not path.exists():
+        raise _NotFound(f"session record not found: {file}")
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise _NotFound(f"malformed session record: {file}") from exc
+    if not isinstance(data, dict):
+        raise _NotFound(f"malformed session record: {file}")
+    return data
+
+
+def _list_room_sessions(project: WritingProject) -> list[dict[str, Any]]:
+    base = _room_sessions_dir(project)
+    if not base.exists():
+        return []
+    out: list[dict[str, Any]] = []
+    for f in sorted(base.glob("*.json")):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(data, dict):
+            continue
+        out.append(
+            {
+                "file": f.name,
+                "id": data.get("id"),
+                "scope": data.get("scope"),
+                "chapter": data.get("chapter"),
+                "editors": data.get("editors", []),
+                "findings": len(data.get("findings", []) or []),
+                "obligations_unmet": len(data.get("obligations_unmet", []) or []),
+                "created_at": data.get("created_at"),
+            }
+        )
+    out.sort(key=lambda r: r["created_at"] or 0, reverse=True)
+    return out
+
+
+def _list_room_notebooks(project: WritingProject) -> list[dict[str, Any]]:
+    base = project.root / ".stoner" / "room" / "notebooks"
+    if not base.exists():
+        return []
+    out: list[dict[str, Any]] = []
+    for f in sorted(base.glob("*.json")):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(data, dict):
+            continue
+        items = data.get("items") if isinstance(data.get("items"), list) else []
+        out.append(
+            {
+                "editor": data.get("editor", f.stem),
+                "opinion": data.get("opinion", ""),
+                "items": items,
+                "updated_at": data.get("updated_at"),
+            }
+        )
+    return out
 
 
 def _review_kind(data: dict[str, Any]) -> str:
@@ -393,6 +487,49 @@ def create_app(project: WritingProject) -> FastAPI:
             if isinstance(data, dict):
                 return data
         return {}
+
+    # -- writers' room ----------------------------------------------------------
+
+    @app.get("/api/room/sessions")
+    def api_room_sessions() -> list[dict[str, Any]]:
+        return _list_room_sessions(project)
+
+    @app.get("/api/room/sessions/{file}")
+    def api_room_session_detail(file: str) -> dict[str, Any]:
+        try:
+            return _load_room_session(project, file)
+        except _BadPath as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except _NotFound as exc:
+            raise _http404(str(exc)) from exc
+
+    @app.get("/api/room/notebooks")
+    def api_room_notebooks() -> list[dict[str, Any]]:
+        return _list_room_notebooks(project)
+
+    @app.get("/api/room/comments/{chapter}")
+    def api_room_comments(chapter: int) -> list[dict[str, Any]]:
+        from ..room.comments import CommentStore
+
+        return [c.model_dump(mode="json") for c in CommentStore(project).list(chapter)]
+
+    @app.post("/api/room/comments/{chapter}")
+    def api_room_comment_create(chapter: int, body: _CommentCreate) -> dict[str, Any]:
+        from ..room.comments import CommentStore
+
+        comment = CommentStore(project).add(chapter, quote=body.quote, text=body.text)
+        return comment.model_dump(mode="json")
+
+    @app.patch("/api/room/comments/{chapter}/{comment_id}")
+    def api_room_comment_patch(
+        chapter: int, comment_id: str, update: _CommentStatusUpdate
+    ) -> dict[str, Any]:
+        from ..room.comments import CommentStore
+
+        comment = CommentStore(project).set_status(chapter, comment_id, update.status)
+        if comment is None:
+            raise _http404(f"comment not found: {comment_id}")
+        return comment.model_dump(mode="json")
 
     return app
 

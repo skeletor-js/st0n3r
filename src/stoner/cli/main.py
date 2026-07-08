@@ -538,7 +538,14 @@ def ui(
     run_server(project, host=host, port=port)
 
 
-from . import book_cmds, drafts_cmds, foundation_cmds, pacing_cmds, voice_cmds  # noqa: E402
+from . import (  # noqa: E402
+    book_cmds,
+    drafts_cmds,
+    foundation_cmds,
+    pacing_cmds,
+    room_cmds,
+    voice_cmds,
+)
 
 # Feature command groups register here. New register lines append below in
 # plan-number order: voice, cast, tournament, pacing, room, facts, motifs,
@@ -547,6 +554,7 @@ book_cmds.register(app)
 foundation_cmds.register(app)
 voice_cmds.register(app)
 pacing_cmds.register(app)
+room_cmds.register(app)
 drafts_cmds.register(app)
 
 

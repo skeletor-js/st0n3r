@@ -31,6 +31,10 @@ DIRS = [
     ".stoner/sessions",
     ".stoner/reviews",
     ".stoner/voice",
+    ".stoner/room",
+    ".stoner/room/notebooks",
+    ".stoner/room/sessions",
+    ".stoner/room/comments",
     ".stoner/drafts",
 ]
 
