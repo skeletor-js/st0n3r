@@ -28,7 +28,7 @@ errors (frozen as baseline; new code must not add errors).
 | tail | 011 U4 cross-feature wiring | done | e7a4f80, +19 tests (850 green) |
 | tail | 011 U5 UI panel consolidation | done | be50743 (+1 test, 831 green); manual light/dark screenshot check outstanding |
 | tail | 011 U6 docs reconciliation | wip | Opus subagent worktree, run 3 |
-| tail | 011 U7 full-suite + novella proof run | wip | offline half done (2 bugs found+fixed); live steps need API key |
+| tail | 011 U7 full-suite + novella proof run | done | offline + live halves complete; 3 live-run bugs found+fixed (5f511e9, f7459f9, b9fe4ab); all feature namespaces ledgered |
 
 ## Phase status
 
@@ -244,6 +244,38 @@ errors (frozen as baseline; new code must not add errors).
   with fresh screenshots, roadmap) — runs AFTER the docs-reconciliation agent
   merges; screenshots captured after the live proof so panels have real data
   (chromium installed in scratchpad for playwright capture).
+- **Run 3 (cont): LIVE PROOF COMPLETE (all 11 steps, via claude CLI provider,
+  zero API keys).** Highlights: room session 4 editors/53 findings answered the
+  margin comment; tournament run/vote/apply/graft end-to-end (tournament.*
+  ledgered — every feature namespace now covered); cast update+check; facts
+  research pulled 4 real sourced facts off the web (northcoastjournal,
+  lostcoastoutpost, kymkemp URLs); readers run + heatmap + bench (novella beat
+  the comp 12-0); flip-pov refactor whose advisory verification correctly
+  flagged the flip as a canon violation; ship blurbs; say-backend audio with
+  --assist (no-op: zero UNKNOWN lines); pacing LLM judge across 16 chapters
+  with cache-assisted resume (interrupted run finished from cache; re-run made
+  1 fresh call — only the repeatably unjudgeable ch-10). THIRD live-run bug
+  found+fixed (b9fe4ab): text-only tournament takes captured tool-call XML/
+  preamble/log scaffolding because the angle task mentioned write_chapter on
+  the single-shot path; task contract now branches on provider.supports_tools.
+  Suite 853 passed / 1 skipped, ruff clean, mypy baseline.
+- **Live-proof follow-ups (recorded, not blocking):** (1) cast update prints
+  "want_shift: want_shift" — value echoes field name, cosmetic extraction/
+  display nit in the curator output path; (2) haiku pacing judge repeatably
+  fails to emit parseable JSON on ch-10 (degrades to unjudged+info finding as
+  designed; unjudged results are deliberately not cached, so a full cache hit
+  needs every chapter judgeable — document or accept); (3) guard interaction:
+  tournament apply resets chapter status to draft, which then blocks ship
+  audio without --allow-incomplete — correct per plans, worth a docs note;
+  (4) room session (~16 min) and full LLM pacing (~15-20 min) exceed 10-minute
+  budgets in one shot on CLI providers — resumable by design.
+- **ORCHESTRATION NOTE (self):** shell cwd silently persisted inside the docs
+  agent's worktree during a status check; relative-path git/pytest commands ran
+  against the worktree while Edit-tool absolute paths hit main, producing a
+  phantom "lost commits" scare (main was always intact; reflog + git -C
+  untangled it). Accidental test append into the docs worktree was reverted.
+  Rule: always `git -C /Users/jordanstella/GitHub/st0n3r` or cd explicitly at
+  the start of every shell command chain.
 
 ## Run journal (run 1 — v1/v2)
 
