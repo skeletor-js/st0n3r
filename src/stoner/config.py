@@ -237,6 +237,47 @@ class ArchaeologyConfig(BaseModel):
     verify_after_refactor: bool = True
 
 
+class ShipAudioConfig(BaseModel):
+    """Table-read audio settings (src/stoner/ship/audio.py, tts.py).
+
+    `backend` names the TTS adapter (`say` local default, `openai` network).
+    Network synthesis is never a silent fallback: the `openai` backend is
+    reached only by an explicit `backend: openai` here or `--backend openai`
+    on the command, and it ledgers every run (R14). `narrator_voice` empty
+    lets the backend pick its first voice; `announce_speakers` prepends a
+    narrator-voiced name before each speaker change. `model` is the
+    network-TTS model id, config-overridable so a drifting vendor name never
+    forces a code change.
+    """
+
+    backend: str = "say"
+    narrator_voice: str = ""
+    announce_speakers: bool = False
+    model: str = "gpt-4o-mini-tts"
+
+
+class ShipConfig(BaseModel):
+    """The Production Line: export a finished manuscript (src/stoner/ship/).
+
+    Metadata resolves config > `canon/premise.md` > `project_name` (an empty
+    field falls back). `trim` is the PDF trade-paperback size as `WxH` inches
+    (default US digest 5.5x8.5). `underline_italics` emits classic Courier-era
+    underlines in the Shunn DOCX instead of real italics. Everything under
+    `audio` tunes the table read. This is the one config block the whole ship
+    line reads from (per shared-seam etiquette).
+    """
+
+    title: str = ""  # empty -> canon/premise.md title heuristic -> project_name
+    author: str = ""
+    year: str = ""
+    isbn: str = ""  # empty -> placeholder text in front matter
+    contact_lines: list[str] = Field(default_factory=list)
+    dedication: str = ""
+    trim: str = "5.5x8.5"
+    underline_italics: bool = False
+    audio: ShipAudioConfig = Field(default_factory=ShipAudioConfig)
+
+
 class ModelRoles(BaseModel):
     """Which model handles which job. Any `provider/model` string."""
 
@@ -267,6 +308,7 @@ class StonerConfig(BaseModel):
     motifs: MotifsConfig = Field(default_factory=MotifsConfig)
     readers: ReadersConfig = Field(default_factory=ReadersConfig)
     archaeology: ArchaeologyConfig = Field(default_factory=ArchaeologyConfig)
+    ship: ShipConfig = Field(default_factory=ShipConfig)
 
     # ------------------------------------------------------------------
     @classmethod

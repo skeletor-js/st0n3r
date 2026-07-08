@@ -37,6 +37,7 @@ DIRS = [
     ".stoner/room/sessions",
     ".stoner/room/comments",
     ".stoner/drafts",
+    "export",
 ]
 
 
