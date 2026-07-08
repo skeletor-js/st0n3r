@@ -25,10 +25,10 @@ errors (frozen as baseline; new code must not add errors).
 | W4 | 008 reader simulation (U1-U7) | done | f4e26cc, +56 tests (773 green) |
 | W5 | 010 production line (U1-U8) | done | 4103937, +57 tests (830 green) |
 | Wx | 009 U3-U8 (provenance/CLI/refactors) | done | 5e4c4ff, +41 tests (284 green) |
-| tail | 011 U4 cross-feature wiring | wip | Opus subagent worktree, run 3 |
+| tail | 011 U4 cross-feature wiring | done | e7a4f80, +19 tests (850 green) |
 | tail | 011 U5 UI panel consolidation | done | be50743 (+1 test, 831 green); manual light/dark screenshot check outstanding |
-| tail | 011 U6 docs reconciliation | todo | |
-| tail | 011 U7 full-suite + novella proof run | todo | live steps need API key |
+| tail | 011 U6 docs reconciliation | wip | Opus subagent worktree, run 3 |
+| tail | 011 U7 full-suite + novella proof run | wip | offline half done (2 bugs found+fixed); live steps need API key |
 
 ## Phase status
 
@@ -209,6 +209,33 @@ errors (frozen as baseline; new code must not add errors).
   Outstanding follow-up: manual stoner ui screenshot check in both themes on
   examples/novella (no browser automation in worktrees). Wiring (011 U4) still
   building.
+- **Run 3 (cont):** Wiring (011 U4) landed and merged (e7a4f80): all eight items,
+  +19 tests -> 850 passed / 1 skipped; hooks default-off byte-identical; write
+  --tournament = apply consent; book --tournaments flag. Docs reconciliation (U6)
+  launched as an Opus worktree agent. Proof run (U7, offline half) executed on
+  scratchpad COPIES of examples/novella (repo copy verified untouched):
+  status/voice learn+check(+all --save)/pacing --no-llm/promises
+  plant->check(1)->payoff->check(0) + --strict(1)/motifs add+scan+rhyme
+  --no-judge/drafts snapshot+list+blame+refactor split(9->16 renumber, integrity
+  clean)+verify/ship check(warnings only)+all(epub/pdf/docx)+voices+audio ch-08
+  dialogue-only via real say (13.8MB, 55 chunks)/cast init+show/room
+  comment+comments/facts add+list+show/readers personas+comps add/slop. Ledger on
+  the proof copy covers every feature namespace EXCEPT tournament.* (needs a
+  model). TWO live-run bugs found and fixed with regression tests: (1) motifs add
+  crashed on legacy projects lacking canon/motifs.md — now bootstraps from the
+  template (5f511e9); (2) legacy book-*.json reports sniffed as slop in the
+  reviews listing — verdict+overall now sniffs book (f7459f9). UI screenshot
+  check done in BOTH themes via preview browser (dark: rail order + manuscript;
+  light: reviews kind chips incl. BOOK REVIEW on legacy files, pacing empty state
+  and populated timeline) — closes the U5 follow-up. Suite at 852 passed / 1
+  skipped.
+- **PENDING LIVE-KEY PROOF STEPS (need a real provider API key; none configured
+  in this environment):** room session on one chapter; small tournament run (+
+  vote/apply — the only way to ledger tournament.*); cast update + cast check;
+  facts research (also needs facts.enabled: true); motifs candidates / rhyme
+  with judge; readers run (small roster) + heatmap + bench; drafts refactor
+  move-reveal/flip-pov + post-refactor model verification; ship blurbs; pacing
+  report with LLM instruments; ship audio --assist. Everything else is proven.
 
 ## Run journal (run 1 — v1/v2)
 
