@@ -183,6 +183,7 @@ def test_notebook_escalation_increments_across_updates(project: WritingProject):
     nb.mark_persisting("f_1", "s2")
     nb.mark_persisting("f_1", "s3")
     item = nb.get("f_1")
+    assert item is not None
     assert item["escalations"] == 2
     assert item["status"] == "persisting"
     assert item["last_seen_session"] == "s3"
@@ -255,7 +256,9 @@ def test_reconcile_dismissals_silences_item(project: WritingProject):
     }
     changed = nb.reconcile_dismissals([record])
     assert changed == 1
-    assert nb.get("f_1")["status"] == "dismissed"
+    item = nb.get("f_1")
+    assert item is not None
+    assert item["status"] == "dismissed"
     # dismissed items stop tracking: no re-location, no digest, no escalation
     assert nb.tracked_items(1) == []
     assert "flagged thing" not in nb.digest(chapter=1)
@@ -269,7 +272,9 @@ def test_reconcile_ignores_other_editors_findings(project: WritingProject):
     nb.upsert_item("f_1", 1, "q", "issue", "minor", "line", "s1")
     record = {"findings": [{"id": "f_1", "source": "room:first-reader:grade", "status": "dismissed"}]}
     assert nb.reconcile_dismissals([record]) == 0
-    assert nb.get("f_1")["status"] == "open"
+    item = nb.get("f_1")
+    assert item is not None
+    assert item["status"] == "open"
 
 
 def test_notebook_stays_capped_after_thirty_session_churn(project: WritingProject):
@@ -313,6 +318,7 @@ def test_relocate_exact_match_is_persisting(project: WritingProject):
     assert outcomes[0].outcome == "persisting"
     assert outcomes[0].tier == "exact"
     span = outcomes[0].span
+    assert span is not None
     assert BODY[span.start : span.end] == "the count came up short both times"
     assert provider.requests == []  # no model call: cost discipline (R17)
     assert usage.input_tokens == 0
@@ -324,6 +330,7 @@ def test_relocate_whitespace_drift_via_tier2(project: WritingProject):
     assert outcomes[0].outcome == "persisting"
     assert outcomes[0].tier == "normalized"
     span = outcomes[0].span
+    assert span is not None
     assert BODY[span.start : span.end] == "the count came up short both times"
 
 
@@ -352,7 +359,9 @@ def test_relocate_llm_fallback_classifies_resolved_and_new_quote(project: Writin
     by_id = {o.item_id: o for o in outcomes}
     assert by_id["f_gone"].outcome == "resolved"
     assert by_id["f_moved"].outcome == "persisting"
-    assert BODY[by_id["f_moved"].span.start : by_id["f_moved"].span.end] == new_quote
+    moved_span = by_id["f_moved"].span
+    assert moved_span is not None
+    assert BODY[moved_span.start : moved_span.end] == new_quote
     assert usage.input_tokens > 0
 
 
@@ -432,6 +441,7 @@ def test_session_persisting_flag_escalates_and_is_on_the_record(project: Writing
 
     assert len(provider.requests) == 4  # deterministic re-locate: no extra call
     item = Notebook(proj, "line-editor", proj.config.room).get("f_old")
+    assert item is not None
     assert item["status"] == "persisting"
     assert item["escalations"] == 1
     md = Path(res.md_path).read_text(encoding="utf-8")
@@ -458,6 +468,7 @@ def test_session_comment_answered_in_crossexam(project: WritingProject):
     assert len(provider.requests) == 4  # answered in cross-exam: no follow-up call
     assert res.obligations_unmet == []
     updated = store.get(1, c.id)
+    assert updated is not None
     assert updated.status == "answered"
     assert updated.responses[0].editor == "dev-editor"
     assert updated.responses[0].text == "no, it earns its length"
@@ -482,6 +493,7 @@ def test_session_unanswered_comment_triggers_exactly_one_followup(project: Writi
     assert len(provider.requests) == 5  # exactly ONE follow-up
     assert res.obligations_unmet == []
     updated = store.get(1, c.id)
+    assert updated is not None
     assert updated.status == "answered"
     assert updated.responses[0].editor == "room"
 
@@ -606,6 +618,7 @@ def test_session_reconciles_human_dismissal_before_relocation(project: WritingPr
     provider = FakeProvider([_take_resp(), _take_resp(), _crossexam_resp(), _crossexam_resp()])
     res = run_room_session(proj, chapter=1, provider=provider)
     item = Notebook(proj, "line-editor", proj.config.room).get("f_old")
+    assert item is not None
     assert item["status"] == "dismissed"
     assert item["escalations"] == 0  # never re-located, never escalated
     assert res.relocated == {}

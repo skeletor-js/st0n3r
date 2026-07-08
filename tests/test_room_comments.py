@@ -57,11 +57,13 @@ def test_append_response_flips_open_to_answered(project: WritingProject):
     store = CommentStore(project)
     c = store.add(1, quote="", text="why the bell?")
     updated = store.append_response(1, c.id, editor="line-editor", text="it tolls for thee", session="s1")
+    assert updated is not None
     assert updated.status == "answered"
     assert updated.responses[0].editor == "line-editor"
     assert updated.responses[0].session == "s1"
     # a second response accumulates without resetting status
     updated = store.append_response(1, c.id, editor="first-reader", text="agreed", session="s1")
+    assert updated is not None
     assert len(updated.responses) == 2
     assert updated.status == "answered"
 
@@ -71,6 +73,7 @@ def test_resolve_answered_comment_persists_and_ledgers(project: WritingProject):
     c = store.add(1, quote="", text="q")
     store.append_response(1, c.id, editor="room", text="a")
     updated = store.set_status(1, c.id, "resolved")
+    assert updated is not None
     assert updated.status == "resolved"
     on_disk = json.loads(
         (project.root / ".stoner" / "room" / "comments" / "ch-01.json").read_text(encoding="utf-8")

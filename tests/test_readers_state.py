@@ -58,7 +58,9 @@ def test_save_then_load_round_trips(project: WritingProject):
     assert loaded.model_dump() == original.model_dump()
     # int chapter keys survive the JSON string-key round-trip.
     assert 1 in loaded.chapter_logs
-    assert loaded.chapter_logs[1].markers[0].span.start == 0
+    span = loaded.chapter_logs[1].markers[0].span
+    assert span is not None
+    assert span.start == 0
 
 
 def test_corrupt_state_backed_up_and_fresh_returned(project: WritingProject):

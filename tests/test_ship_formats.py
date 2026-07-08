@@ -66,6 +66,7 @@ def test_epub_structure(tmp_path: Path):
 
         opf = ET.fromstring(zf.read("OEBPS/package.opf"))
         spine = opf.find("{*}spine")
+        assert spine is not None
         chapter_refs = [i for i in spine if i.tag.endswith("itemref")]
         # 3 front-matter pages + 3 chapters + 1 end page all spine-ordered.
         assert len(chapter_refs) == len(project.chapters()) + 4

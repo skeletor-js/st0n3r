@@ -383,7 +383,9 @@ def test_apply_updates_dry_run_does_not_write(store: CanonStore, project: Writin
     result = apply_updates(store, mem, parsed, chapter_number=3, auto=False)
     assert result.dry_run is True
     assert len(result.applied_facts) == 1
-    assert store.get_character("aria-voss").frontmatter["age"] == 29  # unchanged
+    entry = store.get_character("aria-voss")
+    assert entry is not None
+    assert entry.frontmatter["age"] == 29  # unchanged
     assert mem.get_chapter_summary(3) is None
     assert result.summary_saved is False
 
@@ -399,7 +401,9 @@ def test_apply_updates_auto_merges_non_conflicting(store: CanonStore, project: W
     }
     result = apply_updates(store, mem, parsed, chapter_number=1, auto=True)
     assert result.dry_run is False
-    assert store.get_character("aria-voss").frontmatter["eyes"] == "green"
+    entry = store.get_character("aria-voss")
+    assert entry is not None
+    assert entry.frontmatter["eyes"] == "green"
     assert mem.get_chapter_summary(1) == "Aria's eyes are described as green."
     assert result.summary_saved is True
     assert result.new_entities[0]["name"] == "The Hollow"
@@ -419,7 +423,9 @@ def test_apply_updates_never_overwrites_conflicts(store: CanonStore, project: Wr
     result = apply_updates(store, mem, parsed, chapter_number=2, auto=True)
     assert len(result.conflicts) == 1
     assert result.applied_facts == []
-    assert store.get_character("aria-voss").frontmatter["age"] == 29
+    entry = store.get_character("aria-voss")
+    assert entry is not None
+    assert entry.frontmatter["age"] == 29
 
 
 def test_apply_updates_thread_updates(store: CanonStore, project: WritingProject):

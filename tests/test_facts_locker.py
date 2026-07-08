@@ -167,6 +167,7 @@ def test_apply_auto_writes_only_nonconflicting(store: CanonStore, project: Writi
     assert res.applied == []
     # The original claim is untouched -- no auto-overwrite.
     entry = store.get_fact("category-ii-reinspection-fee")
+    assert entry is not None
     assert "$1,200" in entry.frontmatter["claim"]
 
 

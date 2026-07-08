@@ -11,6 +11,7 @@ import pytest
 from stoner.canon.scaffold import scaffold_project
 from stoner.canon.store import CanonStore
 from stoner.project import WritingProject
+from stoner.tournament.state import TournamentStatus
 from stoner.types import Finding, ReviewReport, Severity, SlopReport, Span
 
 SLOPPY_BODY = (
@@ -545,7 +546,9 @@ def test_reviews_listing_routes_all_seven_kinds(client, project: WritingProject)
 # ---------------------------------------------------------------------------
 
 
-def _seed_tournament(project: WritingProject, tid: str = "ch-01-1111", status: str = "proposed"):
+def _seed_tournament(
+    project: WritingProject, tid: str = "ch-01-1111", status: TournamentStatus = "proposed"
+):
     from stoner.tournament.state import (
         Comparison,
         TakeRecord,

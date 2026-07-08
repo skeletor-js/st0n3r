@@ -245,7 +245,9 @@ def test_conflicting_candidate_not_written(project: WritingProject):
     assert len(res.conflicts) == 1
     assert res.applied == []
     # Original untouched
-    assert "2016" in store.get_fact("cannabis-land-use-ordinance").frontmatter["claim"]
+    entry = store.get_fact("cannabis-land-use-ordinance")
+    assert entry is not None
+    assert "2016" in entry.frontmatter["claim"]
     assert "facts.conflict" in _ledger_actions(project)
 
 

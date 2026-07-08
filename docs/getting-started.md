@@ -27,7 +27,7 @@ Both `stoner` and `st0n3r` work as the command name. Check the install:
 
 ```
 $ stoner --version
-st0n3r 0.1.0
+st0n3r 0.2.0
 ```
 
 ## API keys

@@ -207,8 +207,9 @@ def test_voice_map_ranks_and_preserves(tmp_path: Path):
     assert vm["characters"]["ruth-vann"] == "v1"
 
     # Regeneration preserves a hand-edited assignment and appends a new char.
-    edited = {"narrator": "narr", "characters": dict(vm["characters"])}
-    edited["characters"]["ruth-vann"] = "custom"
+    edited_chars = dict(vm["characters"])
+    edited_chars["ruth-vann"] = "custom"
+    edited = {"narrator": "narr", "characters": edited_chars}
     counts2 = dict(counts)
     counts2["iris-vann"] = 5
     vm2 = build_voice_map(counts2, ["v1", "v2", "v3"], narrator_voice="narr", existing=edited)

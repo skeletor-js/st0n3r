@@ -11,14 +11,14 @@ from stoner.canon.scaffold import scaffold_project
 from stoner.project import WritingProject
 from stoner.readers.heatmap import build_heatmap, paragraph_segments, run_heatmap
 from stoner.readers.personas import load_shipped
-from stoner.readers.state import ChapterLog, Marker, RunState, save_state
+from stoner.readers.state import ChapterLog, Marker, MarkerType, RunState, save_state
 from stoner.types import Span
 
 BODY = "The strongbox sat there.\n\nThe frost came early that year.\n"
 # paragraph 0: chars [0, 24); paragraph 1 starts at 26.
 
 
-def _marker(persona: str, mtype: str, offset: int) -> Marker:
+def _marker(persona: str, mtype: MarkerType, offset: int) -> Marker:
     return Marker(persona=persona, chapter=1, type=mtype, quote="x", span=Span(start=offset, end=offset + 1, line=1))
 
 
