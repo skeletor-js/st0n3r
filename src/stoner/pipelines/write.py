@@ -37,6 +37,8 @@ class WriteResult:
     words: int = 0
     slop_before: float = -1.0
     slop_after: float = -1.0
+    voice_before: float = -1.0
+    voice_after: float = -1.0
     revision_loops: int = 0
     gate_passed: bool = False
     archive: ApplyResult | None = None
@@ -144,6 +146,41 @@ def draft_chapter(
     return result.usage
 
 
+def _draft_via_tournament(
+    project: WritingProject,
+    number: int,
+    takes: int,
+    model: str | None = None,
+    provider: Provider | None = None,
+) -> Usage:
+    """Draft `takes` angled takes, judge them blind, and apply the proposed
+    winner to the manuscript — the `stoner write --tournament N` / book-slot
+    drafting path (plan 003 seam, plan 011 U4).
+
+    Runs before the write pipeline's slop gate: the applied winner lands as a
+    `draft`-status chapter (snapshot reason `tournament-graft`; the per-take
+    drafts carry reason `draft`), and the caller then runs the normal slop
+    gate/archivist flow over it. `run_tournament`/`apply_winner` ledger their
+    own `tournament.*` actions ahead of the pipeline's `pipeline.write.*`.
+    """
+    from ..tournament.run import apply_winner, run_tournament
+
+    usage = Usage()
+    tour = run_tournament(project, number, takes=takes, model=model, provider=provider)
+    usage += tour.usage
+    if tour.proposed_winner is None:
+        raise RuntimeError(
+            f"tournament for chapter {number} produced no winner "
+            f"(status {tour.status!r}); cannot continue the write pipeline"
+        )
+    # `--tournament` on write IS the human-confirmation step: the explicit
+    # flag is consent to apply the proposed winner (normally a separate
+    # `stoner tournament apply`).
+    applied = apply_winner(project, tour.id, model=model, provider=provider)
+    usage += applied.usage
+    return usage
+
+
 def run_write(
     project: WritingProject,
     number: int,
@@ -151,15 +188,29 @@ def run_write(
     provider: Provider | None = None,
     skip_archive: bool = False,
     task: str = "",
+    tournament: int | None = None,
 ) -> WriteResult:
-    """Full pipeline: draft -> slop gate (auto-revise) -> archivist.
+    """Full pipeline: draft -> slop gate (auto-revise) -> voice gate -> archivist.
 
     `model` overrides the *writer* role only; the revise and archivist
     stages keep their configured role models (unless a `provider` instance
     is injected, which routes every stage — that path exists for tests).
+
+    `tournament=N` (opt-in) drafts N angled takes, judges them, and applies
+    the winner before the slop gate instead of a single draft (plan 011 U4).
     """
     res = WriteResult(chapter=number)
     ledger = Ledger(project.root)
+
+    # Optional tournament drafting runs first so its `tournament.*` ledger
+    # entries precede `pipeline.write.*` (plan 011 U4).
+    skip_draft = False
+    if tournament is not None:
+        res.usage += _draft_via_tournament(
+            project, number, takes=tournament, model=model, provider=provider
+        )
+        skip_draft = True
+
     if provider is None:
         # Auth-preflight the writer provider before logging the pipeline
         # start, so a missing API key doesn't leave an orphaned start entry
@@ -167,7 +218,8 @@ def run_write(
         get_provider(resolve_role_model(project.config, "writer", model), project.config)
     ledger.append("pipeline.write.start", target=project.chapter_rel(number))
 
-    res.usage += draft_chapter(project, number, model=model, provider=provider, task=task)
+    if not skip_draft:
+        res.usage += draft_chapter(project, number, model=model, provider=provider, task=task)
 
     # --- slop gate -----------------------------------------------------
     bw, bp = CanonStore(project).banned_terms()
@@ -217,9 +269,68 @@ def run_write(
             f"score {report.score:.1f} (max {gates.slop_max_score})"
         )
 
+    # --- voice gate (opt-in; default-off) --------------------------------
+    # Deterministic drift check settles after the slop gate. `voice_gate_check`
+    # returns (None, False) when `voice.gate` is off or no fingerprint exists,
+    # so the default path adds no `voice.*` ledger entries and is byte-identical
+    # to v0.2.0. Revision loops continue from the slop loop's count against the
+    # shared `gates.max_revision_loops` budget (plan 001 U5).
+    from ..voice.drift import voice_gate_check
+
+    _, body = project.read_chapter(number)
+    voice_report, voice_fails = voice_gate_check(
+        project, body, path=project.chapter_rel(number)
+    )
+    if voice_report is None:
+        # The helper collapses "gate off" and "gate on but no fingerprint" to
+        # None. Only the second case warrants a note: the writer asked for a
+        # voice gate but nothing was there to check against.
+        if project.config.voice.gate:
+            res.notes.append(
+                "voice gate enabled but no fingerprint learned "
+                "(run `stoner voice learn`); skipping voice check"
+            )
+    else:
+        res.voice_before = res.voice_after = voice_report.score
+        while res.revision_loops < gates.max_revision_loops and voice_fails:
+            voice_findings = [
+                f for f in voice_report.findings if f.severity.value in ("major", "critical")
+            ][:40] or voice_report.findings[:40]
+            if not voice_findings:
+                break  # nothing actionable to revise against
+            res.revision_loops += 1
+            ledger.append(
+                "voice.gate",
+                target=project.chapter_rel(number),
+                score=voice_report.score,
+                loop=res.revision_loops,
+            )
+            from ..review.revise import revise_chapter
+
+            voice_revise_kwargs: dict[str, Any] = {}
+            if "reason" in inspect.signature(revise_chapter).parameters:
+                voice_revise_kwargs["reason"] = "voice-revise"
+            revision = revise_chapter(
+                project, number, voice_findings, provider=provider, **voice_revise_kwargs
+            )
+            res.usage += revision.usage
+            _, body = project.read_chapter(number)
+            voice_report, voice_fails = voice_gate_check(
+                project, body, path=project.chapter_rel(number)
+            )
+            if voice_report is None:
+                break  # gate turned off mid-run (defensive); nothing more to do
+            res.voice_after = voice_report.score
+        if voice_fails:
+            res.notes.append(
+                f"voice gate still failing after {res.revision_loops} loop(s): "
+                f"score {res.voice_after:.1f} (max {project.config.voice.max_drift_score})"
+            )
+
     # --- archivist -------------------------------------------------------
     if not skip_archive:
         res.archive = run_archive(project, number, provider=provider, auto=True)
+        _run_cast_auto_update(project, number, provider=provider, result=res)
 
     fm, body = project.read_chapter(number)
     res.words = count_words(body)
@@ -231,6 +342,37 @@ def run_write(
         gate_passed=res.gate_passed,
     )
     return res
+
+
+def _run_cast_auto_update(
+    project: WritingProject,
+    number: int,
+    provider: Provider | None,
+    result: WriteResult,
+) -> None:
+    """Post-archivist cast-curator hook (plan 002 U7, plan 011 U4).
+
+    Fires only when `config.cast.auto_update` is true AND cast sheets exist —
+    a project that never opts into cast pays nothing (no model call, no
+    `cast.*` ledger). Private-state conflicts add one summary line to
+    `result.notes`; any curator failure degrades to a note and never fails
+    the write.
+    """
+    if not project.config.cast.auto_update:
+        return
+    try:
+        from ..interiority.pipeline import run_cast_update
+        from ..interiority.store import CastStore
+
+        if not CastStore(project).list_slugs():
+            return
+        cast_res = run_cast_update(project, number, auto=True, provider=provider)
+        if cast_res.conflicts:
+            result.notes.append(
+                f"cast: {len(cast_res.conflicts)} private-state conflict(s) need review"
+            )
+    except Exception as e:  # noqa: BLE001 - cast curator must never fail the write
+        result.notes.append(f"cast auto-update failed: {e}")
 
 
 def run_archive(

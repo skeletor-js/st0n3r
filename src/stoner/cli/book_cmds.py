@@ -74,6 +74,7 @@ def register(app: typer.Typer) -> None:
         max_minutes: float = typer.Option(None, "--max-minutes", help="Wall-clock cap for this run (minutes)."),
         model: str = typer.Option(None, "--model", help="Override the writer model for drafting (review/revise keep their configured roles)."),
         resume: bool = typer.Option(True, "--resume/--no-resume", help="Resume from saved book state (skip written chapters)."),
+        tournaments: bool = typer.Option(False, "--tournaments", help="Draft the opening and ending slot chapters via a per-slot tournament (config.tournament.slot_takes); middle chapters draft once."),
     ) -> None:
         """Write the whole book: draft every planned chapter, then review and revise."""
         from ..pipelines.book import run_book
@@ -88,6 +89,7 @@ def register(app: typer.Typer) -> None:
                 max_review_rounds=max_review_rounds,
                 resume=resume,
                 max_minutes=max_minutes,
+                tournament=tournaments,
                 on_event=_progress_printer(),
             )
         except (ProviderError, ValueError, RuntimeError, ProjectError) as e:
