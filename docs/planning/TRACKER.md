@@ -22,8 +22,8 @@ errors (frozen as baseline; new code must not add errors).
 | W3 | 002 character interiority (U1-U7; run_write cast hook deferred to wiring) | done | merged, +50 tests (604 green) |
 | W3 | 006 verisimilitude engine (U1-U6) | done | c1d1960, +62 tests (666 green) |
 | W4 | 007 promise & motif ledger (U1-U6, incl. book.py promises event) | done | d2961c5, +51 tests (717 green) |
-| W4 | 008 reader simulation (U1-U7) | wip | Opus subagent worktree, run 3 |
-| W5 | 010 production line (all units) | todo | |
+| W4 | 008 reader simulation (U1-U7) | done | f4e26cc, +56 tests (773 green) |
+| W5 | 010 production line (U1-U8) | wip | Opus subagent worktree, run 3 |
 | Wx | 009 U3-U8 (provenance/CLI/refactors) | done | 5e4c4ff, +41 tests (284 green) |
 | tail | 011 U4 cross-feature wiring | todo | |
 | tail | 011 U5 UI panel consolidation | todo | |
@@ -182,6 +182,14 @@ errors (frozen as baseline; new code must not add errors).
   +51 tests -> 717 passed / 1 skipped, ruff clean, mypy baseline. Zero plan
   deviations; canon/promises.md deliberately unused per KTD 1. Readers (008)
   still building.
+- **Run 3 (cont):** Readers (008) landed and merged (f4e26cc): +56 tests -> 773
+  passed / 1 skipped, ruff clean, mypy baseline. Seam conflicts vs motifs merge
+  resolved (MotifsConfig before ReadersConfig; motifs register before readers).
+  Deviations: readers run auto-builds heatmap; deterministic finding ids
+  rh-<ch>-<seg>; feature-local RunState bench fields. WAVE 4 COMPLETE. Wave 5
+  launched: 010 production line, Opus subagent worktree (ship config after
+  archaeology; ship register last; export extra with reportlab/python-docx;
+  CanonStore.promises() live so unfired-guns blocker activates in-plan).
 
 ## Run journal (run 1 — v1/v2)
 
