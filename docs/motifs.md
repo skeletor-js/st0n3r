@@ -4,7 +4,7 @@ Two ledgers that track what a book promises and what it echoes. **Promises** typ
 
 ```bash
 # promises — all offline, no API key
-stoner promises plant --kind mystery --desc "who cut the fence"   # an open, kind-typed thread row
+stoner promises plant p1 "who cut the fence" --kind mystery   # an open, kind-typed thread row
 stoner promises list                                              # planted promises and status
 stoner promises payoff <id> --chapter 14                          # stamp resolved + payoff chapter
 stoner promises check                                             # exit 1 while any promise-kind row is open

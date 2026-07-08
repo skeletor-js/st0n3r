@@ -7,7 +7,7 @@ stoner room session 3            # run the roster over chapter 3
 stoner room session --book       # a whole-book milestone session
 stoner room notebook "Line Editor"   # one editor's running opinion + open items
 stoner room comments 3           # a chapter's margin comments; resolve/dismiss by id
-stoner room comment 3 --quote "..." --note "..."   # pin a margin comment to a span
+stoner room comment 3 --quote "..." --text "..."   # pin a margin comment to a span
 stoner room status               # open comments and persisting flags across the project
 ```
 
@@ -36,7 +36,7 @@ You reshape the roster in `stoner.yaml`: each editor is a `{name, persona, passe
 
 ## Margin comments
 
-`stoner room comment <chapter> --quote "<verbatim span>" --note "<comment>"` pins a comment to a span, anchored by the quote so it survives edits that don't touch that text. `stoner room comments <chapter>` lists them and lets you resolve or dismiss by id; `stoner room status` rolls up open comments and persisting flags across the whole project. Comments and notebooks are read in the [UI](ui.md) Writers' Room panel.
+`stoner room comment <chapter> --quote "<verbatim span>" --text "<comment>"` pins a comment to a span, anchored by the quote so it survives edits that don't touch that text. `stoner room comments <chapter>` lists them and lets you resolve or dismiss by id; `stoner room status` rolls up open comments and persisting flags across the whole project. Comments and notebooks are read in the [UI](ui.md) Writers' Room panel.
 
 Dismissing an item silences that notebook thread — the editor won't keep re-raising a concern you've explicitly waved off.
 
