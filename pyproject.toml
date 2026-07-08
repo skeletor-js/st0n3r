@@ -60,6 +60,10 @@ ignore = ["E501"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+filterwarnings = [
+    # third-party: FastAPI's TestClient triggers this from Starlette; not ours. Remove when FastAPI moves off deprecated httpx usage.
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated:starlette.exceptions.StarletteDeprecationWarning",
+]
 
 [tool.mypy]
 python_version = "3.11"

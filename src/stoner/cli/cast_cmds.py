@@ -138,7 +138,8 @@ def register(app: typer.Typer) -> None:
         mode = "applied" if auto else "would apply (preview — rerun with --auto)"
         console.print(f"{mode}: {len(res.applied)} update(s), {len(res.conflicts)} conflict(s)")
         for a in res.applied:
-            detail = a.get("fact") or a.get("claim") or a.get("topic") or a.get("kind")
+            detail = str(a.get("want") or a.get("fact") or a.get("claim") or a.get("topic") or a.get("kind") or "")
+            detail = (detail[:80] + "…") if len(detail) > 80 else detail
             console.print(f"  {a['slug']} {a['kind']}: {detail}")
         for c in res.conflicts:
             console.print(f"  [yellow]conflict[/yellow] {c.slug} {c.kind}: {c.detail} — resolve by hand")
