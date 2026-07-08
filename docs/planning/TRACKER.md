@@ -23,10 +23,10 @@ errors (frozen as baseline; new code must not add errors).
 | W3 | 006 verisimilitude engine (U1-U6) | done | c1d1960, +62 tests (666 green) |
 | W4 | 007 promise & motif ledger (U1-U6, incl. book.py promises event) | done | d2961c5, +51 tests (717 green) |
 | W4 | 008 reader simulation (U1-U7) | done | f4e26cc, +56 tests (773 green) |
-| W5 | 010 production line (U1-U8) | wip | Opus subagent worktree, run 3 |
+| W5 | 010 production line (U1-U8) | done | 4103937, +57 tests (830 green) |
 | Wx | 009 U3-U8 (provenance/CLI/refactors) | done | 5e4c4ff, +41 tests (284 green) |
-| tail | 011 U4 cross-feature wiring | todo | |
-| tail | 011 U5 UI panel consolidation | todo | |
+| tail | 011 U4 cross-feature wiring | wip | Opus subagent worktree, run 3 |
+| tail | 011 U5 UI panel consolidation | wip | Opus subagent worktree, run 3 |
 | tail | 011 U6 docs reconciliation | todo | |
 | tail | 011 U7 full-suite + novella proof run | todo | live steps need API key |
 
@@ -190,6 +190,18 @@ errors (frozen as baseline; new code must not add errors).
   launched: 010 production line, Opus subagent worktree (ship config after
   archaeology; ship register last; export extra with reportlab/python-docx;
   CanonStore.promises() live so unfired-guns blocker activates in-plan).
+- **Run 3 (cont):** Production line (010) landed and merged (4103937): +57 tests
+  -> 830 passed / 1 skipped, ruff clean, mypy baseline; pyproject gained the
+  export extra (reportlab, python-docx; all grew export — `uv sync --extra dev
+  --extra export` is now the dev setup). Agent live-proved ship
+  check/all/voices/audio on a corpus COPY with the real say backend (cache
+  resume verified); examples/novella untouched. Deviations: corpus uses straight
+  quotes (plan said curly — parser handles both); PDF asserts raw bytes instead
+  of adding pypdf; format orchestration in format modules. ALL TEN FEATURES
+  LANDED. Tail launched: 011 U4 wiring + U5 UI consolidation as parallel Opus
+  worktree agents (disjoint: pipelines/CLI vs ui/). U4 notes: write --tournament
+  = human consent to apply; book slots behind --tournaments flag (default off);
+  voice gate + cast hook per plan scenarios.
 
 ## Run journal (run 1 — v1/v2)
 
