@@ -18,9 +18,9 @@ errors (frozen as baseline; new code must not add errors).
 | W1 | 001 voice engine (U1-U4, U6, U7 + gate helper; write.py gate deferred to wiring) | done | 66836b1, +58 tests (415 green) |
 | W1 | 004 pacing instrumentation (U1-U7) | done | 781de54, +73 tests (357 green) |
 | W2 | 005 writers' room (U1-U7) | done | ad1a147, +77 tests (492 green) |
-| W2 | 003 draft tournaments (U1-U7; write --tournament + book slots deferred to wiring) | wip | Opus subagent worktree, run 3 |
-| W3 | 002 character interiority (all units) | todo | |
-| W3 | 006 verisimilitude engine (all units) | todo | |
+| W2 | 003 draft tournaments (U1-U7; write --tournament + book slots deferred to wiring) | done | merged, +62 tests (554 green) |
+| W3 | 002 character interiority (U1-U7; run_write cast hook deferred to wiring) | wip | Opus subagent worktree, run 3 |
+| W3 | 006 verisimilitude engine (U1-U6) | wip | Opus subagent worktree, run 3 |
 | W4 | 007 promise & motif ledger (all units) | todo | |
 | W4 | 008 reader simulation (all units) | todo | |
 | W5 | 010 production line (all units) | todo | |
@@ -149,6 +149,17 @@ errors (frozen as baseline; new code must not add errors).
   1 skipped, ruff clean, mypy baseline. Deviations: book-scope relocation is
   deterministic-only; chapter relocation batches all editors into the one fallback
   call (R17 bound). Tournaments (003) still building.
+- **Run 3 (cont):** Tournaments (003) landed and merged: +62 tests -> 554 passed /
+  1 skipped, ruff clean, mypy baseline, merged index.html JS node-checked. Seam
+  conflicts with the room merge resolved (tournament register between voice and
+  pacing; both endpoint blocks kept in ui/server.py; tournaments rail/panel/JS
+  before room's). Tournament deviations: restores also via chokepoint (reason
+  tournament-restore) to keep the drafts manifest in sync; Swiss pairing
+  backtracks; drift check vs restored_sha; 409 on closed voting. WAVE 2 COMPLETE.
+  Wave 3 launched: 002 interiority + 006 verisimilitude, Opus subagents in
+  worktrees (cast config/register between voice and tournament; facts between
+  room and archaeology/drafts; cast reports kind "cast"; 006 owns the only
+  pre-reconciliation faq.md edit).
 
 ## Run journal (run 1 — v1/v2)
 
