@@ -40,13 +40,14 @@ class ClaudeCodeProvider(Provider):
 
     def __init__(self, pc: ProviderConfig):
         self.pc = pc
-        self.binary = shutil.which("claude")
-        if not self.binary:
+        binary = shutil.which("claude")
+        if not binary:
             raise ProviderError(
                 "The `claude` CLI was not found on PATH. Install Claude Code "
                 "(https://claude.com/claude-code) and sign in by running `claude` "
                 "once interactively, or via `claude setup-token`, then retry."
             )
+        self.binary: str = binary
         self.timeout = pc.extra.get("timeout", _DEFAULT_TIMEOUT)
 
     # -- feature detection -------------------------------------------------

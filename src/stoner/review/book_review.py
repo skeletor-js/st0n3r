@@ -136,8 +136,9 @@ def _parse_report(text: str, bodies: dict[int, str], model_str: str) -> tuple[li
         for item in raw:
             if not isinstance(item, dict):
                 continue
+            chapter_val = item.get("chapter")
             try:
-                n = int(item.get("chapter"))
+                n = int(chapter_val) if chapter_val is not None else 0
             except (TypeError, ValueError):
                 n = 0
             category = str(item.get("category", "")).strip()
