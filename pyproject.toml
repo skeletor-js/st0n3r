@@ -31,7 +31,8 @@ dependencies = [
 anthropic = ["anthropic>=0.40"]
 openai = ["openai>=1.50"]
 ui = ["fastapi>=0.110", "uvicorn>=0.29"]
-all = ["st0n3r[anthropic,openai,ui]"]
+export = ["reportlab>=5.0", "python-docx>=1.2"]
+all = ["st0n3r[anthropic,openai,ui,export]"]
 dev = ["st0n3r[all]", "pytest>=8.0", "pytest-cov", "ruff>=0.5", "mypy>=1.10"]
 
 [project.scripts]

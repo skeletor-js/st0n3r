@@ -548,6 +548,7 @@ from . import (  # noqa: E402
     pacing_cmds,
     readers_cmds,
     room_cmds,
+    ship_cmds,
     tournament_cmds,
     voice_cmds,
 )
@@ -566,6 +567,7 @@ facts_cmds.register(app)
 motifs_cmds.register(app)
 readers_cmds.register(app)
 drafts_cmds.register(app)
+ship_cmds.register(app)
 
 
 def app_main() -> None:
