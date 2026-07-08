@@ -10,9 +10,7 @@
   <img src="https://img.shields.io/badge/python-3.11%2B-3776AB?style=flat" alt="Python 3.11+">
   <img src="https://img.shields.io/badge/version-0.2.0-1E6FB8?style=flat" alt="version 0.2.0">
   <img src="https://img.shields.io/badge/license-MIT-2E7D32?style=flat" alt="MIT license">
-  <img src="https://img.shields.io/badge/tests-865%20passing-2EA44F?style=flat" alt="865 tests passing">
-  <img src="https://img.shields.io/badge/ruff-clean-4B8BBE?style=flat" alt="ruff clean">
-  <img src="https://img.shields.io/badge/mypy-clean-2A6DB2?style=flat" alt="mypy clean">
+  <a href="https://github.com/skeletor-js/st0n3r/actions/workflows/ci.yml"><img src="https://github.com/skeletor-js/st0n3r/actions/workflows/ci.yml/badge.svg" alt="CI: tests, ruff, mypy"></a>
 </p>
 
 ---
@@ -120,7 +118,7 @@ Architecture notes live in [docs/planning/ARCHITECTURE.md](docs/planning/ARCHITE
 
 ## Status
 
-v0.2.0 — functional end to end, with a complete generated novella as proof. Young; interfaces may move. The badges above are static, verified against this commit; live CI is [roadmap](docs/roadmap.md) item nine.
+v0.2.0 — functional end to end, with a complete generated novella as proof. Young; interfaces may move. The badge above is live: [GitHub Actions](.github/workflows/ci.yml) runs the test suite, ruff, and mypy on every push to main and every pull request, across Python 3.11 and 3.12.
 
 ## Credits & license
 
